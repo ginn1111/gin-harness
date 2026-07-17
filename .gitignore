@@ -1,0 +1,20 @@
+# Machine-specific
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Reports / plans (machine-generated)
+.hermes/reports/*
+.hermes/plans/*
