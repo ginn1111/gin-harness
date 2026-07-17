@@ -1,126 +1,78 @@
-# Gin Delivery Pipeline — New Installation Guide
+# agents-hype — Install / Update Global Hermes Profiles
 
-Set up 2 Hermes agent profiles from scratch on a new machine: `gintary` (planner/dispatcher/escalation sink) → `ginb` (builder, self-reviewer, shipper).
+Use this repo only for **one-time setup** and **update-time maintenance** of global Hermes profiles.
+
+Profiles installed from this repo:
+- `gintary` — planner / dispatcher / escalation sink
+- `ginb` — builder / verifier / shipper
 
 ---
 
 ## 1. Prerequisites
 
 ```bash
-# Hermes agent
-pip install hermes-agent
-hermes update
+# Hermes
+hermes --version
 
 # Runtime deps
-python3 -m pip install pyyaml
-
-# Verify
-hermes --version   # v0.18.2+
-python3 --version  # 3.11+
+python3 --version
 git --version
+python3 -m pip install pyyaml
 ```
 
 ---
 
-## 2. Clone the repo
+## 2. Clone repo
 
 ```bash
 git clone <your-repo-url> agents-hype
 cd agents-hype
 ```
 
-This repo contains:
-
-```
-agents-hype/
-├── profiles/*.SOUL.md    ← role contracts (symlinked into deployed profiles)
-├── config/
-│   ├── profiles.yaml     ← per-profile overrides
-│   └── profile.yaml.tmpl ← config.yaml template
-├── scripts/
-│   ├── setup.sh           ← bootstrap profiles
-│   ├── verify.sh          ← drift detection
-│   └── community-setup.sh ← clone skill repos
-├── skills/               ← custom skills (populate with your own)
-├── community/            ← cloned community skill repos
-├── Makefile
-└── README.md
-```
-
 ---
 
-## 3. Create `.env`
+## 3. Create repo `.env`
 
+```bash
+cp .env.example .env
 ```
+
+Set:
+
+```bash
 GIN_API_KEY=sk-...your-key...
 GIN_BASE_URL=https://agents.gin1111.dev/v1
 GIN_HOST=agents.gin1111.dev
 ```
 
-- `GIN_API_KEY` — API key for your LLM provider
-- `GIN_BASE_URL` — OpenAI-compatible endpoint base
-- `GIN_HOST` — hostname matching the `custom_providers` name in config template
-
-Without `.env`, the setup script uses defaults (agents.gin1111.dev) but auth will fail.
-
 ---
 
-## 4. Clone community skills
+## 4. Clone shared community skills
 
 ```bash
-# Dry-run
-bash scripts/community-setup.sh
-
-# Apply — clones mattpocock/skills into community/
 bash scripts/community-setup.sh --apply
 ```
 
-Expected: `community/mattpocock-skills/skills/` with ~80+ skill dirs.
-
-To add more repos later, edit `scripts/community-setup.sh` and add entries to the `REPOS` array.
-
 ---
 
-## 5. Populate custom skills (optional)
-
-Your gindev-origin skills go into `skills/`. These are loaded via `external_dirs` in config.
-
-If you have existing skills at `~/.hermes/skills/`, copy the ones you want:
+## 5. Bootstrap profiles
 
 ```bash
-mkdir -p skills/software-development
-cp -r ~/.hermes/skills/software-development/my-skill skills/software-development/
-```
-
-Only the skills you explicitly copy will be available — profiles don't inherit the global `~/.hermes/skills/` dir.
-
----
-
-## 6. Bootstrap profiles
-
-```bash
-# Dry-run — see what would change
-bash scripts/setup.sh
-
-# Apply — creates profiles, symlinks SOUL.md, generates config.yaml
+bash scripts/setup.sh        # dry-run
 bash scripts/setup.sh --apply
 ```
 
-What happens:
-
-| Step | Action |
-|------|--------|
-| Profile creation | `hermes profile create <name> --no-skills` (skips if exists) |
-| SOUL.md | Symlinked: `~/.hermes/profiles/<name>/SOUL.md → repo/profiles/<name>.SOUL.md` |
-| config.yaml | Generated from template with `{{PLACEHOLDER}}` replaced by `.env` values |
-| `.no-bundled-skills` | Preserved (set at profile creation) |
-| external_dirs | Points to `repo/community/mattpocock-skills/skills` + `repo/skills` |
-
-Old SOUL.md and config.yaml are backed up with `.bak.<timestamp>` suffix.
+What setup does:
+- creates missing profiles
+- symlinks `SOUL.md` from repo into deployed profiles
+- generates `config.yaml` from template
+- keeps profiles sourced from repo-managed skill dirs
 
 ---
 
-## 7. Copy API keys into profiles
+## 6. Copy per-profile secrets
+
+Important: secret-writing tools redact keys. Use shell copy, not `write_file`.
 
 ```bash
 for p in gintary ginb; do
@@ -128,100 +80,78 @@ for p in gintary ginb; do
 done
 ```
 
-Each profile needs its own `.env` because Hermes scopes environment per-profile.
-
 ---
 
-## 8. Verify
+## 7. Verify
 
 ```bash
 bash scripts/verify.sh
 ```
 
-Expected output:
-
-```
-✅ gintary: exists
-✅ gintary: SOUL.md symlinked to repo
-✅ gintary: config.yaml uses repo-local paths
-✅ gintary: memory provider=holographic
-...
-✅ ginb: exists
-✅ ginb: SOUL.md symlinked to repo
-✅ ginb: config.yaml uses repo-local paths
-✅ ginb: memory provider=byterover
-...
-✅ All checks passed.
-```
+Checks:
+- profile exists
+- `SOUL.md` symlink target correct
+- config uses repo-local skill dirs
+- memory provider expected
+- skills available
+- `.no-bundled-skills` present
+- canonical repo files committed
 
 ---
 
-## 9. Use the pipeline
+## 8. How to use after install
 
-### Run a delivery
+Do **not** use this repo as target project workspace by default.
 
-Work starts in `gintary` profile. Describe the work:
+Instead:
+1. open blank project or real project repo
+2. use installed global profiles there
+3. add project-local `AGENTS.md` or `.hermes.md` if project needs local rules
 
-```bash
-# Use gintary as your daily driver profile
-hermes chat
-```
-
-gintary plans and dispatches Kanban tasks to `ginb`.
-
-Or assign a small task directly:
-
-```bash
-hermes -p ginb chat
-> delivery_id: DM-42 | brief: docs/dm-42.md | scope: src/ | size: XS | acceptance: button changes color
-```
-
-### Pipeline flow
-
-```
-gintary  →  ginb  →  done
-   │           │
-   │ plan/     │ build +
-   │ decompose │ self-review +
-   │           │ ship
-   │           │
-   └─ blocks ←─┘
-        ↓
-     human
-```
-
-- ginb reads `memories/USER.md` + `memories/MEMORY.md` before starting work
-- ginb self-verifies against acceptance criteria, records evidence
-- ginb blocks to gintary when stuck, unclear, or blocked
-- No separate reviewer or shipper profile
+Global behavior comes from deployed profiles sourced from this repo.
+Local project behavior comes from project repo.
 
 ---
 
-## 10. Updating
+## 9. Update flow
 
-### Hermes agent
+### Update profile definitions / shared skills
+
+```bash
+cd agents-hype
+git pull
+bash scripts/community-setup.sh --apply
+bash scripts/setup.sh --apply
+bash scripts/verify.sh
+```
+
+### Update Hermes binary
 
 ```bash
 hermes update
-```
-
-Delivery profiles use `--no-skills` — bundled skills are ignored. No impact.
-
-### Community skills (mattpocock, etc.)
-
-```bash
-bash scripts/community-setup.sh --apply   # git pull each repo
-bash scripts/verify.sh                      # check skill counts stable
-```
-
-### Repo changes (SOUL.md, config)
-
-Pull the repo, re-run setup:
-
-```bash
-git pull
-bash scripts/setup.sh --apply  # updates SOUL.md symlinks + regenerates config
+cd agents-hype
 bash scripts/verify.sh
+```
+
+---
+
+## 10. Blank-project template
+
+Recommended `AGENTS.md` in new project:
+
+```md
+# Project rules
+
+## Build
+- Run project tests before done.
+
+## Style
+- Keep diff small.
+- Match existing style.
+
+## Context
+- Global Hermes profile behavior comes from installed profiles.
+- Project-specific rules live here.
 ```
 
 ---
@@ -229,23 +159,21 @@ bash scripts/verify.sh
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
-|---------|-------|-----|
-| `setup.sh` writes to wrong `~/.hermes` | Running inside a sandboxed session | Fixed by `REAL_HOME` resolution in script — verify with `getent passwd` |
-| 0 skills enabled | `external_dirs` missing or community skills not cloned | Run `scripts/community-setup.sh --apply` |
-| `config.yaml` references `shared-skills` | Was not regenerated from template | Re-run `scripts/setup.sh --apply` |
-| Profile missing from `hermes profile list` | Not created yet | `hermes profile create <name> --no-skills` |
-| `.no-bundled-skills` missing | Profile created with bundled skills | `hermes -p <name> skills opt-out` |
-| Byterover memory not working | Auth not configured | `cd ~/.hermes/shared-skills/byterover && node scripts/auth.mjs` |
+|---|---|---|
+| profile missing | setup not applied | `bash scripts/setup.sh --apply` |
+| 0 skills enabled | community skills missing | `bash scripts/community-setup.sh --apply` |
+| config points to global shared-skills | config stale | rerun `bash scripts/setup.sh --apply` |
+| auth fails | wrong or redacted key in `.env` | rewrite `.env`, copy again to each profile |
+| `.no-bundled-skills` missing | profile not opted out | `touch ~/.hermes/profiles/<name>/.no-bundled-skills` or recreate profile |
 
 ---
 
-## What stays per-machine (not in repo)
+## What stays out of repo
 
-| Artifact | Location | Purpose |
-|----------|----------|---------|
-| `.env` | `~/.hermes/profiles/<name>/.env` | API keys, tokens |
-| `memories/` | `~/.hermes/profiles/<name>/memories/` | USER.md, MEMORY.md (conventions) |
-| `state.db` | `~/.hermes/profiles/<name>/` | Session history |
-| ByteRover auth | `~/.hermes/shared-skills/byterover/` | Memory provider credentials |
+Per-machine only:
+- `~/.hermes/profiles/<name>/.env`
+- session DB / history
+- provider auth state
+- machine-local secrets
 
-None of these are in the repo. On a new machine, create them after running `setup.sh`.
+Do not commit those files.
