@@ -1,0 +1,26 @@
+# Machine-specific build artifacts and state
+.hermes/reports/*
+.hermes/plans/*
+!.hermes/reports/.gitkeep
+!.hermes/plans/.gitkeep
+
+# Deployed profile configs contain machine paths, API keys, model providers
+# These are generated from the templates in profiles/*.SOUL.md
+config.yaml
+
+# Environment / credentials
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~

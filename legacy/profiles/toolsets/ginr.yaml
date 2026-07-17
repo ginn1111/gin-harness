@@ -1,0 +1,14 @@
+profile: ginr
+status: pending_human_definition
+proposed_categories:
+  - filesystem_read
+  - repository_search
+  - git_diff
+  - test_and_verification
+  - static_analysis
+  - kanban_read_update
+  - review_report_write
+excluded_by_default:
+  - application_source_write
+  - deployment
+  - production_mutation
