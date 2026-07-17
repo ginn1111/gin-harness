@@ -1,6 +1,6 @@
 # agents-hype — Hermes Solo Delivery Pipeline
 
-Portable Hermes Agent profiles for the **gin delivery pipeline**: `gino → ginb → ginr → gins`.
+Portable Hermes Agent profiles for the **gin 2-profile pipeline**: `gintary → ginb → done`.
 
 ## Architecture
 

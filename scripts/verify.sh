@@ -19,7 +19,7 @@ REAL_HOME="$(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f6)"
 REAL_HOME="${REAL_HOME:-$HOME}"
 HERMES_PROFILES_DIR="$REAL_HOME/.hermes/profiles"
 
-profiles=(ginb ginr gins gino)
+profiles=(gintary ginb)
 
 echo "===== Delivery Profile Verification ====="
 

@@ -1,6 +1,6 @@
 # Gin Delivery Pipeline — New Installation Guide
 
-Set up 4 Hermes agent profiles from scratch on a new machine: `gino` (orchestrator) → `ginb` (builder) → `ginr` (reviewer) → `gins` (shipper).
+Set up 2 Hermes agent profiles from scratch on a new machine: `gintary` (planner/dispatcher/escalation sink) → `ginb` (builder, self-reviewer, shipper).
 
 ---
 
@@ -123,7 +123,7 @@ Old SOUL.md and config.yaml are backed up with `.bak.<timestamp>` suffix.
 ## 7. Copy API keys into profiles
 
 ```bash
-for p in ginb ginr gins gino; do
+for p in gintary ginb; do
   cp .env ~/.hermes/profiles/$p/.env
 done
 ```
@@ -141,12 +141,15 @@ bash scripts/verify.sh
 Expected output:
 
 ```
+✅ gintary: exists
+✅ gintary: SOUL.md symlinked to repo
+✅ gintary: config.yaml uses repo-local paths
+✅ gintary: memory provider=holographic
+...
 ✅ ginb: exists
 ✅ ginb: SOUL.md symlinked to repo
 ✅ ginb: config.yaml uses repo-local paths
 ✅ ginb: memory provider=byterover
-✅ ginb: 36 skills enabled
-✅ ginb: .no-bundled-skills present
 ...
 ✅ All checks passed.
 ```
@@ -157,16 +160,16 @@ Expected output:
 
 ### Run a delivery
 
-Switch to `gino` profile and describe the work:
+Work starts in `gintary` profile. Describe the work:
 
 ```bash
-hermes -p gino chat
-> I need to add a dark mode toggle to the settings page. Scope: src/settings/. Size: M.
+# Use gintary as your daily driver profile
+hermes chat
 ```
 
-`gino` decomposes it into deliveries, creates Kanban tasks assigned to `ginb`.
+gintary plans and dispatches Kanban tasks to `ginb`.
 
-Or directly assign a small task:
+Or assign a small task directly:
 
 ```bash
 hermes -p ginb chat
@@ -176,15 +179,21 @@ hermes -p ginb chat
 ### Pipeline flow
 
 ```
-gino  →  ginb  →  ginr  →  gins
-│          │         │         │
-│ L/XL     │ M/ XS   │ pass    │ final
-│ break-   │ implem- │→ gins   │ verify
-│ down     │ ent     │ fail    │ → Done
-│          │         │→ ginb   │
+gintary  →  ginb  →  done
+   │           │
+   │ plan/     │ build +
+   │ decompose │ self-review +
+   │           │ ship
+   │           │
+   └─ blocks ←─┘
+        ↓
+     human
 ```
 
-Each profile reads `memories/USER.md` + `memories/MEMORY.md` before starting work (create these files per profile with your project conventions).
+- ginb reads `memories/USER.md` + `memories/MEMORY.md` before starting work
+- ginb self-verifies against acceptance criteria, records evidence
+- ginb blocks to gintary when stuck, unclear, or blocked
+- No separate reviewer or shipper profile
 
 ---
 
