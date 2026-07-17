@@ -2,7 +2,27 @@
 
 Use drift detection at 2 levels.
 
-## 1. Global setup drift
+## 1. Project workflow drift first
+
+Run from target repo.
+
+Example:
+
+```bash
+bash scripts/verify.sh
+```
+
+Typical checks:
+- local docs match task status
+- required project files exist
+- task artifacts follow local conventions
+- local verification commands still exist
+- workspace points to correct repo
+
+Purpose:
+- prove project workflow still matches project rules
+
+## 2. Global setup drift second
 
 Run from setup repo:
 
@@ -22,20 +42,7 @@ Checks:
 Purpose:
 - prove installed profiles still inherit setup repo correctly
 
-## 2. Project workflow drift
-
-Optional in target repo.
-
-Typical checks:
-- local docs match task status
-- required project files exist
-- task artifacts follow local conventions
-- local verification commands still exist
-
-Purpose:
-- prove project workflow still matches project rules
-
 ## Rule
 
-Setup repo drift check != project drift check.
-Keep them separate.
+Project drift check comes first during real work.
+Setup repo drift check is separate and only for profile install health.

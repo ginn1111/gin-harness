@@ -89,25 +89,37 @@ If any missing and risk is material, block back to `gintary`.
 
 ## Drift detection
 
-Use drift detection in 2 layers:
+Use drift detection in 2 layers, in this order:
 
-1. **Global setup drift** — run setup repo `scripts/verify.sh`
+1. **Project workflow drift first** — target repo should own its own `verify.sh`
+   - checks task artifacts, local conventions, task-vs-doc drift, local verification paths
+   - run this first when doing project work
+2. **Global setup drift second** — setup repo `scripts/verify.sh`
    - checks deployed profiles still match setup repo
    - checks symlinks, config paths, shared skills, bundled-skill opt-out
-2. **Project workflow drift** — target repo may add its own `verify.sh`
-   - checks task artifacts, local conventions, or task-vs-doc drift if project wants it
 
 Rule:
-- setup repo `verify.sh` is for profile installation health
-- target repo `verify.sh` is for project workflow health
+- target repo drift check comes first during real work
+- setup repo `verify.sh` is only for profile installation health
 - do not mix them
 
 ## Blank project flow
 
-1. create or copy `AGENTS.md`
-2. add build/test commands
-3. add forbidden areas / deploy rules
-4. then shape first task
+If user starts in blank project:
+
+1. inspect repo for `AGENTS.md` / `.hermes.md`
+2. if missing, help create minimum local setup first
+3. add build/test/lint/run commands if known
+4. add forbidden areas / deploy rules if known
+5. if commands are unknown, leave placeholders and mark them missing
+6. only then shape first task
+
+Minimum local setup:
+- `AGENTS.md` or `.hermes.md`
+- install/dev/build/test/lint commands
+- key directories
+- forbidden/sensitive paths
+- definition of done / verification path
 
 ## Stop rules
 
@@ -123,6 +135,7 @@ Stop and clarify when:
 - `references/doc-layout.md`
 - `references/kanban-guide.md`
 - `references/drift-detect.md`
+- `references/blank-project-checklist.md`
 - `templates/brief.md`
 - `templates/plan.md`
 - `templates/spec.md`
