@@ -137,22 +137,13 @@ bash scripts/verify.sh
 
 ## 10. Blank-project template
 
-Recommended `AGENTS.md` in new project:
+Starter template included in this repo:
 
-```md
-# Project rules
-
-## Build
-- Run project tests before done.
-
-## Style
-- Keep diff small.
-- Match existing style.
-
-## Context
-- Global Hermes profile behavior comes from installed profiles.
-- Project-specific rules live here.
+```bash
+cp templates/AGENTS.md /path/to/your-project/AGENTS.md
 ```
+
+Then edit project-specific commands, constraints, and deployment rules.
 
 ---
 

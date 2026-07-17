@@ -106,21 +106,13 @@ Blank project may then add local context with either:
 - `AGENTS.md` for cross-agent portable rules, or
 - `.hermes.md` for Hermes-specific project rules
 
-Minimal blank-project `AGENTS.md` example:
+Starter template included here:
 
-```md
-# Project rules
-
-## Build
-- Run `make test` before done.
-
-## Style
-- Keep diff small.
-- Match existing code style.
-
-## Notes
-- Global profile behavior comes from installed Hermes profiles.
+```bash
+cp /path/to/agents-hype/templates/AGENTS.md /path/to/your-project/AGENTS.md
 ```
+
+Then edit project-specific commands, constraints, and forbidden areas.
 
 ## Update flow
 
