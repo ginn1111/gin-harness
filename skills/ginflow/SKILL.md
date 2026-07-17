@@ -87,6 +87,21 @@ A task for `ginb` should answer:
 
 If any missing and risk is material, block back to `gintary`.
 
+## Drift detection
+
+Use drift detection in 2 layers:
+
+1. **Global setup drift** — run setup repo `scripts/verify.sh`
+   - checks deployed profiles still match setup repo
+   - checks symlinks, config paths, shared skills, bundled-skill opt-out
+2. **Project workflow drift** — target repo may add its own `verify.sh`
+   - checks task artifacts, local conventions, or task-vs-doc drift if project wants it
+
+Rule:
+- setup repo `verify.sh` is for profile installation health
+- target repo `verify.sh` is for project workflow health
+- do not mix them
+
 ## Blank project flow
 
 1. create or copy `AGENTS.md`
@@ -107,6 +122,7 @@ Stop and clarify when:
 
 - `references/doc-layout.md`
 - `references/kanban-guide.md`
+- `references/drift-detect.md`
 - `templates/brief.md`
 - `templates/plan.md`
 - `templates/spec.md`
