@@ -1,0 +1,6 @@
+# Plan — <task>
+
+1. Inspect relevant files/context
+2. Make smallest correct change
+3. Verify with project-native commands
+4. Summarize evidence and limits

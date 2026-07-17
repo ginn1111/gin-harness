@@ -16,9 +16,9 @@ Repo owns global profile setup:
 - `config/profile.yaml.tmpl` — generated profile config template
 - `config/profiles.yaml` — per-profile display/description overrides
 - `scripts/setup.sh` — create/update deployed profiles
-- `scripts/verify.sh` — verify deployed profiles match repo
+- `scripts/verify.sh` — verify deployed profiles still match repo
 - `scripts/community-setup.sh` — clone/update shared community skills
-- `skills/` — your repo-versioned shared custom skills
+- `skills/` — repo-versioned shared custom skills, including workflow guide skill
 
 Real project repos own:
 - code
