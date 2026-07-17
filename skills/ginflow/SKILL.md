@@ -121,6 +121,11 @@ Minimum local setup:
 - forbidden/sensitive paths
 - definition of done / verification path
 
+Blank-project workspace pitfall:
+- if `PWD` says target repo but tools act in another repo, check `TERMINAL_CWD`
+- stale `TERMINAL_CWD` can override real project cwd
+- for clean target-repo tests, unset it: `env -u TERMINAL_CWD hermes ...`
+
 ## Stop rules
 
 Stop and clarify when:

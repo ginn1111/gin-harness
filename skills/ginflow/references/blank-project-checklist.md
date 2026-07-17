@@ -23,6 +23,18 @@ Help user create minimum local setup:
 - deploy/release rules if any
 - done = exact verification path
 
+## Workspace check
+If repo behavior looks wrong, compare:
+- `pwd`
+- `echo $TERMINAL_CWD`
+
+If `TERMINAL_CWD` points at old/setup repo, it can override project cwd for Hermes tools.
+For clean target-repo tests:
+
+```bash
+env -u TERMINAL_CWD hermes ...
+```
+
 ## Rule
 Do not pretend missing commands are known.
 Leave placeholders if needed.
