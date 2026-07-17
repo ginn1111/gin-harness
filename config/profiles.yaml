@@ -1,0 +1,16 @@
+# Profile registry for setup.sh
+# Maps each profile name to its per-profile config overrides
+
+profiles:
+  ginb:
+    display_skin: daylight
+    description: "Builds approved deliveries from the authoritative brief and hands completed work to ginr."
+  ginr:
+    display_skin: sisyphus
+    description: "Reviews completed deliveries against the authoritative brief and routes passed work to gins."
+  gins:
+    display_skin: default
+    description: "Performs final verification and completes or rejects delivery readiness."
+  gino:
+    display_skin: charizard
+    description: "Orchestrates approved L/XL work and decomposes it into M-or-smaller deliveries."
