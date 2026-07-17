@@ -1,9 +1,9 @@
 ---
-name: workflow-global
+name: ginflow
 description: Use when working under gin global Hermes profiles and deciding how to organize project docs, shape tasks, write Kanban cards, or split setup-repo rules from target-project rules.
 ---
 
-# workflow-global
+# ginflow
 
 Global workflow guide shared by installed profiles from setup repo.
 
