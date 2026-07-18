@@ -1,28 +1,34 @@
-# Drift detection
+# Verification separation
 
-Use drift detection at 2 levels.
+Use three separate checks. Never merge their meaning.
 
-## 1. Project workflow drift first
+## 1. Project verification
 
-Run from target repo.
-
-Example:
+Run exact canonical command declared by target repo from target root, for example:
 
 ```bash
-bash scripts/verify.sh
+make verify
 ```
 
-Typical checks:
-- local docs match task status
-- required project files exist
-- task artifacts follow local conventions
-- local verification commands still exist
-- workspace points to correct repo
+Target may instead declare `./verify.sh` or another project-native command. Ginflow does not force script name or location.
 
 Purpose:
-- prove project workflow still matches project rules
+- prove project behavior matches project rules
+- block completion when command fails or is unavailable
 
-## 2. Global setup drift second
+## 2. Ginflow harness
+
+Run harness from setup repo or deployed ginflow skill against target repo and selected Kanban card. Never copy harness script into target repo, add it to target dependencies, or include it in project verification.
+
+Purpose:
+- detect workflow readiness and drift
+- report result separately from project verification
+- block affected lifecycle stage for missing card, wrong workspace, missing acceptance, missing required artifact, or missing completion verification path
+- report other drift as warning
+
+Harness unavailable is a warning and never substitutes for project verification.
+
+## 3. Global setup verification
 
 Run from setup repo:
 
@@ -42,7 +48,12 @@ Checks:
 Purpose:
 - prove installed profiles still inherit setup repo correctly
 
-## Rule
+## Report shape
 
-Project drift check comes first during real work.
-Setup repo drift check is separate and only for profile install health.
+```text
+Project verification: pass|fail|blocked
+Ginflow harness: pass|warning|blocker|unavailable
+Profile installation: pass|fail|not-run
+```
+
+Project verification comes first during real work. Ginflow harness remains external. Setup verification only checks profile installation health.

@@ -45,6 +45,14 @@ Starter local context:
 
 ## Task shaping
 
+### Kanban boundary
+
+Before a card exists, ginflow may brainstorm, inspect read-only context, choose work mode, size work, choose artifacts, and draft proposed card content. These actions shape work but do not start project execution.
+
+After shaping, require one selected Kanban card before creating target artifacts, running implementation investigation, changing code, dispatching, recording progress, verifying completion, or handing off. No selected card blocks project execution.
+
+Selected card must contain: ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing required fields block execution until card is repaired.
+
 ### Choose work mode
 
 1. **Investigation** — cause unclear
@@ -75,17 +83,20 @@ Before target-project work:
 
 1. Confirm workspace points at real target repo.
 2. Read local `AGENTS.md` / `.hermes.md`.
-3. Read selected or assigned Kanban card.
-4. Confirm objective, scope, acceptance criteria, and workspace.
+3. Require and read selected or assigned Kanban card. Stop if absent.
+4. Confirm all required card fields and workspace. Stop if incomplete.
 5. Read linked brief/spec/plan when present.
 6. Inspect git state and run project baseline verification.
-7. Route work as investigation, implementation, or brainstorming.
+7. Run external ginflow harness against target repo and selected card; do not copy harness into target repo.
+8. Report project verification and ginflow harness separately.
+9. Route execution as investigation or implementation. Brainstorming may occur before card selection.
 
 Stop when any required input is missing and risk is material.
 
 ## Execution contract
 
 - One active card per worker.
+- No target-project execution without selected, complete card.
 - Stay inside card scope and target workspace.
 - Use project-native commands and local conventions.
 - Block on material ambiguity; do not invent requirements.
@@ -144,11 +155,15 @@ Next session resumes from selected card, linked artifacts, local rules, and repo
 
 Immediately before reporting completion:
 
-1. Run canonical project verification from target repo.
+1. Run canonical project verification declared by target repo.
 2. Read target-repo `git status --short`; use `git diff --stat` when useful.
-3. Report only files under selected card workspace.
-4. Quote canonical command and exact fresh result.
-5. Record same evidence on selected Kanban card before completing it.
+3. Run ginflow harness externally against target repo and selected card. Never copy harness script into target repo.
+4. Report project verification and ginflow harness as separate results.
+5. Report only files under selected card workspace.
+6. Quote canonical project command and exact fresh result.
+7. Record same evidence on selected Kanban card before completing it.
+
+Project verification proves product behavior and blocks completion when it fails. Ginflow harness proves workflow readiness and drift: report failures as warnings, but treat missing card, wrong workspace, missing acceptance, missing required artifact, or missing completion verification path as blockers for affected lifecycle stage. Harness unavailable is a warning and never substitutes for project verification.
 
 Temporary or ad-hoc checks are not completion evidence unless selected card explicitly targets that temporary artifact. Do not create or report unrelated temporary checks when canonical project verification exists. If canonical verification is unavailable or fails, report blocked/not done.
 
@@ -185,9 +200,9 @@ Never infer missing facts from status, chat, OS identity, commit history, or unr
 
 Use drift detection in 2 layers, in this order:
 
-1. **Project workflow drift first** — target repo should own its own `verify.sh`
-   - checks task artifacts, local conventions, task-vs-doc drift, local verification paths
-   - run this first when doing project work
+1. **Project verification first** — target repo declares its own canonical command
+   - examples: `./verify.sh`, `make verify`, or project-native command
+   - proves project behavior; ginflow does not force script location
 2. **Global setup drift second** — setup repo `scripts/verify.sh`
    - checks deployed profiles still match setup repo
    - checks symlinks, config paths, shared skills, bundled-skill opt-out
@@ -196,6 +211,7 @@ Rule:
 - target repo drift check comes first during real work
 - setup repo `verify.sh` is only for profile installation health
 - do not mix them
+- ginflow harness remains in setup/deployed skill and runs externally against target repo; never copy it into target repo
 
 ## Blank project flow
 
@@ -229,6 +245,8 @@ Blank-project workspace pitfall:
 
 Stop and clarify when:
 - wrong repo
+- no selected Kanban card after pre-card shaping
+- selected card missing required fields
 - fuzzy requirement
 - unclear cause but user expects direct fix
 - acceptance criteria missing

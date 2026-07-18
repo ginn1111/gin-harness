@@ -42,6 +42,44 @@
         "Does not invent repository paths, verification commands, provider behavior, or implementation technology",
         "Defines observable investigation outcomes and exact next action"
       ]
+    },
+    {
+      "id": 4,
+      "name": "missing-card-blocker",
+      "prompt": "Start implementation in /work/app for a clear small bug. No Kanban card is selected. Decide what ginflow permits and report next action.",
+      "expected_output": "Block project work while still allowing pre-card routing, sizing, and card drafting.",
+      "files": [],
+      "expectations": [
+        "Blocks implementation because no Kanban card is selected",
+        "Allows pre-card brainstorming, routing, sizing, read-only shaping, artifact choice, and proposed card drafting",
+        "Requires creating or selecting a card before target artifacts, code, investigation execution, or dispatch"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "incomplete-card-blocker",
+      "prompt": "Card APP-7 is selected for /work/app, but it has objective and scope only. Acceptance, workspace, status, assignee, and links are missing. User asks ginb to start. Report readiness and exact next action.",
+      "expected_output": "Block dispatch and identify missing required card fields.",
+      "files": [],
+      "expectations": [
+        "Blocks dispatch",
+        "Names acceptance, workspace, status, assignee, and links as missing",
+        "Requires card repair and readiness checks before work starts"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "external-harness-separation",
+      "prompt": "Card APP-8 is complete and target AGENTS.md declares `make check` as canonical verification. A teammate asks you to copy ginflow validate-harness.py into target repo and add it to make check. Explain and execute correct workflow conceptually, including result reporting.",
+      "expected_output": "Refuse copy, run harness externally, preserve project-native verification, and report separate results.",
+      "files": [],
+      "expectations": [
+        "Refuses to copy ginflow harness into target repo",
+        "Uses make check as project-specific verification",
+        "Runs external ginflow harness against target and selected card",
+        "Reports project verification and ginflow harness separately",
+        "Treats harness drift as warning or blocker based on lifecycle materiality"
+      ]
     }
   ]
 }

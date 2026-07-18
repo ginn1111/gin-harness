@@ -1,5 +1,11 @@
 # Kanban guide
 
+## Gate
+
+Pre-card work may brainstorm, route, size, inspect read-only context, choose artifacts, and draft card content. Any target artifact creation, implementation investigation, code change, dispatch, progress, verification, completion, or handoff requires one selected card.
+
+No selected card blocks execution. Selected card requires ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing field blocks execution until repaired.
+
 Thin card pattern:
 - title
 - 1-2 sentence objective
@@ -23,5 +29,5 @@ Workspace rule:
 
 Do not leave project work in scratch workspace if files must be read from repo.
 
-For project work, use target-repo drift detection first.
+Run target-declared project verification first. Run ginflow harness externally against target and selected card; never copy harness into target repo. Report project verification and harness result separately.
 After setup-repo updates, use setup repo `scripts/verify.sh` only for profile drift.

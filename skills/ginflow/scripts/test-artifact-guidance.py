@@ -16,6 +16,7 @@ def main():
     layout = (SKILL / "references/doc-layout.md").read_text()
     content = (SKILL / "references/artifact-content-guide.md").read_text()
     kanban = (SKILL / "references/kanban-guide.md").read_text()
+    drift = (SKILL / "references/drift-detect.md").read_text()
 
     artifact_paths = (
         "docs/briefs/<CARD-ID>.md",
@@ -41,6 +42,14 @@ def main():
         "Record unresolved drift on card",
         "docs/adrs/NNNN-<kebab-title>.md",
     ), "artifact-content-guide.md")
+
+    require(skill, (
+        "No selected card blocks project execution",
+        "Never copy harness script into target repo",
+        "Report project verification and ginflow harness as separate results",
+    ), "SKILL.md")
+    require(kanban, ("No selected card blocks execution", "never copy harness into target repo"), "kanban-guide.md")
+    require(drift, ("Never copy harness script into target repo", "Project verification: pass|fail|blocked"), "drift-detect.md")
 
     for template in ("brief.md", "spec.md", "plan.md", "kanban-task.md", "session-handoff.md"):
         text = (SKILL / "templates" / template).read_text()

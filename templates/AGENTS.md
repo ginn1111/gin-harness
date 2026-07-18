@@ -19,8 +19,10 @@ Shared workflow, Kanban lifecycle, verification evidence, and optional handoff r
 - If requirement is unclear: shape options first.
 
 ## Verification
+- Declare one canonical project-specific command below. Ginflow runs it from project root.
 - Leave real command output or concrete verification evidence.
 - If verification is blocked, say exact blocker.
+- Ginflow harness stays external and must not be copied into this project.
 
 ## Local notes
 - Add project-specific build/test/run commands below.
