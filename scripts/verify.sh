@@ -91,10 +91,44 @@ for p in "${profiles[@]}"; do
   if [[ -f "$marker" ]]; then ok "$p: .no-bundled-skills present"; else warn "$p: .no-bundled-skills missing"; fi
 done
 
-# === 6. Repo drift ===
+# === 6. Workflow harness ===
+echo ""
+echo "--- Workflow harness ---"
+ginflow="$ROOT/skills/ginflow/SKILL.md"
+handoff="$ROOT/skills/ginflow/templates/session-handoff.md"
+agents_template="$ROOT/templates/AGENTS.md"
+
+for profile in gintary ginb; do
+  if grep -q 'load and follow `ginflow`' "$ROOT/profiles/$profile.SOUL.md"; then
+    ok "$profile: routes target-project work through ginflow"
+  else
+    warn "$profile: missing mandatory ginflow routing"
+  fi
+done
+
+for heading in "Project session startup" "Execution contract" "Definition of done" "Session close and restart" "Optional session handoff export"; do
+  if grep -q "^## $heading$" "$ginflow"; then ok "ginflow: $heading"; else warn "ginflow: missing $heading"; fi
+done
+
+for heading in "Ownership" "Work Artifacts" "Progress" "Verification Evidence" "Next Step" "Related Cards"; do
+  if grep -q "^## $heading$" "$handoff"; then ok "handoff template: $heading"; else warn "handoff template: missing $heading"; fi
+done
+
+if grep -q 'Ask Gin which Kanban card to export' "$ginflow"; then ok "handoff export: Gin selects card"; else warn "handoff export: card selection rule missing"; fi
+if grep -q 'Write only after approval' "$ginflow"; then ok "handoff export: write approval required"; else warn "handoff export: write approval rule missing"; fi
+if grep -q 'Never mutate card status' "$ginflow"; then ok "handoff export: Kanban mutation forbidden"; else warn "handoff export: Kanban mutation guard missing"; fi
+if grep -q 'come from `ginflow`' "$agents_template"; then ok "AGENTS template: routes shared workflow to ginflow"; else warn "AGENTS template: ginflow routing missing"; fi
+
+if python3 "$ROOT/skills/ginflow/scripts/validate-harness.py" --setup-repo "$ROOT" >/dev/null; then
+  ok "ginflow: five-subsystem static validation passed"
+else
+  warn "ginflow: five-subsystem static validation failed"
+fi
+
+# === 7. Repo drift ===
 echo ""
 echo "--- Repo drift ---"
-if cd "$ROOT" && git diff --name-only 2>/dev/null | grep -qE "^(profiles/|config/|scripts/|README.md|INSTALL.md)"; then
+if cd "$ROOT" && git diff --name-only 2>/dev/null | grep -qE "^(profiles/|config/|scripts/|skills/|templates/|README.md|INSTALL.md)"; then
   warn "Uncommitted changes to canonical setup files detected"
   cd "$ROOT" && git diff --stat 2>/dev/null | head -20
 else

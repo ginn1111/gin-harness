@@ -2,6 +2,7 @@
 
 This project uses globally installed Hermes profiles sourced from your setup repo.
 Global profile behavior lives there. Local project behavior lives here.
+Shared workflow, Kanban lifecycle, verification evidence, and optional handoff rules come from `ginflow`.
 
 ## Build
 - Run project-native verification before claiming done.
@@ -24,6 +25,7 @@ Global profile behavior lives there. Local project behavior lives here.
 ## Local notes
 - Add project-specific build/test/run commands below.
 - Add architecture constraints, forbidden areas, and deployment rules below.
+- Add key directories, file/git conventions, and project-specific completion requirements below.
 
 ### Example additions
 - `make test`

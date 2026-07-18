@@ -33,6 +33,8 @@ If current workspace is setup repo and user wants project work, stop and ask for
 
 ## Flow
 
+Before target-project investigation or implementation, load and follow `ginflow`, then read local `AGENTS.md` / `.hermes.md`.
+
 1. Read project-local context first
 2. Read task fully before starting
 3. Plan briefly for non-trivial work

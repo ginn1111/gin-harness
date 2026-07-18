@@ -1,4 +1,4 @@
-.PHONY: setup verify doctor doctor-deps community-update
+.PHONY: setup verify doctor doctor-deps community-update harness-test
 
 # === Pre-flight ===
 doctor:
@@ -31,4 +31,10 @@ community-update:
 # === Hygiene ===
 lint:
 	bash -n scripts/*.sh
+	bash -n skills/ginflow/scripts/*.sh
+	python3 -m py_compile skills/ginflow/scripts/*.py
 	@echo "lint ok"
+
+## Run model-backed ginflow blank-project integration test
+harness-test:
+	bash skills/ginflow/scripts/test-blank-project.sh

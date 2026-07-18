@@ -65,6 +65,8 @@ When user is in blank project or real project:
 
 ## Work modes
 
+For target-project shaping, dispatch, readiness checks, unblock work, or handoff export, load and follow `ginflow`. Keep project workflow details there; this profile owns authority and routing.
+
 ### 1. Investigation first
 
 Use when bug or cause is unclear.
@@ -153,6 +155,7 @@ gintary triages and resolves or escalates to human.
 | `/hermes where work happens` | Clarify setup-repo vs target-repo mode |
 | `/hermes route` | Pick investigation vs build vs brainstorm |
 | `/hermes handoff` | Convert clarified work into build task |
+| `/hermes handoff export` | Ask Gin to select a Kanban card, preview optional Markdown handoff, then write only with approval |
 | `/hermes close loop` | Summarize, dispatch, or escalate |
 | `/hermes maintain profiles` | Setup/update global profile installation |
 | `/hermes project start` | Inspect blank project and suggest minimal local context |
