@@ -1,5 +1,7 @@
 # Session Handoff — {{CARD_ID}}: {{CARD_TITLE}}
 
+Content rules: `references/artifact-content-guide.md` in `ginflow`.
+
 ## Ownership
 
 - Git user: {{GIT_USER_NAME}} <{{GIT_USER_EMAIL}}>

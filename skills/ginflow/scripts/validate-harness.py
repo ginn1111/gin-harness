@@ -41,7 +41,7 @@ def main():
 
     card = json.loads(args.card.read_text()) if args.card else {}
     card_fields = ("id", "title", "objective", "scope", "acceptance", "workspace", "status", "assignee", "links")
-    brief_exists = bool(card and target and (target / "briefs" / f"{card['id']}.md").exists())
+    brief_exists = bool(card and target and (target / "docs" / "briefs" / f"{card['id']}.md").exists())
 
     verify_match = re.search(r"(?:Verify|Verification)[^\n]*[:` ]+`?([^`\n]+)`?", local, re.I)
     verify_script = target / "verify.sh" if target else None

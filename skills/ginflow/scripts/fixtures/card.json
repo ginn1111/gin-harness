@@ -2,7 +2,7 @@
   "id": "TEST-001",
   "title": "Random standard-library CLI",
   "objective": "Build one small standard-library-only command-line utility",
-  "scope": ["AGENTS.md", "briefs/TEST-001.md", "implementation", "tests", "verify.sh"],
+  "scope": ["AGENTS.md", "docs/briefs/TEST-001.md", "implementation", "tests", "verify.sh"],
   "acceptance": ["CLI works", "tests pass", "verify.sh exits 0"],
   "workspace": "{{WORKSPACE}}",
   "status": "in_progress",

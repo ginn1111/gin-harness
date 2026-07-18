@@ -34,11 +34,11 @@ Put these in target repo when project needs them:
 |---|---|
 | `AGENTS.md` | local project rules, cross-agent portable |
 | `.hermes.md` | Hermes-specific project rules |
-| `briefs/<CARD-ID>.md` | concrete task brief |
-| `specs/<CARD-ID>.md` | behavior/contract detail when needed |
-| `plans/<CARD-ID>.md` | execution order for medium+ work |
+| `docs/briefs/<CARD-ID>.md` | concrete task brief |
+| `docs/specs/<CARD-ID>.md` | behavior/contract detail when needed |
+| `docs/plans/<CARD-ID>.md` | execution order for medium+ work |
 | `docs/handoffs/<CARD-ID>.md` | optional exported resume snapshot |
-| `adrs/` | durable architectural decisions |
+| `docs/adrs/` | durable architectural decisions |
 
 Starter local context:
 - copy `templates/AGENTS.md` from setup repo into target repo
@@ -67,6 +67,7 @@ Rule:
 - plan when ordering/risk matters
 - use Kanban card ID across artifacts for deterministic linking
 - brief defines objective/scope/acceptance; spec defines behavior/contracts; plan defines execution order
+- follow `references/artifact-content-guide.md` for content quality, artifact boundaries, authority, ADRs, cards, and handoffs
 
 ## Project session startup
 
@@ -235,6 +236,7 @@ Stop and clarify when:
 
 ## References
 
+- `references/artifact-content-guide.md`
 - `references/doc-layout.md`
 - `references/kanban-guide.md`
 - `references/drift-detect.md`

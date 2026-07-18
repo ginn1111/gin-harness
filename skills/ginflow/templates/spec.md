@@ -1,5 +1,7 @@
 # Spec — <feature or behavior>
 
+Content rules: `references/artifact-content-guide.md` in `ginflow`.
+
 ## Problem
 
 ## Desired behavior

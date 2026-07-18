@@ -8,9 +8,9 @@ Thin card pattern:
 - link to artifact if present
 
 Use card ID for linked artifacts:
-- `briefs/<CARD-ID>.md`
-- `specs/<CARD-ID>.md`
-- `plans/<CARD-ID>.md`
+- `docs/briefs/<CARD-ID>.md`
+- `docs/specs/<CARD-ID>.md`
+- `docs/plans/<CARD-ID>.md`
 
 Before closing unfinished or blocked work, record outcome, changed files, verification, blockers, next step, and accurate status on card. Optional Markdown handoff export does not replace or mutate card.
 

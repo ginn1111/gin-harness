@@ -1,4 +1,4 @@
-.PHONY: setup verify doctor doctor-deps community-update harness-test
+.PHONY: setup verify doctor doctor-deps community-update harness-test artifact-guidance-test
 
 # === Pre-flight ===
 doctor:
@@ -35,6 +35,10 @@ lint:
 	python3 -m py_compile skills/ginflow/scripts/*.py
 	@echo "lint ok"
 
+## Check ginflow docs layout and artifact content guidance
+artifact-guidance-test:
+	python3 skills/ginflow/scripts/test-artifact-guidance.py
+
 ## Run model-backed ginflow blank-project integration test
-harness-test:
+harness-test: artifact-guidance-test
 	bash skills/ginflow/scripts/test-blank-project.sh

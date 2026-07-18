@@ -1,5 +1,7 @@
 Title: <short objective>
 
+Content rules: `references/artifact-content-guide.md` in `ginflow`.
+
 Objective:
 - <what to achieve>
 

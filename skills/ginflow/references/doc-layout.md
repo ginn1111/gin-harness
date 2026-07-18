@@ -7,20 +7,22 @@ Suggested layout:
 ```text
 project/
 ├── AGENTS.md
-├── briefs/
-├── specs/
-├── plans/
-├── docs/handoffs/
-├── adrs/
+├── docs/
+│   ├── briefs/
+│   ├── specs/
+│   ├── plans/
+│   ├── handoffs/
+│   └── adrs/
 └── src/
 ```
 
 Guidelines:
-- `briefs/<CARD-ID>.md` for objective, scope, and acceptance
-- `specs/<CARD-ID>.md` for behavior and contract detail
-- `plans/<CARD-ID>.md` for execution order
+- follow `artifact-content-guide.md` for artifact boundaries, authority, and content quality
+- `docs/briefs/<CARD-ID>.md` for objective, scope, and acceptance
+- `docs/specs/<CARD-ID>.md` for behavior and contract detail
+- `docs/plans/<CARD-ID>.md` for execution order
 - `docs/handoffs/<CARD-ID>.md` for optional exported resume snapshots
-- `adrs/` for decisions worth keeping
+- `docs/adrs/` for decisions worth keeping
 - skip folders you do not need
 - prefer smallest artifact set that keeps handoff clear
 - Kanban remains live work state; handoff Markdown is optional

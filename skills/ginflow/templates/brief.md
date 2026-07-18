@@ -7,6 +7,8 @@ owner:
 
 # Brief — <title>
 
+Content rules: `references/artifact-content-guide.md` in `ginflow`.
+
 ## Objective
 
 ## Scope
