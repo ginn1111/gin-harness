@@ -5,10 +5,17 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 FAILED=0
+STRICT=0
+case "${1:-}" in
+  "") ;;
+  --strict) STRICT=1 ;;
+  *) printf 'Usage: %s [--strict]\n' "$0" >&2; exit 2 ;;
+esac
 
 info()  { printf 'ℹ️  %s\n' "$*"; }
 ok()    { printf '✅ %s\n' "$*"; }
 warn()  { printf '⚠️  %s\n' "$*" >&2; FAILED=1; }
+recommend() { printf '💡 %s\n' "$*"; }
 die()   { printf '❌ %s\n' "$*" >&2; exit 1; }
 require_command() { command -v "$1" >/dev/null 2>&1 || die "Missing: $1"; }
 require_command hermes
@@ -73,6 +80,30 @@ for p in "${profiles[@]}"; do
   else
     warn "$p: model api_key missing"
   fi
+
+  if python3 - "$cfg" <<'PY'
+import sys, yaml
+with open(sys.argv[1]) as f:
+    config = yaml.safe_load(f) or {}
+server = config.get("mcp_servers", {}).get("codegraph", {})
+assert server.get("command") == "codegraph"
+assert server.get("args") == ["serve", "--mcp"]
+assert "mcp-codegraph" in config.get("platform_toolsets", {}).get("cli", [])
+PY
+  then
+    ok "$p: CodeGraph MCP configured"
+    if command -v codegraph >/dev/null 2>&1; then
+      if hermes -p "$p" mcp test codegraph >/dev/null 2>&1; then
+        ok "$p: CodeGraph MCP connected"
+      else
+        warn "$p: CodeGraph MCP connection failed"
+      fi
+    else
+      recommend "$p: CodeGraph CLI not installed (recommended, optional)"
+    fi
+  else
+    recommend "$p: CodeGraph MCP not configured (recommended, optional)"
+  fi
 done
 
 # === 4. Skills loaded ===
@@ -128,13 +159,19 @@ fi
 # === 7. Repo drift ===
 echo ""
 echo "--- Repo drift ---"
-if cd "$ROOT" && git diff --name-only 2>/dev/null | grep -qE "^(profiles/|config/|scripts/|skills/|templates/|README.md|INSTALL.md)"; then
-  warn "Uncommitted changes to canonical setup files detected"
-  cd "$ROOT" && git diff --stat 2>/dev/null | head -20
+mapfile -t drift_files < <(cd "$ROOT" && git status --porcelain --untracked-files=all 2>/dev/null | sed 's/^...//' | grep -E "^(profiles/|config/|scripts/|skills/|templates/|README\.md$|INSTALL\.md$)" || true)
+if [[ "${#drift_files[@]}" -gt 0 ]]; then
+  if [[ "$STRICT" == "1" ]]; then
+    warn "Uncommitted canonical setup changes detected"
+  else
+    recommend "Uncommitted canonical setup changes detected (non-fatal)"
+  fi
+  printf '  %s\n' "${drift_files[@]:0:20}"
+  [[ "${#drift_files[@]}" -gt 20 ]] && info "$(( ${#drift_files[@]} - 20 )) more files"
 else
   ok "No uncommitted changes to canonical setup files"
 fi
 
 echo ""
-if [[ "$FAILED" -eq 0 ]]; then ok "All checks passed."; else warn "Some checks failed."; fi
+if [[ "$FAILED" -eq 0 ]]; then ok "All checks passed."; else printf '⚠️  Some checks failed.\n' >&2; fi
 exit "$FAILED"

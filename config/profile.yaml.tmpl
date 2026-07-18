@@ -43,6 +43,17 @@ platform_toolsets:
     - todo
     - vision
     - web
+    - mcp-codegraph
+
+mcp_servers:
+  codegraph:
+    command: codegraph
+    args:
+      - serve
+      - --mcp
+    timeout: 120
+    connect_timeout: 60
+    enabled: true
 
 known_plugin_toolsets:
   cli:

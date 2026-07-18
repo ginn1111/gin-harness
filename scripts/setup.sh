@@ -22,6 +22,7 @@ run_or_print() {
 }
 require_command() { command -v "$1" >/dev/null 2>&1 || die "Missing: $1"; }
 require_command hermes
+command -v codegraph >/dev/null 2>&1 || warn "CodeGraph not installed — recommended for code-aware MCP tools: https://github.com/colbymchenry/codegraph"
 
 # Resolve real user home (profile sessions may override $HOME)
 REAL_HOME="$(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f6)"
