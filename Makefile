@@ -1,4 +1,4 @@
-.PHONY: setup verify verify-strict verify-test doctor doctor-deps community-update harness-test artifact-guidance-test kanban-harness-test
+.PHONY: setup apply verify verify-strict verify-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test
 
 # === Pre-flight ===
 doctor:
@@ -12,7 +12,7 @@ doctor-deps:
 	python3 -m pip install pyyaml
 
 # === Setup ===
-## Bootstrap delivery profiles (dry-run first)
+## Preview profile setup
 setup:
 	./scripts/setup.sh
 
@@ -38,12 +38,21 @@ community-update:
 	./scripts/community-setup.sh --apply
 
 # === Hygiene ===
+## Remove generated local files
+clean:
+	find . -type d -name __pycache__ -prune -exec rm -rf {} +
+	find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
+	rm -rf .codegraph
+
 lint:
 	bash -n scripts/*.sh
 	python3 -m py_compile scripts/*.py
 	bash -n skills/ginflow/scripts/*.sh
 	python3 -m py_compile skills/ginflow/scripts/*.py
 	@echo "lint ok"
+
+## Run deterministic repository tests
+test: lint artifact-guidance-test kanban-harness-test
 
 ## Check ginflow docs layout and artifact content guidance
 artifact-guidance-test:

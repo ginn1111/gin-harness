@@ -5,8 +5,12 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
 .venv/
 venv/
+
+# Generated indexes
+.codegraph/
 
 # OS
 .DS_Store
