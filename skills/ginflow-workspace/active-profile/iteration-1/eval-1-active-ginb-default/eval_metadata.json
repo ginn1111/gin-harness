@@ -1,0 +1,10 @@
+{
+  "eval_id": 1,
+  "eval_name": "active-ginb-default",
+  "prompt": "Active profile is ginb. Run bare make setup. Which profile is integrated?",
+  "assertions": [
+    "Targets ginb",
+    "Does not target gintary",
+    "Uses exactly one profile"
+  ]
+}

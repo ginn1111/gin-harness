@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Targets gindev",
+      "passed": true,
+      "evidence": "Exit 0; captured output: \u2139\ufe0f  Integrating gindev (SOUL.md and distribution.yaml remain profile-owned)\n\u2139\ufe0f  gindev: would link skills/ginflow and plugins/ginflow-gate\n\u2139\ufe0f  gindev: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config\n\n\u2139\ufe0f  Dry-run compl"
+    },
+    {
+      "text": "Does not target active gintary",
+      "passed": true,
+      "evidence": "Exit 0; captured output: \u2139\ufe0f  Integrating gindev (SOUL.md and distribution.yaml remain profile-owned)\n\u2139\ufe0f  gindev: would link skills/ginflow and plugins/ginflow-gate\n\u2139\ufe0f  gindev: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config\n\n\u2139\ufe0f  Dry-run compl"
+    },
+    {
+      "text": "Explicit override succeeds",
+      "passed": true,
+      "evidence": "Exit 0; captured output: \u2139\ufe0f  Integrating gindev (SOUL.md and distribution.yaml remain profile-owned)\n\u2139\ufe0f  gindev: would link skills/ginflow and plugins/ginflow-gate\n\u2139\ufe0f  gindev: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config\n\n\u2139\ufe0f  Dry-run compl"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  }
+}

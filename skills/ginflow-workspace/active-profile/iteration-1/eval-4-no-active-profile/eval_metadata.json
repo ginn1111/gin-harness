@@ -1,0 +1,10 @@
+{
+  "eval_id": 4,
+  "eval_name": "no-active-profile",
+  "prompt": "No profile is marked active. Run bare make verify. What happens?",
+  "assertions": [
+    "Command fails",
+    "Error explains no active profile",
+    "Error gives profile-use or PROFILES recovery"
+  ]
+}

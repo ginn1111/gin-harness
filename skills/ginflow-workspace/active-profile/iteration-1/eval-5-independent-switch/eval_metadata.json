@@ -1,0 +1,10 @@
+{
+  "eval_id": 5,
+  "eval_name": "independent-switch",
+  "prompt": "Profiles gintary and ginb exist; ginb is active. Run bare make setup. Does harness integrate both or imply collaboration?",
+  "assertions": [
+    "Targets ginb only",
+    "Does not integrate gintary",
+    "Does not imply collaboration or handoff"
+  ]
+}

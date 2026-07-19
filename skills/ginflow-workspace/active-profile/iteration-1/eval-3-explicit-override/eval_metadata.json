@@ -1,0 +1,10 @@
+{
+  "eval_id": 3,
+  "eval_name": "explicit-override",
+  "prompt": "Active profile is gintary. Run make setup PROFILES=\"gindev\". Which profile is integrated?",
+  "assertions": [
+    "Targets gindev",
+    "Does not target active gintary",
+    "Explicit override succeeds"
+  ]
+}

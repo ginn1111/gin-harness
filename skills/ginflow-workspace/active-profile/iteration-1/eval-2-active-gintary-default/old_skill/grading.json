@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Targets gintary",
+      "passed": true,
+      "evidence": "Exit 0; captured output: \u2139\ufe0f  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)\n\u2139\ufe0f  gintary: would link skills/ginflow and plugins/ginflow-gate\n\u2139\ufe0f  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config\n\n\u2139\ufe0f  Dry-run co"
+    },
+    {
+      "text": "Does not target ginb",
+      "passed": true,
+      "evidence": "Exit 0; captured output: \u2139\ufe0f  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)\n\u2139\ufe0f  gintary: would link skills/ginflow and plugins/ginflow-gate\n\u2139\ufe0f  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config\n\n\u2139\ufe0f  Dry-run co"
+    },
+    {
+      "text": "Uses exactly one profile",
+      "passed": true,
+      "evidence": "Exit 0; captured output: \u2139\ufe0f  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)\n\u2139\ufe0f  gintary: would link skills/ginflow and plugins/ginflow-gate\n\u2139\ufe0f  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config\n\n\u2139\ufe0f  Dry-run co"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  }
+}

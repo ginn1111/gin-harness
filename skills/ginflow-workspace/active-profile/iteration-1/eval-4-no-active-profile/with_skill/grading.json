@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Command fails",
+      "passed": true,
+      "evidence": "Exit 2; captured output: No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES=\"<name>\"\nmake: *** [verify] Error 2"
+    },
+    {
+      "text": "Error explains no active profile",
+      "passed": true,
+      "evidence": "Exit 2; captured output: No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES=\"<name>\"\nmake: *** [verify] Error 2"
+    },
+    {
+      "text": "Error gives profile-use or PROFILES recovery",
+      "passed": true,
+      "evidence": "Exit 2; captured output: No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES=\"<name>\"\nmake: *** [verify] Error 2"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  }
+}

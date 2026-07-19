@@ -1,0 +1,6 @@
+{
+  "source_commit": "f0d634c29f2b1fbd45c838c4aad216268b6fa512",
+  "path": "Makefile",
+  "sha256": "506d51357c961b1a54cc535af02ff3467145ea733c9e195741f9fdf2ee304ab6",
+  "behavior": "hardcoded PROFILES ?= gintary"
+}

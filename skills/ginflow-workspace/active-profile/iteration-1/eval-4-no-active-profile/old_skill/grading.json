@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Command fails",
+      "passed": false,
+      "evidence": "Exit 0; captured output: VERIFY gintary"
+    },
+    {
+      "text": "Error explains no active profile",
+      "passed": false,
+      "evidence": "Exit 0; captured output: VERIFY gintary"
+    },
+    {
+      "text": "Error gives profile-use or PROFILES recovery",
+      "passed": false,
+      "evidence": "Exit 0; captured output: VERIFY gintary"
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 3,
+    "total": 3,
+    "pass_rate": 0.0
+  }
+}

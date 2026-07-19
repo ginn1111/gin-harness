@@ -1,0 +1,36 @@
+{
+  "skill_name": "gin-harness active-profile selection",
+  "iteration": "active-profile/iteration-1",
+  "evals_run": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "runs_per_configuration": 1,
+  "configurations": {
+    "with_skill": {
+      "passed": 15,
+      "total": 15,
+      "failed": 0,
+      "pass_rate": 1.0
+    },
+    "old_skill": {
+      "passed": 8,
+      "total": 15,
+      "failed": 7,
+      "pass_rate": 0.5333
+    }
+  },
+  "delta": {
+    "passed_assertions": 7,
+    "pass_rate": 0.4667
+  },
+  "grading": "Deterministic assertion grading against captured command exit and stdout/stderr",
+  "notes": [
+    "Identical prompts, assertions, profile inventory, and commands.",
+    "Single run measures correctness, not variance.",
+    "Temporary homes only; no real profile mutation or agent launch."
+  ]
+}

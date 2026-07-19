@@ -1,0 +1,223 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Active-profile eval compare</title><style>body{font:15px system-ui;margin:0;background:#f5f5f3;color:#171717}header{background:#171717;color:white;padding:24px}main{max-width:1400px;margin:auto;padding:24px}article,section{background:white;border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:20px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}pre{white-space:pre-wrap;background:#f4f4f4;padding:12px}li.pass{color:#176b36}li.fail{color:#a32020}small{display:block;color:#555}@media(max-width:800px){.pair{grid-template-columns:1fr}}</style></head><body><header><h1>Active-profile independent harness — paired review</h1><p>Current 15/15 vs baseline 8/15</p></header><main><article id='eval-1'><h2>Eval 1: active-ginb-default</h2><p>Active profile is ginb. Run bare make setup. Which profile is integrated?</p><div class='pair'><section><h3>Current</h3><pre># Result
+
+Command: `make -s setup`
+
+Exit: `0`
+
+```text
+ℹ️  Integrating ginb (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  ginb: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  ginb: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. Re-run with --apply.
+```
+</pre><ul><li class=pass>PASS — Targets ginb<small>Exit 0; captured output: ℹ️  Integrating ginb (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  ginb: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  ginb: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. R</small></li><li class=pass>PASS — Does not target gintary<small>Exit 0; captured output: ℹ️  Integrating ginb (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  ginb: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  ginb: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. R</small></li><li class=pass>PASS — Uses exactly one profile<small>Exit 0; captured output: ℹ️  Integrating ginb (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  ginb: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  ginb: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. R</small></li></ul></section><section><h3>Baseline</h3><pre># Result
+
+Command: `make -s setup`
+
+Exit: `0`
+
+```text
+ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. Re-run with --apply.
+```
+</pre><ul><li class=fail>FAIL — Targets ginb<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li><li class=fail>FAIL — Does not target gintary<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li><li class=pass>PASS — Uses exactly one profile<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li></ul></section></div></article><article id='eval-2'><h2>Eval 2: active-gintary-default</h2><p>Active profile is gintary. Run bare make setup. Which profile is integrated?</p><div class='pair'><section><h3>Current</h3><pre># Result
+
+Command: `make -s setup`
+
+Exit: `0`
+
+```text
+ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. Re-run with --apply.
+```
+</pre><ul><li class=pass>PASS — Targets gintary<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li><li class=pass>PASS — Does not target ginb<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li><li class=pass>PASS — Uses exactly one profile<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li></ul></section><section><h3>Baseline</h3><pre># Result
+
+Command: `make -s setup`
+
+Exit: `0`
+
+```text
+ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. Re-run with --apply.
+```
+</pre><ul><li class=pass>PASS — Targets gintary<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li><li class=pass>PASS — Does not target ginb<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li><li class=pass>PASS — Uses exactly one profile<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li></ul></section></div></article><article id='eval-3'><h2>Eval 3: explicit-override</h2><p>Active profile is gintary. Run make setup PROFILES=&quot;gindev&quot;. Which profile is integrated?</p><div class='pair'><section><h3>Current</h3><pre># Result
+
+Command: `make -s setup PROFILES=gindev`
+
+Exit: `0`
+
+```text
+ℹ️  Integrating gindev (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gindev: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gindev: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. Re-run with --apply.
+```
+</pre><ul><li class=pass>PASS — Targets gindev<small>Exit 0; captured output: ℹ️  Integrating gindev (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gindev: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gindev: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run compl</small></li><li class=pass>PASS — Does not target active gintary<small>Exit 0; captured output: ℹ️  Integrating gindev (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gindev: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gindev: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run compl</small></li><li class=pass>PASS — Explicit override succeeds<small>Exit 0; captured output: ℹ️  Integrating gindev (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gindev: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gindev: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run compl</small></li></ul></section><section><h3>Baseline</h3><pre># Result
+
+Command: `make -s setup PROFILES=gindev`
+
+Exit: `0`
+
+```text
+ℹ️  Integrating gindev (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gindev: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gindev: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. Re-run with --apply.
+```
+</pre><ul><li class=pass>PASS — Targets gindev<small>Exit 0; captured output: ℹ️  Integrating gindev (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gindev: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gindev: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run compl</small></li><li class=pass>PASS — Does not target active gintary<small>Exit 0; captured output: ℹ️  Integrating gindev (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gindev: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gindev: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run compl</small></li><li class=pass>PASS — Explicit override succeeds<small>Exit 0; captured output: ℹ️  Integrating gindev (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gindev: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gindev: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run compl</small></li></ul></section></div></article><article id='eval-4'><h2>Eval 4: no-active-profile</h2><p>No profile is marked active. Run bare make verify. What happens?</p><div class='pair'><section><h3>Current</h3><pre># Result
+
+Command: `make -s verify`
+
+Exit: `2`
+
+```text
+No active Hermes profile found; run `hermes profile use &lt;name&gt;` or pass PROFILES=&quot;&lt;name&gt;&quot;
+make: *** [verify] Error 2
+```
+</pre><ul><li class=pass>PASS — Command fails<small>Exit 2; captured output: No active Hermes profile found; run `hermes profile use &lt;name&gt;` or pass PROFILES=&quot;&lt;name&gt;&quot;
+make: *** [verify] Error 2</small></li><li class=pass>PASS — Error explains no active profile<small>Exit 2; captured output: No active Hermes profile found; run `hermes profile use &lt;name&gt;` or pass PROFILES=&quot;&lt;name&gt;&quot;
+make: *** [verify] Error 2</small></li><li class=pass>PASS — Error gives profile-use or PROFILES recovery<small>Exit 2; captured output: No active Hermes profile found; run `hermes profile use &lt;name&gt;` or pass PROFILES=&quot;&lt;name&gt;&quot;
+make: *** [verify] Error 2</small></li></ul></section><section><h3>Baseline</h3><pre># Result
+
+Command: `make -s verify`
+
+Exit: `0`
+
+```text
+VERIFY gintary
+```
+</pre><ul><li class=fail>FAIL — Command fails<small>Exit 0; captured output: VERIFY gintary</small></li><li class=fail>FAIL — Error explains no active profile<small>Exit 0; captured output: VERIFY gintary</small></li><li class=fail>FAIL — Error gives profile-use or PROFILES recovery<small>Exit 0; captured output: VERIFY gintary</small></li></ul></section></div></article><article id='eval-5'><h2>Eval 5: independent-switch</h2><p>Profiles gintary and ginb exist; ginb is active. Run bare make setup. Does harness integrate both or imply collaboration?</p><div class='pair'><section><h3>Current</h3><pre># Result
+
+Command: `make -s setup`
+
+Exit: `0`
+
+```text
+ℹ️  Integrating ginb (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  ginb: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  ginb: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. Re-run with --apply.
+```
+</pre><ul><li class=pass>PASS — Targets ginb only<small>Exit 0; captured output: ℹ️  Integrating ginb (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  ginb: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  ginb: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. R</small></li><li class=pass>PASS — Does not integrate gintary<small>Exit 0; captured output: ℹ️  Integrating ginb (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  ginb: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  ginb: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. R</small></li><li class=pass>PASS — Does not imply collaboration or handoff<small>Exit 0; captured output: ℹ️  Integrating ginb (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  ginb: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  ginb: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. R</small></li></ul></section><section><h3>Baseline</h3><pre># Result
+
+Command: `make -s setup`
+
+Exit: `0`
+
+```text
+ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run complete. Re-run with --apply.
+```
+</pre><ul><li class=fail>FAIL — Targets ginb only<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li><li class=fail>FAIL — Does not integrate gintary<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li><li class=pass>PASS — Does not imply collaboration or handoff<small>Exit 0; captured output: ℹ️  Integrating gintary (SOUL.md and distribution.yaml remain profile-owned)
+ℹ️  gintary: would link skills/ginflow and plugins/ginflow-gate
+ℹ️  gintary: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config
+
+ℹ️  Dry-run co</small></li></ul></section></div></article></main></body></html>
