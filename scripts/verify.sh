@@ -15,8 +15,7 @@ warn() { printf '⚠️  %s\n' "$*" >&2; FAILED=1; }
 recommend() { printf '💡 %s\n' "$*"; }
 command -v hermes >/dev/null || { printf 'Missing: hermes\n' >&2; exit 1; }
 
-REAL_HOME="$(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f6)"
-REAL_HOME="${REAL_HOME:-$HOME}"
+REAL_HOME="${HERMES_REAL_HOME:-$(python3 -c 'import os, pwd; print(pwd.getpwuid(os.getuid()).pw_dir)')}"
 PROFILES_DIR="$REAL_HOME/.hermes/profiles"
 export HOME="$REAL_HOME"
 unset HERMES_HOME
@@ -41,12 +40,13 @@ for profile in "$@"; do
     warn "$profile: ginflow integration missing"
   fi
 
-  plugin_link="$profile_dir/plugins/herdr-agent-state"
-  if [[ -L "$plugin_link" && "$(readlink -f "$plugin_link")" == "$ROOT/plugins/herdr-agent-state" ]]; then
-    ok "$profile: herdr-agent-state linked"
-  else
-    warn "$profile: herdr-agent-state integration missing"
-  fi
+  [[ ! -e "$profile_dir/plugins/herdr-agent-state" && ! -L "$profile_dir/plugins/herdr-agent-state" ]] \
+    && ok "$profile: obsolete herdr-agent-state link absent" \
+    || warn "$profile: obsolete herdr-agent-state link remains"
+
+  gate_link="$profile_dir/plugins/ginflow-gate"
+  [[ -L "$gate_link" && "$(readlink -f "$gate_link")" == "$ROOT/plugins/ginflow-gate" ]] \
+    && ok "$profile: ginflow-gate linked" || warn "$profile: ginflow-gate integration missing"
 
   cfg="$profile_dir/config.yaml"
   if python3 - "$cfg" "$ROOT" <<'PY'
@@ -61,7 +61,8 @@ server = cfg.get("mcp_servers", {}).get("codegraph", {})
 assert server.get("command") == "codegraph"
 assert server.get("args") == ["serve", "--mcp"]
 assert "mcp-codegraph" in cfg.get("platform_toolsets", {}).get("cli", [])
-assert "herdr-agent-state" in cfg.get("plugins", {}).get("enabled", [])
+assert "herdr-agent-state" not in cfg.get("plugins", {}).get("enabled", [])
+assert "ginflow-gate" in cfg.get("plugins", {}).get("enabled", [])
 PY
   then ok "$profile: config integrations present"; else warn "$profile: config integrations incomplete"; fi
 
@@ -80,9 +81,10 @@ for heading in "Project session startup" "Execution contract" "Definition of don
   grep -q "^## $heading$" "$ROOT/skills/ginflow/SKILL.md" && ok "ginflow: $heading" || warn "ginflow: missing $heading"
 done
 python3 "$ROOT/skills/ginflow/scripts/validate-harness.py" --setup-repo "$ROOT" >/dev/null && ok "ginflow: static validation passed" || warn "ginflow: static validation failed"
+python3 "$ROOT/skills/ginflow/scripts/test-ginflow-gate.py" >/dev/null && ok "ginflow-gate: veto contract passed" || warn "ginflow-gate: veto contract failed or Hermes hook compatibility changed"
 
-mapfile -t drift < <(cd "$ROOT" && git status --porcelain --untracked-files=all 2>/dev/null | cut -c4- | grep -E "^(scripts/|skills/|plugins/|templates/|README\.md$|INSTALL\.md$|Makefile$)" || true)
-if [[ "${#drift[@]}" -gt 0 ]]; then
+drift="$(cd "$ROOT" && git status --porcelain --untracked-files=all 2>/dev/null | cut -c4- | grep -E "^(scripts/|skills/|plugins/|templates/|README\.md$|INSTALL\.md$|Makefile$)" || true)"
+if [[ -n "$drift" ]]; then
   if [[ "$STRICT" == 1 ]]; then warn "Uncommitted canonical integration changes detected"; else recommend "Uncommitted canonical integration changes detected (non-fatal)"; fi
 else
   ok "No uncommitted integration changes"

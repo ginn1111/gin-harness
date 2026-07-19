@@ -1,0 +1,5 @@
+name: ginflow-gate
+version: "0.1.0"
+description: Block invalid Ginflow Kanban lifecycle transitions
+hooks:
+  - pre_tool_call

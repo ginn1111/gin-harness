@@ -101,7 +101,7 @@ Stop when any required input is missing and risk is material.
 
 ## Execution contract
 
-- One active card per worker.
+- One active card per mutable workspace. Parallel cards are allowed only when each uses an isolated worktree or a different workspace. Hermes dispatcher claim remains the mechanical authority; no public `kanban_claim` tool exists for plugin interception, so atomic workspace-collision enforcement requires Hermes core.
 - No target-project execution without selected, complete card.
 - Do not resume, hand off, or derive work from a completed card while its linked-artifact drift is unresolved. Unrelated cards and unlinked project work may continue.
 - Stay inside card scope and target workspace.
@@ -133,7 +133,7 @@ Include only:
 
 At completion, also store a path-scoped `artifact_baseline` with the Git completion commit and exact target-local linked artifact paths. This is verification metadata, not duplicated artifact content.
 
-For a live Hermes Kanban card, use these exact body labels so the external harness can normalize `hermes kanban show --json` output:
+For a live Hermes Kanban card, use these exact body labels. `ginflow-gate` rejects malformed completion attempts:
 
 ```text
 Objective: <what to achieve>
@@ -189,8 +189,8 @@ Immediately before reporting completion:
 5. Report only files under selected card workspace.
 6. Quote canonical project command and exact fresh result.
 7. Record same evidence on selected Kanban card before completing it.
-8. Require every target-local linked artifact to be committed. If the worker lacks commit permission, block completion and ask the human to commit; never create a commit implicitly. Record that Git commit and the exact linked paths in card `artifact_baseline`.
-9. Before completion, validate candidate metadata against live card with `--kanban-task-id`, `--baseline-commit`, and repeated `--baseline-path` arguments. Worker comments verification evidence plus exact `artifact_baseline` payload and blocks with `review-required: Ginflow completion baseline ready`; worker does not call `kanban_complete` for tasks with target-local artifact links. Orchestrator revalidates and makes first and only terminal completion call with that payload, then reruns harness without candidate arguments.
+8. `ginflow-gate` synchronously validates required card fields, verification evidence, completion commit, exact linked paths, and drift before `kanban_complete`; validation errors fail closed with an actionable rejection. Record `metadata.verification_result` (`commit`, `command`, `result`) and matching `metadata.artifact_baseline` (`commit`, `paths`) in the completion call.
+9. The external CLI harness remains available for manual and CI validation independent of the live plugin gate.
 10. Review target workspace using `references/workspace-health-warnings.md`. Record concise findings under `Workspace warnings` on card and in completion report. Warnings do not block by default; promote only when acceptance, canonical verification, security, privacy, data integrity, or restartability is affected. Do not copy warning policy or scanner files into target repo.
 
 Project verification proves product behavior and blocks completion when it fails. Ginflow harness proves workflow readiness and drift: report failures as warnings, but treat missing card, wrong workspace, missing acceptance, missing required artifact, missing completion verification path, missing completed-card artifact baseline, or changed completed-card linked artifact as blockers for the affected lifecycle stage. Harness unavailable is a warning and never substitutes for project verification.
@@ -221,7 +221,7 @@ Add harness `--board <slug>` when the task is not on the current board. For dire
 | Instructions | profile distribution chooses whether to route to `ginflow`; target `AGENTS.md` stores local context |
 | State | Hermes Kanban card and linked artifacts |
 | Verification | project-native canonical command and card evidence |
-| Scope | card objective, scope, acceptance, workspace, and one active card |
+| Scope | card objective, scope, acceptance, workspace, and one active card per mutable workspace |
 | Lifecycle | startup, close, restart, and optional Markdown export in `ginflow` |
 
 `feature_list.json`, `progress.md`, `init.sh`, and mandatory handoff files are not required equivalents.

@@ -46,7 +46,7 @@ Setup requires existing profiles. It adds only:
 
 - Ginflow skill
 - setup-repo and optional community skill directories
-- `herdr-agent-state` plugin
+- `ginflow-gate` plugin
 - CodeGraph MCP and its toolset
 - common CLI toolsets needed by harness/workflow
 

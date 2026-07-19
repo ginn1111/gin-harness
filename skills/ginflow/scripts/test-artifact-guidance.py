@@ -72,7 +72,9 @@ def main():
         "without an assignee",
         "reserve the card's first explicit block",
         "do not invent a `--body` option",
-        "first and only terminal completion call",
+        "synchronously validates required card fields",
+        "One active card per mutable workspace",
+        "isolated worktree",
         "references/workspace-health-warnings.md",
         "Workspace warnings",
     ), "SKILL.md")

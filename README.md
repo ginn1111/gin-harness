@@ -9,7 +9,7 @@ This repo contains no profile identity, profile manifest, profile registry, prov
 | Owner | Content |
 |---|---|
 | Hermes profile distribution | `SOUL.md`, `distribution.yaml`, native `config.yaml` defaults, profile skills/cron, version, release source |
-| This setup repo | `skills/ginflow`, harness/tests, optional community skills, `herdr-agent-state`, CodeGraph MCP/tool wiring, target-project starter |
+| This setup repo | `skills/ginflow`, harness/tests, optional community skills, CodeGraph MCP/tool wiring, target-project starter |
 | Target project | code, tests, `AGENTS.md` / `.hermes.md`, briefs/specs/plans/handoffs |
 
 No profile names or profile package files belong here.
@@ -52,7 +52,7 @@ Applied integrations:
 - `skills/ginflow` linked into each selected profile
 - setup repo `skills/` exposed through `skills.external_dirs`
 - optional community skills exposed when checkout exists
-- `plugins/herdr-agent-state` linked and enabled
+- `plugins/ginflow-gate` linked and enabled
 - CodeGraph MCP registered as `codegraph serve --mcp`
 - required CLI toolsets enabled, including `mcp-codegraph`
 - one-time native `config.yaml.bak.integration` backup
@@ -64,7 +64,7 @@ Restart profile sessions after apply.
 | Path | Purpose |
 |---|---|
 | `skills/ginflow/` | Shared workflow, templates, validator, tests |
-| `plugins/herdr-agent-state/` | Optional lifecycle-state plugin |
+| `plugins/ginflow-gate/` | Blocking Kanban completion policy |
 | `scripts/setup.sh` | Generic integration preview/apply for named existing profiles |
 | `scripts/verify.sh` | Generic integration and harness verification |
 | `scripts/community-setup.sh` | Optional community skill checkout |

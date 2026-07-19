@@ -1,4 +1,4 @@
-.PHONY: setup apply verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test
+.PHONY: setup apply verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test harness-core-test ginflow-gate-test
 
 PROFILES ?= gintary ginb
 
@@ -60,7 +60,13 @@ lint:
 	@echo "lint ok"
 
 ## Run deterministic repository tests
-test: lint setup-test artifact-guidance-test kanban-harness-test
+test: lint setup-test harness-core-test artifact-guidance-test kanban-harness-test ginflow-gate-test
+
+harness-core-test:
+	python3 skills/ginflow/scripts/test-harness-core.py
+
+ginflow-gate-test:
+	python3 skills/ginflow/scripts/test-ginflow-gate.py
 
 ## Check ginflow docs layout and artifact content guidance
 artifact-guidance-test:

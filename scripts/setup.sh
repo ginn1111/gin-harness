@@ -31,21 +31,26 @@ for profile in "$@"; do
   echo
   info "Integrating $profile (SOUL.md and distribution.yaml remain profile-owned)"
   if [[ "$APPLY" == 0 ]]; then
-    info "$profile: would link skills/ginflow and plugins/herdr-agent-state"
+    info "$profile: would link skills/ginflow and plugins/ginflow-gate"
     info "$profile: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config"
     continue
   fi
 
   mkdir -p "$profile_dir/skills" "$profile_dir/plugins"
-  for link in "$profile_dir/skills/ginflow" "$profile_dir/plugins/herdr-agent-state"; do
+  for link in "$profile_dir/skills/ginflow" "$profile_dir/plugins/ginflow-gate"; do
     if [[ -e "$link" && ! -L "$link" ]]; then
       backup="$link.bak.integration.$(date +%s)"
       mv "$link" "$backup"
       info "$profile: backed up $(basename "$link") to $backup"
     fi
   done
-  ln -sfnT "$ROOT/skills/ginflow" "$profile_dir/skills/ginflow"
-  ln -sfnT "$ROOT/plugins/herdr-agent-state" "$profile_dir/plugins/herdr-agent-state"
+  ln -sfn "$ROOT/skills/ginflow" "$profile_dir/skills/ginflow"
+  ln -sfn "$ROOT/plugins/ginflow-gate" "$profile_dir/plugins/ginflow-gate"
+  old_plugin="$profile_dir/plugins/herdr-agent-state"
+  if [[ -L "$old_plugin" ]]; then
+    rm "$old_plugin"
+    info "$profile: removed obsolete herdr-agent-state link"
+  fi
 
   python3 - "$config" "$ROOT" <<'PY'
 import sys
@@ -65,9 +70,12 @@ config.setdefault("mcp_servers", {})["codegraph"] = {
     "command": "codegraph", "args": ["serve", "--mcp"],
     "timeout": 120, "connect_timeout": 60, "enabled": True,
 }
-enabled = config.setdefault("plugins", {}).setdefault("enabled", [])
-if "herdr-agent-state" not in enabled:
-    enabled.append("herdr-agent-state")
+plugins = config.get("plugins", {})
+enabled = plugins.get("enabled", [])
+if isinstance(enabled, list):
+    plugins["enabled"] = [name for name in enabled if name != "herdr-agent-state"]
+    if "ginflow-gate" not in plugins["enabled"]:
+        plugins["enabled"].append("ginflow-gate")
 backup = path.with_name(path.name + ".bak.integration")
 if not backup.exists():
     backup.write_text(path.read_text())
