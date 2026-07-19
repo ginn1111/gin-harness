@@ -21,6 +21,13 @@
 - Different workspaces and isolated worktrees may run concurrently.
 - Claim-time workspace collision remains Hermes core work because dispatcher claims do not cross `pre_tool_call`.
 
+## Phase 4.5 — Collapse profile default
+
+- Default integration targets one profile: `gintary`.
+- Completion review is mechanical through `ginflow-gate`; no second review profile is implied.
+- Live harness uses current board only and exposes no board-selection option.
+- Setup and verification remain generic when explicit profile names are supplied.
+
 ## Command
 
 `python3 skills/ginflow/scripts/test-ginflow-gate.py`

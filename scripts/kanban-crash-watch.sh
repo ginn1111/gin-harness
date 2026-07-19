@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Create durable gintary recovery cards for new ginb worker failures.
-# Herdr remains application-state reporting; it is not used here.
+# Create durable gintary recovery cards for new task failures.
 
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.hermes/profiles/gintary/state}"
 SEEN_FILE="$STATE_DIR/kanban-crash-seen"
@@ -15,7 +14,7 @@ while IFS=$'\t' read -r task_id title count diagnostic; do
   fingerprint="$task_id|$count"
   grep -qxF "$fingerprint" "$SEEN_FILE" 2>/dev/null && continue
 
-  body="Objective: Recover crashed ginb task $task_id and restore its Kanban flow.
+  body="Objective: Recover crashed task $task_id and restore its Kanban flow.
 Scope:
 - Inspect original card, worker logs, runs, and diagnostics.
 - Identify root cause before changing task state.

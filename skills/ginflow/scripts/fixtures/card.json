@@ -6,6 +6,6 @@
   "acceptance": ["CLI works", "tests pass", "verify.sh exits 0"],
   "workspace": "{{WORKSPACE}}",
   "status": "in_progress",
-  "assignee": "ginb",
+  "assignee": "gintary",
   "links": []
 }

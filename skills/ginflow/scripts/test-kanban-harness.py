@@ -2,12 +2,17 @@
 import json
 import os
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-VALIDATOR = ROOT / "skills/ginflow/scripts/validate-harness.py"
+SCRIPT = ROOT / "skills/ginflow/scripts/validate-harness.py"
+
+help_result = subprocess.run([sys.executable, str(SCRIPT), "--help"], text=True, capture_output=True)
+assert help_result.returncode == 0
+assert "--board" not in help_result.stdout, help_result.stdout
 CARD_FIELDS = {
     "id": "TEST-1",
     "title": "Test",
@@ -21,14 +26,13 @@ CARD_FIELDS = {
 }
 
 
-def run(target, card=None, task_id=None, board=None, env=None, baseline_commit=None, baseline_paths=None):
-    command = ["python3", str(VALIDATOR), "--setup-repo", str(ROOT), "--target", str(target), "--json"]
+def run(target, card=None, task_id=None, env=None, baseline_commit=None, baseline_paths=None):
+    command = ["python3", str(SCRIPT), "--setup-repo", str(ROOT), "--target", str(target), "--json"]
     if card:
         command += ["--card", str(card)]
     if task_id:
         command += ["--kanban-task-id", task_id]
-    if board:
-        command += ["--board", board]
+
     if baseline_commit:
         command += ["--baseline-commit", baseline_commit]
     for path in baseline_paths or []:
@@ -152,13 +156,6 @@ def main():
             missing_result = json.loads(missing_card.stdout)
             assert missing_result["status"] == "blocker"
             assert "t_missing" in missing_result["card_load_error"]
-
-        with tempfile.TemporaryDirectory(prefix="ginflow-kanban-home-") as hermes_home:
-            env = os.environ | {"HERMES_HOME": hermes_home}
-            task_id = create_live_card(env, target, kanban_show["task"]["body"], board="product")
-            named_board = run(target, task_id=task_id, board="product", env=env)
-            assert named_board.returncode == 0, named_board.stdout + named_board.stderr
-            assert json.loads(named_board.stdout)["status"] == "pass"
 
         incomplete = complete.copy()
         del incomplete["acceptance"]

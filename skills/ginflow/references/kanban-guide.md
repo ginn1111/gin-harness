@@ -34,7 +34,7 @@ Use a stable human-facing card key chosen before creation for linked artifacts; 
 
 Put the key in the task title and explicit `Links:` paths. The harness follows those links rather than deriving filenames from the generated task ID.
 
-Draft card and artifact content before writing. Create the card without an assignee, with its future links and `--initial-status blocked`. Do not emit a setup `needs_input` block; reserve the first explicit block for `ginb`'s review handoff so recurrence protection does not move the card to triage. Write and commit linked artifacts, assign `ginb`, validate the candidate baseline, then unblock once. The assigned `ginb` profile loads its canonical local Ginflow skill; do not force `--skill ginflow` because the claiming dispatcher profile resolves task skills and another gateway may not expose that name.
+Draft card and artifact content before writing. Create the card assigned to the current profile, with its future links and `--initial-status blocked`. Write and commit linked artifacts, validate the candidate baseline, then unblock once. Current profile loads its canonical local Ginflow skill; do not force `--skill ginflow`.
 
 For a malformed existing body, keep the task blocked and have the human edit title/body in the Kanban dashboard before rerunning the harness. `hermes kanban edit` is only for completed-task recovery fields, not body edits. Do not invent a CLI `--body` repair command or acceptance criteria. If dashboard repair is unavailable, replacing the card requires human approval and an explicit backlink/comment.
 
@@ -50,7 +50,7 @@ Commit every target-local artifact linked from a card, then record the Git compl
 
 Never silently advance the completion commit or substitute per-file hashes.
 
-Before handoff to `gintary`, `ginb` validates the candidate baseline against the live card:
+Before completion, current profile validates the candidate baseline against the live card:
 
 ```bash
 python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
@@ -59,7 +59,7 @@ python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --baseline-path docs/briefs/<CARD-ID>.md --json
 ```
 
-`ginb` comments verification evidence plus the exact payload, then blocks with `review-required: Ginflow completion baseline ready`; it does not call `kanban_complete` for tasks with target-local artifact links. `gintary` revalidates and makes the first and only completion call with the same commit and paths in `metadata={"artifact_baseline": ...}`. Then rerun with only `--kanban-task-id` to verify persisted metadata. Add harness `--board <slug>` for a non-current board.
+Current profile makes first and only `kanban_complete` call with verification evidence plus same commit and paths in `metadata={"artifact_baseline": ...}`. `ginflow-gate` revalidates synchronously before mutation. Then rerun with only `--kanban-task-id` to verify persisted metadata.
 
 Workspace rule:
 - use real target repo

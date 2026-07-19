@@ -38,10 +38,10 @@ Hermes owns update safety: `SOUL.md`, skills, cron, and MCP distribution files u
 ```bash
 make doctor
 make community-update              # optional community skill checkout
-make setup                              # preview pinned gintary + ginb profiles
-make setup PROFILES="profile-a profile-b"   # preview named profiles
-make apply PROFILES="profile-a profile-b"   # apply integration wiring
-make verify PROFILES="profile-a profile-b"
+make setup                         # preview default gintary profile
+make setup PROFILES="profile-a"   # preview named profile
+make apply PROFILES="profile-a"   # apply integration wiring
+make verify PROFILES="profile-a"
 make test
 ```
 
@@ -85,8 +85,8 @@ Target-project behavior remains separate. Run project-native verification in tar
 ```bash
 git pull
 make community-update
-make apply PROFILES="profile-a profile-b"
-make verify PROFILES="profile-a profile-b"
+make apply PROFILES="profile-a"
+make verify PROFILES="profile-a"
 make test
 ```
 

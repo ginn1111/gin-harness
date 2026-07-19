@@ -1,6 +1,6 @@
 .PHONY: setup apply verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test harness-core-test ginflow-gate-test
 
-PROFILES ?= gintary ginb
+PROFILES ?= gintary
 
 # === Pre-flight ===
 doctor:
@@ -24,12 +24,12 @@ apply:
 
 ## Verify integrations in existing profiles
 verify:
-	@test -n "$(PROFILES)" || (echo 'Usage: make verify PROFILES="profile-a profile-b"' >&2; exit 2)
+	@test -n "$(PROFILES)" || (echo 'Usage: make verify PROFILES="gintary"' >&2; exit 2)
 	./scripts/verify.sh $(PROFILES)
 
 ## Verify profiles and fail on canonical repo drift
 verify-strict:
-	@test -n "$(PROFILES)" || (echo 'Usage: make verify-strict PROFILES="profile-a profile-b"' >&2; exit 2)
+	@test -n "$(PROFILES)" || (echo 'Usage: make verify-strict PROFILES="gintary"' >&2; exit 2)
 	./scripts/verify.sh --strict $(PROFILES)
 
 ## Test verify default and strict drift behavior

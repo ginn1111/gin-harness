@@ -4,7 +4,7 @@
     {
       "id": 1,
       "name": "medium-feature-artifacts",
-      "prompt": "In a target repo, shape card INV-21 for adding CSV export to an existing invoice list. Requirement is clear, size M, canonical verification is `make test`, workspace is `dir:/work/invoice-app`, and unrelated invoice creation must not change. Return proposed artifact paths and concise contents for every artifact needed for a build-ready handoff to ginb. Do not write code.",
+      "prompt": "In a target repo, shape card INV-21 for adding CSV export to an existing invoice list. Requirement is clear, size M, canonical verification is `make test`, workspace is `dir:/work/invoice-app`, and unrelated invoice creation must not change. Return proposed artifact paths and concise contents for every artifact needed for execution by current profile. Do not write code.",
       "expected_output": "A docs/briefs brief, docs/plans plan, and thin Kanban card with clear boundaries, observable acceptance, real workspace, and no unnecessary spec or ADR.",
       "files": [],
       "expectations": [
@@ -58,7 +58,7 @@
     {
       "id": 5,
       "name": "incomplete-card-blocker",
-      "prompt": "Card APP-7 is selected for /work/app, but it has objective and scope only. Acceptance, workspace, status, assignee, and links are missing. User asks ginb to start. Report readiness and exact next action.",
+      "prompt": "Card APP-7 is selected for /work/app, but it has objective and scope only. Acceptance, workspace, status, assignee, and links are missing. User asks current profile to start. Report readiness and exact next action.",
       "expected_output": "Block dispatch and identify missing required card fields.",
       "files": [],
       "expectations": [
@@ -127,12 +127,12 @@
     {
       "id": 10,
       "name": "live-kanban-startup-adapter",
-      "prompt": "I have a live Hermes Kanban task t_ab12 on board product. Its body uses Objective, Scope, Acceptance, and Links sections; workspace/status/assignee are normal task fields. I need to run the external Ginflow harness before resuming work. Should I create a separate normalized card JSON? Give the exact integration path and explain where Ginflow reads each required field.",
-      "expected_output": "Use --kanban-task-id and --board so the harness calls hermes kanban show --json, normalizes task/body/run metadata directly, and avoids a shadow card format.",
+      "prompt": "I have a live Hermes Kanban task t_ab12 on the current board. Its body uses Objective, Scope, Acceptance, and Links sections; workspace/status/assignee are normal task fields. I need to run the external Ginflow harness before resuming work. Should I create a separate normalized card JSON? Give the exact integration path and explain where Ginflow reads each required field.",
+      "expected_output": "Use --kanban-task-id so the harness calls hermes kanban show --json on the current board, normalizes task/body/run metadata directly, and avoids a shadow card format.",
       "files": [],
       "expectations": [
         "Rejects creating a separate shadow or normalized card JSON",
-        "Provides an external harness command with --kanban-task-id t_ab12 and --board product",
+        "Provides an external harness command with --kanban-task-id t_ab12",
         "Reads objective, scope, acceptance, and links from the live task body",
         "Reads ID, workspace, status, and assignee from the Kanban task row",
         "Reads artifact_baseline from latest completion-run metadata when present"
@@ -167,19 +167,19 @@
     },
     {
       "id": 13,
-      "prompt": "You are gintary preparing a live Hermes Kanban card for ginb. The body already has Objective, Scope, Acceptance, and a future docs/briefs/DM-42.md link, but that brief is not written yet. The gateway continuously recomputes blocked tasks. Give the exact safe CLI/order from card creation through parking, writing artifacts, assigning ginb, harness validation, and unblocking. Explain why each transition is safe.",
-      "expected_output": "A no-race setup sequence: create unassigned, explicitly sticky-block with needs_input, write linked artifacts, assign ginb, validate, then unblock.",
+      "prompt": "You are gintary preparing a live Hermes Kanban card for the same profile. The body already has Objective, Scope, Acceptance, and a future docs/briefs/DM-42.md link, but that brief is not written yet. Give the exact safe CLI/order from card creation through parking, writing artifacts, harness validation, and unblocking. Explain why each transition is safe.",
+      "expected_output": "A no-race single-profile setup sequence: create assigned to current profile with initial blocked status, write linked artifacts, validate, then unblock.",
       "files": [],
       "expectations": [
-        "Creates the card without assigning ginb before setup is parked",
-        "Uses hermes kanban block --kind needs_input with options before the task ID",
-        "Explains that initial blocked status alone lacks the sticky blocked event and may auto-promote",
-        "Assigns ginb only after artifacts are written and unblocks only after harness validation"
+        "Creates the card assigned to current profile with initial blocked status",
+        "Writes linked artifacts before unblocking",
+        "Runs harness validation before unblocking",
+        "Does not introduce a second profile handoff"
       ]
     },
     {
       "id": 14,
-      "prompt": "You are ginb on live task t_example. Canonical verification and candidate-baseline validation have passed. HEAD is abc123 and the only linked target artifact is docs/briefs/DM-42.md. Show the exact completion sequence and metadata. The card becomes terminal on completion, so the answer must prevent an incomplete first call.",
+      "prompt": "You are current profile on live task t_example. Canonical verification and candidate-baseline validation have passed. HEAD is abc123 and the only linked target artifact is docs/briefs/DM-42.md. Show the exact completion sequence and metadata. The card becomes terminal on completion, so the answer must prevent an incomplete first call.",
       "expected_output": "Construct and inspect the exact artifact_baseline, make one completion call with metadata, then validate persisted live-card metadata.",
       "files": [],
       "expectations": [
@@ -191,7 +191,7 @@
     },
     {
       "id": 15,
-      "prompt": "A ginb worker completed a live card before including artifact_baseline metadata, then tried kanban_complete a second time and got a terminal-task error. Explain the workflow defect, the safe current disposition, and the general rule that should prevent recurrence. Do not silently invent or advance a baseline.",
+      "prompt": "Current profile completed a live card before including artifact_baseline metadata, then tried kanban_complete a second time and got a terminal-task error. Explain the workflow defect, the safe current disposition, and the general rule that should prevent recurrence. Do not silently invent or advance a baseline.",
       "expected_output": "Identify non-atomic terminal completion, block authority until explicit recovery, and require metadata on the first completion call.",
       "files": [],
       "expectations": [
@@ -298,7 +298,7 @@
     {
       "id": 23,
       "name": "route-unrelated-warning-follow-up",
-      "prompt": "Active card APP-23 changes CSV export. Workspace warning notes pre-existing docs/roadmap.md edits unrelated to APP-23. User says: \"fix that warning too.\" Decide whether ginb should edit it now and route exact next action.",
+      "prompt": "Active card APP-23 changes CSV export. Workspace warning notes pre-existing docs/roadmap.md edits unrelated to APP-23. User says: \"fix that warning too.\" Decide whether current profile should edit it now and route exact next action.",
       "expected_output": "Preserve unrelated edits, refuse scope expansion on APP-23, shape/select a separate follow-up card before execution.",
       "files": [],
       "expectations": [

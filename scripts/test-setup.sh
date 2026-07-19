@@ -15,6 +15,9 @@ chmod +x "$TMP/bin/hermes"
 
 output="$(HERMES_REAL_HOME="$TMP/home" PATH="$TMP/bin:$PATH" make -s -C "$ROOT" setup)"
 grep -q 'Integrating gintary' <<<"$output"
-grep -q 'Integrating ginb' <<<"$output"
+if grep -q 'Integrating ginb' <<<"$output"; then
+  printf 'default setup must not integrate ginb\n' >&2
+  exit 1
+fi
 grep -q 'Dry-run complete' <<<"$output"
-printf 'setup pinned-profile test ok\n'
+printf 'setup single-profile default test ok\n'

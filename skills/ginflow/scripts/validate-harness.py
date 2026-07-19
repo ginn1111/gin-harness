@@ -19,15 +19,14 @@ def main():
     source = parser.add_mutually_exclusive_group()
     source.add_argument("--card", type=Path, help="Card JSON file; accepts normalized Ginflow or `hermes kanban show --json` shape")
     source.add_argument("--kanban-task-id", help="Read a live card with `hermes kanban show <id> --json`")
-    parser.add_argument("--board", help="Kanban board slug used with --kanban-task-id")
+
     parser.add_argument("--baseline-commit", help="Candidate completion commit to validate before closing a live card")
     parser.add_argument("--baseline-path", action="append", default=[], help="Candidate linked artifact path; repeat for each path")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     if bool(args.baseline_commit) != bool(args.baseline_path):
         parser.error("--baseline-commit and at least one --baseline-path must be supplied together")
-    if args.board and not args.kanban_task_id:
-        parser.error("--board requires --kanban-task-id")
+
 
     root = (args.setup_repo or Path(__file__).resolve().parents[3]).resolve()
     ginflow = (root / "skills/ginflow/SKILL.md").read_text()
@@ -45,7 +44,7 @@ def main():
     if args.card:
         card_document = json.loads(args.card.read_text())
     elif args.kanban_task_id:
-        card_document, card_load_error = load_kanban_card(args.kanban_task_id, args.board)
+        card_document, card_load_error = load_kanban_card(args.kanban_task_id)
     else:
         card_document = {}
     card = normalize_card(card_document)

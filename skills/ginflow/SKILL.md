@@ -14,7 +14,7 @@ Use when any of these apply:
 - starting, executing, closing, or resuming target-project work
 - deciding where docs belong
 - deciding brief vs spec vs plan
-- shaping Kanban task for selected worker profile
+- shaping Kanban task for selected execution profile
 - exporting an optional session handoff from Kanban
 - explaining setup-repo vs target-repo split
 
@@ -147,7 +147,7 @@ Links:
 
 Hermes stores workspace, status, assignee, and ID on the task row. It stores `artifact_baseline` in the latest completion run metadata. The harness reads both locations; do not create a second shadow card JSON format.
 
-To avoid dispatch racing ahead of linked artifacts, draft card and artifact contents in memory, then create card without an assignee, with complete future `Links:` paths and `--initial-status blocked`. Do not emit a setup `needs_input` block: reserve the card's first explicit block for worker review handoff so recurrence protection does not move card to triage. Write and commit linked target artifacts, assign selected worker profile, then run project checks and external candidate-baseline harness. Unblock only after dispatch readiness passes. Assigned worker profile loads its configured Ginflow skill; do not force `--skill ginflow` because the claiming dispatcher profile resolves task skills and multi-profile gateways may not share that skill.
+To avoid dispatch racing ahead of linked artifacts, draft card and artifact contents in memory, then create card assigned to the current profile, with complete future `Links:` paths and `--initial-status blocked`. Write and commit linked target artifacts, then run project checks and external candidate-baseline harness. Unblock only after dispatch readiness passes. Current profile loads its configured Ginflow skill; do not force `--skill ginflow`.
 
 If an existing live body is missing required sections, keep it blocked and ask the human to edit the title/body in the Kanban dashboard, then rerun the harness. The current CLI `hermes kanban edit` only backfills completed-task result/summary/metadata; do not invent a `--body` option. If dashboard repair is unavailable, create a corrected replacement card only with human approval and preserve a link/comment back to the malformed card.
 
@@ -157,13 +157,13 @@ Use real target repo workspace:
 
 ## Required fields for build-ready handoff
 
-A task for selected worker profile should answer:
+A task for current profile should answer:
 - what to change
 - where to change it
 - how done is judged
 - what not to touch
 
-If any missing and risk is material, block back to selected orchestrator profile.
+If any missing and risk is material, keep card blocked and ask Gin.
 
 ## Session close and restart
 
@@ -212,7 +212,7 @@ python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --baseline-path docs/briefs/<CARD-ID>.md --json
 ```
 
-Add harness `--board <slug>` when the task is not on the current board. For direct CLI operations, board selection is a Kanban-level option: `hermes kanban --board <slug> show|create|complete ...`. `--card <json-file>` remains available for fixtures and accepts either normalized Ginflow JSON or saved `hermes kanban show --json` output.
+The live harness reads from the current board. `--card <json-file>` remains available for fixtures and accepts either normalized Ginflow JSON or saved `hermes kanban show --json` output.
 
 ## Harness subsystem mapping
 
