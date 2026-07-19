@@ -1,0 +1,5 @@
+No—the change to `src/cache.py` is outside the completed-card artifact comparison and does not itself create drift.
+
+For `APP-10`, the gate compares only the current target-local artifacts linked from the card with the card’s recorded `artifact_baseline`. Because the card links only `docs/briefs/APP-10.md`, the comparison scope is that brief, not the whole repository. If the brief’s current SHA-256 matches its recorded baseline value, the gate passes even though other repository files changed after completion.
+
+The card’s completion commit `def456` does not replace the required SHA-256 artifact baseline. If no baseline hash was recorded, the gate must block because the completed card is missing required baseline metadata—not because `src/cache.py` changed. With a recorded, matching hash for `docs/briefs/APP-10.md`, there is no suspected post-completion drift and the unrelated work may proceed.

@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Refuses to copy ginflow harness into target repo",
+      "passed": true,
+      "evidence": "Checked answer.md for required decision and terms."
+    },
+    {
+      "text": "Uses make check as project-specific verification",
+      "passed": true,
+      "evidence": "Checked answer.md for required decision and terms."
+    },
+    {
+      "text": "Runs external ginflow harness against target and selected card",
+      "passed": true,
+      "evidence": "Checked answer.md for required decision and terms."
+    },
+    {
+      "text": "Reports project verification and ginflow harness separately",
+      "passed": true,
+      "evidence": "Checked answer.md for required decision and terms."
+    },
+    {
+      "text": "Treats harness drift as warning or blocker based on lifecycle materiality",
+      "passed": true,
+      "evidence": "Checked answer.md for required decision and terms."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

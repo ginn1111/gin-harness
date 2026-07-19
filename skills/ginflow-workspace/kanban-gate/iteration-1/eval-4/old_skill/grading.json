@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Blocks implementation because no Kanban card is selected",
+      "passed": false,
+      "evidence": "Checked answer.md for required decision and terms."
+    },
+    {
+      "text": "Allows only brainstorming, routing, sizing, read-only shaping, and proposed card drafting",
+      "passed": false,
+      "evidence": "Checked answer.md for required decision and terms."
+    },
+    {
+      "text": "Requires creating or selecting a card before target artifacts, code, investigation execution, or dispatch",
+      "passed": true,
+      "evidence": "Checked answer.md for required decision and terms."
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 2,
+    "total": 3,
+    "pass_rate": 0.3333333333333333
+  }
+}

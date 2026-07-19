@@ -1,0 +1,11 @@
+{
+  "eval_id": 8,
+  "eval_name": "unrelated-change-does-not-drift",
+  "prompt": "Card APP-10 is done at completion commit def456 and links only docs/briefs/APP-10.md. Since then, I committed changes to src/cache.py but did not change the linked brief. Should the solo-dev drift gate block unrelated work? Explain the comparison scope and decision.",
+  "assertions": [
+    "Does not report artifact drift for unrelated src/cache.py changes",
+    "Scopes comparison to target-local paths linked from APP-10",
+    "Does not block unrelated project work merely because repository HEAD advanced",
+    "Uses def456 as the path-scoped completion baseline without requiring a per-file SHA fallback"
+  ]
+}

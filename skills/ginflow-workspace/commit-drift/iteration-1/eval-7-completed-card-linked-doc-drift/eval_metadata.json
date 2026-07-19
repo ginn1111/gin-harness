@@ -1,0 +1,14 @@
+{
+  "eval_id": 7,
+  "eval_name": "completed-card-linked-doc-drift",
+  "prompt": "Solo-dev repo card APP-9 is done. Its artifact baseline records completion commit abc123 and links docs/briefs/APP-9.md plus docs/specs/APP-9.md. A later commit materially changes the linked spec. Explain the gate decision and exact resolution options before any work resumes from APP-9.",
+  "assertions": [
+    "Blocks resume or authority use for APP-9 because a linked artifact differs from the completion commit",
+    "Proposes new versioned docs and a follow-up card linked back to APP-9",
+    "Proposes reopening APP-9 and rerunning verification for changed completed scope",
+    "Allows baseline advancement only after explicit human classification as editorial",
+    "Does not silently replace the completion commit",
+    "Uses the supplied path-scoped completion commit rather than replacing it with a mandatory per-file SHA baseline",
+    "Blocks only use of APP-9 as authority while leaving unrelated cards and unlinked work available"
+  ]
+}

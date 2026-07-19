@@ -1,0 +1,12 @@
+{
+  "eval_id": 11,
+  "eval_name": "kanban-atomic-completion-baseline",
+  "prompt": "I am about to complete live Hermes Kanban task t_cd34. All linked docs are committed at COMMIT, but Hermes only persists completion metadata when kanban_complete runs. Show the safe Ginflow sequence that validates the candidate baseline before closing, stores the exact same artifact_baseline in completion metadata, and verifies the persisted card afterward.",
+  "assertions": [
+    "Prevalidates the candidate with --kanban-task-id, --baseline-commit, and one or more --baseline-path arguments",
+    "Passes the identical commit and path list as artifact_baseline in kanban_complete metadata",
+    "Reruns the live-card harness after completion without candidate baseline overrides",
+    "Uses the persisted completion-run metadata as the post-completion authority",
+    "Does not substitute per-file hashes"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Rejects creating a separate shadow or normalized card JSON",
+      "passed": false,
+      "evidence": "The answer explicitly recommends the opposite: line 3 says, 'create a temporary normalized JSON adapter,' lines 17-31 provide that adapter, and lines 35-42 pass it to the harness with --card. Temporary deletion does not satisfy the requirement to reject separate normalized card JSON."
+    },
+    {
+      "text": "Provides an external harness command with --kanban-task-id t_ab12 and --board product",
+      "passed": false,
+      "evidence": "answer.md instead proposes a temporary normalized JSON and invokes the old harness with --card; it does not provide --kanban-task-id t_ab12 or --board product."
+    },
+    {
+      "text": "Reads objective, scope, acceptance, and links from the live task body",
+      "passed": true,
+      "evidence": "The adapter maps objective to the 'Objective section from live task body' (line 23), scope to the Scope section (line 24), acceptance to the Acceptance section (line 25), and links to the Links section (line 29). The source table repeats these mappings on lines 55-57 and 61."
+    },
+    {
+      "text": "Reads ID, workspace, status, and assignee from the Kanban task row",
+      "passed": true,
+      "evidence": "The answer maps id to live task ID t_ab12 (lines 21 and 53), workspace to the live task workspace field (lines 26 and 58), status to the live task status field (lines 27 and 59), and assignee to the live task assignee field (lines 28 and 60)."
+    },
+    {
+      "text": "Reads artifact_baseline from latest completion-run metadata when present",
+      "passed": false,
+      "evidence": "The answer does not identify latest completion-run metadata as the source. Line 33 instead says to copy an 'existing artifact_baseline mapping' into the adapter for completed/closed tasks, and line 68 says the harness compares files with the card's artifact_baseline."
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 3,
+    "total": 5,
+    "pass_rate": 0.4
+  }
+}

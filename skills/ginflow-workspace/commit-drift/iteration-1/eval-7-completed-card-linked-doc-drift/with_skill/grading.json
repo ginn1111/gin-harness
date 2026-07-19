@@ -1,0 +1,92 @@
+{
+  "expectations": [
+    {
+      "text": "Blocks resume or authority use for APP-9 because a linked artifact differs from the completion commit",
+      "passed": true,
+      "evidence": "The answer explicitly says, \"Block any resume, handoff, or derived work that uses APP-9 as authority\" and explains that the gate compares the linked paths against completion commit `abc123`; the later material change to `docs/specs/APP-9.md` therefore means the baseline has drifted."
+    },
+    {
+      "text": "Proposes new versioned docs and a follow-up card linked back to APP-9",
+      "passed": true,
+      "evidence": "Resolution 1 says to \"create new versioned documentation for the changed intent, create a follow-up card, and link both the new docs and follow-up card back to APP-9.\""
+    },
+    {
+      "text": "Proposes reopening APP-9 and rerunning verification for changed completed scope",
+      "passed": true,
+      "evidence": "Resolution 2 says to \"Reopen APP-9\" and then \"rerun canonical project verification and the external Ginflow harness\" before completing the card again."
+    },
+    {
+      "text": "Allows baseline advancement only after explicit human classification as editorial",
+      "passed": true,
+      "evidence": "Resolution 3 makes the editorial path available \"only after explicit human classification that the change is non-material/editorial\" and only then permits advancing the baseline commit; it also notes that the stated material change is ineligible unless a human explicitly overturns that classification."
+    },
+    {
+      "text": "Does not silently replace the completion commit",
+      "passed": true,
+      "evidence": "The gate decision explicitly says, \"Do not resume work from APP-9 or silently advance its completion commit,\" and each permitted baseline change requires a recorded human resolution."
+    },
+    {
+      "text": "Uses the supplied path-scoped completion commit rather than replacing it with a mandatory per-file SHA baseline",
+      "passed": true,
+      "evidence": "The answer calls APP-9's baseline path-scoped, identifies completion commit `abc123`, and says the gate compares only the two linked paths against that commit."
+    },
+    {
+      "text": "Blocks only use of APP-9 as authority while leaving unrelated cards and unlinked work available",
+      "passed": true,
+      "evidence": "The answer says to block resume, handoff, or derived work using APP-9 as authority and explicitly states that unrelated cards and work outside the linked paths remain unblocked."
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_calls": {},
+    "total_tool_calls": 0,
+    "total_steps": 0,
+    "errors_encountered": 0,
+    "output_chars": 1687,
+    "transcript_chars": 0
+  },
+  "claims": [
+    {
+      "claim": "The linked-artifact gate compares the two recorded paths against completion commit abc123.",
+      "type": "factual",
+      "verified": true,
+      "evidence": "This matches the supplied scenario: the artifact baseline records completion commit `abc123`, links the brief and spec, and a later commit materially changes the linked spec."
+    },
+    {
+      "claim": "APP-9 cannot be used as authority for resumed or derived work until an applicable resolution is completed.",
+      "type": "quality",
+      "verified": true,
+      "evidence": "This is the requested gate outcome and is consistently enforced in both the opening gate decision and final sentence."
+    },
+    {
+      "claim": "Unrelated cards and work outside APP-9's linked paths remain unblocked.",
+      "type": "factual",
+      "verified": false,
+      "evidence": "The provided prompt and assertions establish the APP-9 gate but do not supply enough policy context to verify this broader statement about unrelated work."
+    },
+    {
+      "claim": "The editorial resolution is unavailable for the stated material change unless a human explicitly reclassifies it.",
+      "type": "quality",
+      "verified": true,
+      "evidence": "The answer correctly preserves the material-drift block while satisfying the requirement that baseline advancement be gated by explicit human editorial classification."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "No assertion checks whether the response avoids overbroad claims about unrelated cards or work outside the linked paths. Adding a scope-accuracy assertion would catch unsupported global or carve-out statements while preserving the APP-9-specific gate."
+      }
+    ],
+    "overall": "The assertions strongly cover the required gate and all three resolution paths. A scope-accuracy check would make the eval more discriminating."
+  }
+}

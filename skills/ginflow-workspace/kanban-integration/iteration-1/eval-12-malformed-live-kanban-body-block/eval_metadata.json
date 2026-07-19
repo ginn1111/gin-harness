@@ -1,0 +1,11 @@
+{
+  "eval_id": 12,
+  "eval_name": "malformed-live-kanban-body-block",
+  "prompt": "A live Hermes Kanban task has a target workspace and assignee, but its body has Objective, Scope, and Links sections with no Acceptance section. Can Ginflow dispatch it? Explain the blocker and smallest repair without inventing acceptance criteria.",
+  "assertions": [
+    "Blocks dispatch because Acceptance is a required live-card field",
+    "Does not invent acceptance criteria",
+    "Requests an observable Acceptance section from the human",
+    "Reruns the live-card harness after repair before dispatch"
+  ]
+}

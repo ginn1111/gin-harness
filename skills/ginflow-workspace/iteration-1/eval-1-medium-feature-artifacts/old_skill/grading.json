@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Uses docs/briefs/INV-21.md and docs/plans/INV-21.md paths",
+      "passed": false,
+      "evidence": "Checked artifact paths in answer.md"
+    },
+    {
+      "text": "Does not create a spec or ADR without decision value",
+      "passed": false,
+      "evidence": "Checked proposed artifact paths for unnecessary spec/ADR"
+    },
+    {
+      "text": "Brief owns objective, bounded scope, non-goals, and observable acceptance",
+      "passed": true,
+      "evidence": "Checked brief section labels"
+    },
+    {
+      "text": "Plan contains ordered targets, changes, verification evidence, and requirement traceability",
+      "passed": true,
+      "evidence": "Checked plan verification evidence and ordering content"
+    },
+    {
+      "text": "Kanban card stays thin and records dir:/work/invoice-app plus artifact links",
+      "passed": false,
+      "evidence": "Checked card workspace and links"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 3,
+    "total": 5,
+    "pass_rate": 0.4
+  }
+}

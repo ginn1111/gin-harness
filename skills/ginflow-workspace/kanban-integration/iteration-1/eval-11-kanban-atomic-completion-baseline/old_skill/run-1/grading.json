@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Prevalidates the candidate with --kanban-task-id, --baseline-commit, and one or more --baseline-path arguments",
+      "passed": false,
+      "evidence": "The answer never supplies the required candidate prevalidation invocation or any of the flags --kanban-task-id, --baseline-commit, or --baseline-path. Instead, lines 9-20 construct a SHA-256 path-to-hash map and validate a temporary card snapshot containing that map."
+    },
+    {
+      "text": "Passes the identical commit and path list as artifact_baseline in kanban_complete metadata",
+      "passed": false,
+      "evidence": "Lines 22-34 pass artifact_baseline as BASELINE, but BASELINE is explicitly the path-to-SHA-256 map defined in lines 9-18. No baseline commit plus path list is represented or passed, so the required identical commit/path baseline is absent."
+    },
+    {
+      "text": "Reruns the live-card harness after completion without candidate baseline overrides",
+      "passed": false,
+      "evidence": "Lines 36-43 say to refetch the card, then serialize it into a temporary card JSON 'exposing the persisted artifact_baseline at the card field the harness checks' and run the harness on that serialization. This is not a demonstrated live-card harness rerun without candidate baseline overrides, and no override-free command is provided."
+    },
+    {
+      "text": "Uses the persisted completion-run metadata as the post-completion authority",
+      "passed": false,
+      "evidence": "The post-completion authority in lines 36-43 is a refetched card's persisted artifact_baseline hash map and a derived temporary card JSON. The answer does not identify or consume persisted completion-run metadata as the authority for the post-completion harness run."
+    },
+    {
+      "text": "Does not substitute per-file hashes",
+      "passed": false,
+      "evidence": "The answer directly substitutes per-file hashes: lines 9-18 require SHA-256 hashes for each committed and working-tree file, and lines 22-40 require that exact path/hash map to be persisted as artifact_baseline. This contradicts the assertion."
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 5,
+    "total": 5,
+    "pass_rate": 0.0
+  }
+}

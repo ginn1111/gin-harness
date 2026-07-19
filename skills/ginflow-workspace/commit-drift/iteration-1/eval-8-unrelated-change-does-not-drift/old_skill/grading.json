@@ -1,0 +1,67 @@
+{
+  "expectations": [
+    {
+      "text": "Does not report artifact drift for unrelated src/cache.py changes",
+      "passed": true,
+      "evidence": "The answer explicitly says: \"the change to `src/cache.py` is outside the completed-card artifact comparison and does not itself create drift.\""
+    },
+    {
+      "text": "Scopes comparison to target-local paths linked from APP-10",
+      "passed": true,
+      "evidence": "The answer states: \"Because the card links only `docs/briefs/APP-10.md`, the comparison scope is that brief, not the whole repository.\""
+    },
+    {
+      "text": "Does not block unrelated project work merely because repository HEAD advanced",
+      "passed": true,
+      "evidence": "The answer says the gate passes when the linked brief's SHA-256 matches its baseline \"even though other repository files changed after completion,\" and concludes that unrelated work may proceed."
+    },
+    {
+      "text": "Uses def456 as the path-scoped completion baseline without requiring a per-file SHA fallback",
+      "passed": false,
+      "evidence": "The answer rejects `def456` as sufficient baseline metadata and requires a per-file SHA-256 value instead."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  },
+  "execution_metrics": {
+    "output_chars": 906
+  },
+  "claims": [
+    {
+      "claim": "The unrelated src/cache.py change is outside the completed-card artifact comparison and does not create drift.",
+      "type": "quality",
+      "verified": true,
+      "evidence": "APP-10 links only `docs/briefs/APP-10.md`; the skill's completed-card gate compares target-local linked artifacts, not all repository files."
+    },
+    {
+      "claim": "The gate compares the linked brief's current SHA-256 with its recorded artifact_baseline value.",
+      "type": "factual",
+      "verified": true,
+      "evidence": "references/drift-detect.md lines 52-65 and SKILL.md lines 221-225 require a SHA-256 baseline for each target-local linked artifact and comparison against that baseline."
+    },
+    {
+      "claim": "Completion commit def456 does not replace the required SHA-256 artifact baseline, and a missing baseline blocks the completed card.",
+      "type": "quality",
+      "verified": true,
+      "evidence": "The skill requires `artifact_baseline` metadata and identifies a missing completed-card artifact baseline as a blocker; it does not define the completion commit as a substitute."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Scopes comparison to target-local paths linked from APP-10",
+        "reason": "Add an assertion that the comparison uses the recorded SHA-256 `artifact_baseline`, not merely the completion commit. The current assertions would also pass an answer with the right path scope but the wrong baseline mechanism."
+      }
+    ],
+    "overall": "The assertions adequately test unrelated-path scope and the no-block decision, but they should also verify the required SHA-256 artifact-baseline mechanism."
+  }
+}

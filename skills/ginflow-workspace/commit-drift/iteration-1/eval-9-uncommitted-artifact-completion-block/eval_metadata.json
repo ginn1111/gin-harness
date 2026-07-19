@@ -1,0 +1,12 @@
+{
+  "eval_id": 9,
+  "eval_name": "uncommitted-artifact-completion-block",
+  "prompt": "I am a solo developer completing card APP-11. The linked brief has uncommitted edits, while artifact_baseline points at the current HEAD commit. Can I mark the card done? Give the smallest safe next action; do not use per-file SHA fallback.",
+  "assertions": [
+    "Blocks completion because the recorded commit does not contain the current linked artifact content",
+    "Requires committing linked artifact edits before completion",
+    "Records the resulting completion commit and linked paths on the card",
+    "Reruns project verification and the external harness",
+    "Does not propose a per-file SHA fallback"
+  ]
+}

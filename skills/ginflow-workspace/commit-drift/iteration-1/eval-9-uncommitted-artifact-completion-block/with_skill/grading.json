@@ -1,0 +1,72 @@
+{
+  "expectations": [
+    {
+      "text": "Blocks completion because the recorded commit does not contain the current linked artifact content",
+      "passed": true,
+      "evidence": "The output says, \"No. The card is not ready to mark done because every target-local linked artifact must be committed, and `artifact_baseline.commit` must identify the completion commit containing those exact linked paths.\" It also directs recording a new commit rather than the current HEAD, directly recognizing that the recorded HEAD does not contain the edited brief."
+    },
+    {
+      "text": "Requires committing linked artifact edits before completion",
+      "passed": true,
+      "evidence": "The smallest safe action explicitly says, \"keep APP-11 incomplete and commit the linked brief.\""
+    },
+    {
+      "text": "Records the resulting completion commit and linked paths on the card",
+      "passed": true,
+      "evidence": "The output says, \"Then record that new commit (not the current HEAD) plus the exact linked-artifact paths in `artifact_baseline`.\""
+    },
+    {
+      "text": "Reruns project verification and the external harness",
+      "passed": true,
+      "evidence": "The output requires the developer to \"rerun the required verification and external Ginflow harness before completing the card.\""
+    },
+    {
+      "text": "Does not propose a per-file SHA fallback",
+      "passed": true,
+      "evidence": "The output explicitly says, \"Do not use per-file SHA fallback.\""
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "tool_calls": {},
+    "total_tool_calls": 0,
+    "total_steps": 1,
+    "errors_encountered": 0,
+    "output_chars": 524,
+    "transcript_chars": 0
+  },
+  "claims": [
+    {
+      "claim": "APP-11 is not ready to be marked done because the linked artifact edits are not represented by the recorded completion commit.",
+      "type": "quality",
+      "verified": true,
+      "evidence": "This follows from the prompt's uncommitted linked-brief edits and current-HEAD baseline, and the output correctly blocks completion on that basis."
+    },
+    {
+      "claim": "The linked brief must be committed, with the new completion commit and exact linked-artifact paths recorded in artifact_baseline.",
+      "type": "process",
+      "verified": true,
+      "evidence": "The recommendation directly satisfies the commit-and-record requirements in the assertions."
+    },
+    {
+      "claim": "Required project verification and the external Ginflow harness must be rerun before completion.",
+      "type": "process",
+      "verified": true,
+      "evidence": "The output explicitly includes both verification activities before marking the card complete."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "No suggestions; the assertions are concrete, discriminating, and collectively check the required completion-block workflow."
+  }
+}

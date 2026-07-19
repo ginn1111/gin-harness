@@ -1,0 +1,331 @@
+{
+  "metadata": {
+    "skill_name": "ginflow",
+    "skill_path": "/home/aioz/personal/agents-hype/skills/ginflow",
+    "executor_model": "inherited session model",
+    "timestamp": "2026-07-18",
+    "evals_run": [
+      1,
+      2,
+      3
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "medium-feature-artifacts",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 64.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses docs/briefs/INV-21.md and docs/plans/INV-21.md paths",
+          "passed": true,
+          "evidence": "Checked artifact paths in answer.md"
+        },
+        {
+          "text": "Does not create a spec or ADR without decision value",
+          "passed": true,
+          "evidence": "Checked proposed artifact paths for unnecessary spec/ADR"
+        },
+        {
+          "text": "Brief owns objective, bounded scope, non-goals, and observable acceptance",
+          "passed": true,
+          "evidence": "Checked brief section labels"
+        },
+        {
+          "text": "Plan contains ordered targets, changes, verification evidence, and requirement traceability",
+          "passed": true,
+          "evidence": "Plan has numbered ordered targets, explicit evidence per step, acceptance criteria mapping, and make test."
+        },
+        {
+          "text": "Kanban card stays thin and records dir:/work/invoice-app plus artifact links",
+          "passed": true,
+          "evidence": "Checked card workspace and links"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "medium-feature-artifacts",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.4,
+        "passed": 2,
+        "failed": 3,
+        "total": 5,
+        "time_seconds": 67.73,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Uses docs/briefs/INV-21.md and docs/plans/INV-21.md paths",
+          "passed": false,
+          "evidence": "Checked artifact paths in answer.md"
+        },
+        {
+          "text": "Does not create a spec or ADR without decision value",
+          "passed": false,
+          "evidence": "Checked proposed artifact paths for unnecessary spec/ADR"
+        },
+        {
+          "text": "Brief owns objective, bounded scope, non-goals, and observable acceptance",
+          "passed": true,
+          "evidence": "Checked brief section labels"
+        },
+        {
+          "text": "Plan contains ordered targets, changes, verification evidence, and requirement traceability",
+          "passed": true,
+          "evidence": "Checked plan verification evidence and ordering content"
+        },
+        {
+          "text": "Kanban card stays thin and records dir:/work/invoice-app plus artifact links",
+          "passed": false,
+          "evidence": "Checked card workspace and links"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "risky-contract-artifacts",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 137.93,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Places brief, spec, plan, and ADR under docs/ and links them from card",
+          "passed": true,
+          "evidence": "Checked docs artifact paths"
+        },
+        {
+          "text": "Spec covers compatibility, security, failures, migration, rollback, observability, and behavioral acceptance",
+          "passed": true,
+          "evidence": "Checked required spec concerns"
+        },
+        {
+          "text": "Plan orders discovery or decision before implementation and includes make verify evidence",
+          "passed": true,
+          "evidence": "Checked plan decision ordering and verification command"
+        },
+        {
+          "text": "ADR status remains proposed and compares viable storage alternatives",
+          "passed": true,
+          "evidence": "Checked ADR status and alternatives"
+        },
+        {
+          "text": "Does not claim architecture approval or silently choose an accepted storage strategy",
+          "passed": true,
+          "evidence": "Checked approval not invented"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "risky-contract-artifacts",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 98.91,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Places brief, spec, plan, and ADR under docs/ and links them from card",
+          "passed": false,
+          "evidence": "Checked docs artifact paths"
+        },
+        {
+          "text": "Spec covers compatibility, security, failures, migration, rollback, observability, and behavioral acceptance",
+          "passed": true,
+          "evidence": "Checked required spec concerns"
+        },
+        {
+          "text": "Plan orders discovery or decision before implementation and includes make verify evidence",
+          "passed": true,
+          "evidence": "Checked plan decision ordering and verification command"
+        },
+        {
+          "text": "ADR status remains proposed and compares viable storage alternatives",
+          "passed": false,
+          "evidence": "Checked ADR status and alternatives"
+        },
+        {
+          "text": "Does not claim architecture approval or silently choose an accepted storage strategy",
+          "passed": true,
+          "evidence": "Checked approval not invented"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "unknown-facts-investigation",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 68.75,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Rejects direct build and routes investigation first",
+          "passed": true,
+          "evidence": "Checked readiness decision"
+        },
+        {
+          "text": "Uses docs/briefs/PAY-42.md and docs/plans/PAY-42.md paths",
+          "passed": true,
+          "evidence": "Checked docs artifact paths"
+        },
+        {
+          "text": "Marks unknown material facts as TBD with owner or blocking decision",
+          "passed": true,
+          "evidence": "Checked owned TBD markers"
+        },
+        {
+          "text": "Does not invent repository paths, verification commands, provider behavior, or implementation technology",
+          "passed": true,
+          "evidence": "Checked common invented repo/provider/technology/command values"
+        },
+        {
+          "text": "Defines observable investigation outcomes and exact next action",
+          "passed": true,
+          "evidence": "Checked investigation outcome and next action"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "unknown-facts-investigation",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 69.01,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Rejects direct build and routes investigation first",
+          "passed": true,
+          "evidence": "Checked readiness decision"
+        },
+        {
+          "text": "Uses docs/briefs/PAY-42.md and docs/plans/PAY-42.md paths",
+          "passed": false,
+          "evidence": "Checked docs artifact paths"
+        },
+        {
+          "text": "Marks unknown material facts as TBD with owner or blocking decision",
+          "passed": false,
+          "evidence": "Checked owned TBD markers"
+        },
+        {
+          "text": "Does not invent repository paths, verification commands, provider behavior, or implementation technology",
+          "passed": true,
+          "evidence": "Checked common invented repo/provider/technology/command values"
+        },
+        {
+          "text": "Defines observable investigation outcomes and exact next action",
+          "passed": true,
+          "evidence": "Checked investigation outcome and next action"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 90.22666666666667,
+        "stddev": 33.78704518335722,
+        "min": 64.0,
+        "max": 137.93
+      },
+      "tokens": {
+        "mean": 0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "old_skill": {
+      "pass_rate": {
+        "mean": 0.5333333333333333,
+        "stddev": 0.09428090415820632,
+        "min": 0.4,
+        "max": 0.6
+      },
+      "time_seconds": {
+        "mean": 78.55,
+        "stddev": 14.406174602116502,
+        "min": 67.73,
+        "max": 98.91
+      },
+      "tokens": {
+        "mean": 0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.47",
+      "time_seconds": "+11.7",
+      "tokens": "unavailable"
+    }
+  },
+  "notes": [
+    "Token counts unavailable from delegation completion notifications.",
+    "Single run per configuration; timing variance is descriptive, not robust."
+  ]
+}

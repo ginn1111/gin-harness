@@ -1,0 +1,9 @@
+{
+  "total_tokens": null,
+  "duration_ms": 37290,
+  "total_duration_seconds": 93.66,
+  "api_calls": 6,
+  "executor_duration_seconds": 37.29,
+  "grader_duration_seconds": 56.37,
+  "grader_api_calls": 9
+}

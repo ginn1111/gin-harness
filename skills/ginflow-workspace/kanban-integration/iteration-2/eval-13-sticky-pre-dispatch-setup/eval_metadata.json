@@ -1,0 +1,11 @@
+{
+  "eval_id": 13,
+  "eval_name": "sticky-pre-dispatch-setup",
+  "prompt": "You are gintary preparing a live Hermes Kanban card for ginb. The body already has Objective, Scope, Acceptance, and a future docs/briefs/DM-42.md link, but that brief is not written yet. The gateway continuously recomputes blocked tasks. Give the exact safe CLI/order from card creation through parking, writing artifacts, assigning ginb, harness validation, and unblocking. Explain why each transition is safe.",
+  "assertions": [
+    "Creates the card without assigning ginb before setup is parked",
+    "Uses hermes kanban block --kind needs_input with options before the task ID",
+    "Explains that initial blocked status alone lacks the sticky blocked event and may auto-promote",
+    "Assigns ginb only after artifacts are written and unblocks only after harness validation"
+  ]
+}

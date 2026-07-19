@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Blocks dispatch because Acceptance is a required live-card field",
+      "passed": true,
+      "evidence": "answer.md states, \"Ginflow must not dispatch the task yet\" and explains that \"`acceptance` is a required field\" whose absence keeps the dispatch gate unsatisfied."
+    },
+    {
+      "text": "Does not invent acceptance criteria",
+      "passed": true,
+      "evidence": "answer.md says dispatching without acceptance criteria would risk \"inventing requirements\" and explicitly instructs, \"Do not derive that check from Objective, Scope, or Links.\" The placeholder requires a check supplied or confirmed by the task owner/stakeholder rather than proposing one."
+    },
+    {
+      "text": "Requests an observable Acceptance section from the human",
+      "passed": true,
+      "evidence": "answer.md provides the required `Acceptance:` section with \"<observable completion check supplied or confirmed by the task owner/stakeholder>\" and says to return the card to its owner for clarification if no authoritative criterion is available."
+    },
+    {
+      "text": "Reruns the live-card harness after repair before dispatch",
+      "passed": true,
+      "evidence": "answer.md explicitly states, \"Once the owner supplies the criterion, rerun the live-card validation/harness and dispatch only if the card is complete.\""
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "eval_id": 10,
+  "eval_name": "live-kanban-startup-adapter",
+  "prompt": "I have a live Hermes Kanban task t_ab12 on board product. Its body uses Objective, Scope, Acceptance, and Links sections; workspace/status/assignee are normal task fields. I need to run the external Ginflow harness before resuming work. Should I create a separate normalized card JSON? Give the exact integration path and explain where Ginflow reads each required field.",
+  "assertions": [
+    "Rejects creating a separate shadow or normalized card JSON",
+    "Provides an external harness command with --kanban-task-id t_ab12 and --board product",
+    "Reads objective, scope, acceptance, and links from the live task body",
+    "Reads ID, workspace, status, and assignee from the Kanban task row",
+    "Reads artifact_baseline from latest completion-run metadata when present"
+  ]
+}

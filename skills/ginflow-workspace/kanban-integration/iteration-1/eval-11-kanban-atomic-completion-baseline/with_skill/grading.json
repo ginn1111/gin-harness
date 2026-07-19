@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Prevalidates the candidate with --kanban-task-id, --baseline-commit, and one or more --baseline-path arguments",
+      "passed": true,
+      "evidence": "answer.md lines 5-17 provides a pre-completion validate-harness.py command containing --kanban-task-id t_cd34, --baseline-commit COMMIT, and three repeated --baseline-path arguments. Lines 19-20 explicitly say to use the card's exact linked paths and leave the card open if validation blocks."
+    },
+    {
+      "text": "Passes the identical commit and path list as artifact_baseline in kanban_complete metadata",
+      "passed": true,
+      "evidence": "answer.md lines 21-40 says to persist the identical commit and path list atomically with completion, defines artifact_baseline with commit COMMIT and the same three ordered paths, and passes it as metadata={\"artifact_baseline\": artifact_baseline} to kanban_complete. Line 40 explicitly requires an exact match to the preceding candidate arguments."
+    },
+    {
+      "text": "Reruns the live-card harness after completion without candidate baseline overrides",
+      "passed": true,
+      "evidence": "answer.md lines 42-50 gives a post-completion validate-harness.py invocation with --kanban-task-id and --json but no --baseline-commit or --baseline-path candidate overrides."
+    },
+    {
+      "text": "Uses the persisted completion-run metadata as the post-completion authority",
+      "passed": true,
+      "evidence": "answer.md lines 42 and 52 state that the final override-free run verifies what Hermes actually persisted and must read the latest completion-run metadata from Hermes, then validate artifact_baseline.commit and artifact_baseline.paths."
+    },
+    {
+      "text": "Does not substitute per-file hashes",
+      "passed": true,
+      "evidence": "answer.md line 21 explicitly says not to substitute per-file hashes; the supplied artifact_baseline contains only commit and paths, matching the candidate validation arguments."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

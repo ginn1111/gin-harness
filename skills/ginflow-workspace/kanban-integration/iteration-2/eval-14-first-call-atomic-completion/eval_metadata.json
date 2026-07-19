@@ -1,0 +1,11 @@
+{
+  "eval_id": 14,
+  "eval_name": "first-call-atomic-completion",
+  "prompt": "You are ginb on live task t_example. Canonical verification and candidate-baseline validation have passed. HEAD is abc123 and the only linked target artifact is docs/briefs/DM-42.md. Show the exact completion sequence and metadata. The card becomes terminal on completion, so the answer must prevent an incomplete first call.",
+  "assertions": [
+    "Constructs artifact_baseline with commit abc123 and exactly docs/briefs/DM-42.md",
+    "States that the first and only completion call includes metadata",
+    "Does not propose completing first and editing or retrying metadata afterward",
+    "Reruns the harness against the completed live card without candidate overrides"
+  ]
+}

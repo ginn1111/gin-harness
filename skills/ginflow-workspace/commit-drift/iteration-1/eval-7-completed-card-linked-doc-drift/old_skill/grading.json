@@ -1,0 +1,95 @@
+{
+  "expectations": [
+    {
+      "text": "Blocks resume or authority use for APP-9 because a linked artifact differs from the completion commit",
+      "passed": true,
+      "evidence": "The answer says the later material change to `docs/specs/APP-9.md` \"would produce a hash mismatch against any valid completion-time baseline\" and directs, \"Do not resume from APP-9.\" Although its baseline model conflicts with the supplied completion-commit framing, it substantively blocks APP-9 because the linked artifact changed after completion."
+    },
+    {
+      "text": "Proposes new versioned docs and a follow-up card linked back to APP-9",
+      "passed": true,
+      "evidence": "Resolution 1 says to \"create new versioned documentation and a follow-up card for the changed intent, and link both back to APP-9.\""
+    },
+    {
+      "text": "Proposes reopening APP-9 and rerunning verification for changed completed scope",
+      "passed": true,
+      "evidence": "Resolution 2 says to \"Reopen APP-9\" and \"rerun the Ginflow harness\" before completing APP-9 again, which provides a rerun-verification path for changed completed scope."
+    },
+    {
+      "text": "Allows baseline advancement only after explicit human classification as editorial",
+      "passed": false,
+      "evidence": "The answer provides only new-intent and changed-scope options. It never presents an editorial-only classification path or conditions baseline advancement on explicit human classification as editorial."
+    },
+    {
+      "text": "Does not silently replace the completion commit",
+      "passed": true,
+      "evidence": "The answer explicitly says, \"do not silently re-baseline it,\" and requires a human to choose and complete a resolution."
+    },
+    {
+      "text": "Uses the supplied path-scoped completion commit rather than replacing it with a mandatory per-file SHA baseline",
+      "passed": false,
+      "evidence": "The answer rejects `abc123` as the required baseline and replaces the supplied commit/path model with mandatory per-file SHA-256 values."
+    },
+    {
+      "text": "Blocks only use of APP-9 as authority while leaving unrelated cards and unlinked work available",
+      "passed": false,
+      "evidence": "The answer opens by blocking all target-project execution, which is broader than card-scoped authority use and does not preserve unrelated work."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 3,
+    "total": 7,
+    "pass_rate": 0.5714
+  },
+  "execution_metrics": {
+    "tool_calls": {},
+    "total_tool_calls": 0,
+    "total_steps": 0,
+    "errors_encountered": 0,
+    "output_chars": 1426,
+    "transcript_chars": 0
+  },
+  "claims": [
+    {
+      "claim": "Ginflow requires a path and SHA-256 for every target-local linked artifact, and completion commit abc123 is not the required artifact baseline.",
+      "type": "factual",
+      "verified": false,
+      "evidence": "This conflicts with the supplied scenario, which explicitly says APP-9's artifact baseline records completion commit `abc123` and links the two documents. No transcript or other evidence was provided to support replacing that model with mandatory SHA-256 baselines."
+    },
+    {
+      "claim": "All target-project execution must be blocked until APP-9 drift is resolved.",
+      "type": "quality",
+      "verified": false,
+      "evidence": "The requested scope is work that resumes from or uses APP-9 as authority. The output's repository-wide block is broader than the prompt and assertions establish."
+    },
+    {
+      "claim": "The material spec change is suspected post-completion drift and work may not resume from APP-9 until resolution.",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The prompt states that a later commit materially changed the linked spec, and the required gate is to block resume or authority use for APP-9."
+    },
+    {
+      "claim": "The two listed options exhaust the valid resolutions.",
+      "type": "quality",
+      "verified": false,
+      "evidence": "The assertions require a third path: baseline advancement after explicit human classification of the change as editorial. That option is absent."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "reason": "Add an assertion that the response uses the supplied completion-commit/path baseline rather than inventing a mandatory SHA-256-only baseline. The old output passes most current assertions despite explicitly rejecting the scenario's baseline framing."
+      },
+      {
+        "reason": "Add a scope assertion that blocks only resume or authority use from the drifted completed card, not all target-project execution. This would catch the old output's unsupported repository-wide freeze."
+      }
+    ],
+    "overall": "The eval catches the missing editorial resolution but does not catch two material policy errors: replacing the supplied completion-commit baseline with a SHA-256-only model and expanding the gate to all target-project execution."
+  }
+}

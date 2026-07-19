@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Rejects direct build and routes investigation first",
+      "passed": true,
+      "evidence": "Checked readiness decision"
+    },
+    {
+      "text": "Uses docs/briefs/PAY-42.md and docs/plans/PAY-42.md paths",
+      "passed": false,
+      "evidence": "Checked docs artifact paths"
+    },
+    {
+      "text": "Marks unknown material facts as TBD with owner or blocking decision",
+      "passed": false,
+      "evidence": "Checked owned TBD markers"
+    },
+    {
+      "text": "Does not invent repository paths, verification commands, provider behavior, or implementation technology",
+      "passed": true,
+      "evidence": "Checked common invented repo/provider/technology/command values"
+    },
+    {
+      "text": "Defines observable investigation outcomes and exact next action",
+      "passed": true,
+      "evidence": "Checked investigation outcome and next action"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 2,
+    "total": 5,
+    "pass_rate": 0.6
+  }
+}

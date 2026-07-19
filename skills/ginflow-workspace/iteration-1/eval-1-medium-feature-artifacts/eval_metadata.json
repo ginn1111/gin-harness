@@ -1,0 +1,12 @@
+{
+  "eval_id": 1,
+  "eval_name": "medium-feature-artifacts",
+  "prompt": "In a target repo, shape card INV-21 for adding CSV export to an existing invoice list. Requirement is clear, size M, canonical verification is `make test`, workspace is `dir:/work/invoice-app`, and unrelated invoice creation must not change. Return proposed artifact paths and concise contents for every artifact needed for a build-ready handoff to ginb. Do not write code.",
+  "assertions": [
+    "Uses docs/briefs/INV-21.md and docs/plans/INV-21.md paths",
+    "Does not create a spec or ADR without decision value",
+    "Brief owns objective, bounded scope, non-goals, and observable acceptance",
+    "Plan contains ordered targets, changes, verification evidence, and requirement traceability",
+    "Kanban card stays thin and records dir:/work/invoice-app plus artifact links"
+  ]
+}

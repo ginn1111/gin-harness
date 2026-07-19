@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Rejects creating a separate shadow or normalized card JSON",
+      "passed": true,
+      "evidence": "answer.md explicitly states, 'Do not create a separate normalized card JSON' (line 3), says not to copy 'a shadow card file into the target repository' (line 14), and identifies --card as fixture-only rather than the live integration path (line 28)."
+    },
+    {
+      "text": "Provides an external harness command with --kanban-task-id t_ab12 and --board product",
+      "passed": true,
+      "evidence": "answer.md provides the external validate-harness.py command with both '--kanban-task-id t_ab12' and '--board product' (lines 5-12), matching the advisory prompt's requested integration path."
+    },
+    {
+      "text": "Reads objective, scope, acceptance, and links from the live task body",
+      "passed": true,
+      "evidence": "answer.md says the harness parses the live JSON in memory (lines 21-26) and explicitly maps Objective, Scope, Acceptance, and Links to their corresponding sections in task.body (lines 40-47)."
+    },
+    {
+      "text": "Reads ID, workspace, status, and assignee from the Kanban task row",
+      "passed": true,
+      "evidence": "answer.md explicitly maps ID to task.id, Status to task.status, Assignee to task.assignee, and Workspace to task.workspace_kind plus task.workspace_path in the top-level task object returned by the live Kanban command (lines 30-38)."
+    },
+    {
+      "text": "Reads artifact_baseline from latest completion-run metadata when present",
+      "passed": true,
+      "evidence": "answer.md states that runs are scanned newest to oldest and that artifact_baseline is read from the latest run's metadata.artifact_baseline (lines 49-52), including its expected commit-and-paths role for completed cards."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

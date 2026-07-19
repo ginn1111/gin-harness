@@ -1,0 +1,356 @@
+{
+  "metadata": {
+    "skill_name": "ginflow",
+    "skill_path": "/home/aioz/personal/agents-hype/skills/ginflow",
+    "executor_model": "gpt-5.6-sol",
+    "timestamp": "2026-07-18T18:23:20.462433+00:00",
+    "evals_run": [
+      7,
+      8,
+      9
+    ],
+    "runs_per_configuration": 1,
+    "paired_eval_duration_seconds": {
+      "7": 43.53,
+      "8": 56.55,
+      "9": 59.95
+    },
+    "parallel_batch_wall_clock_seconds": 60.02,
+    "grading_duration_seconds": {
+      "7": 120.03,
+      "8": 132.81,
+      "9": 115.77
+    },
+    "grading_batch_wall_clock_seconds": 132.87
+  },
+  "runs": [
+    {
+      "eval_id": 7,
+      "eval_name": "completed-card-linked-doc-drift",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 0.0,
+        "tokens": 1687,
+        "tool_calls": 0,
+        "errors": 0,
+        "expectations": [
+          {
+            "text": "Blocks resume or authority use for APP-9 because a linked artifact differs from the completion commit",
+            "passed": true,
+            "evidence": "The answer explicitly says, \"Block any resume, handoff, or derived work that uses APP-9 as authority\" and explains that the gate compares the linked paths against completion commit `abc123`; the later material change to `docs/specs/APP-9.md` therefore means the baseline has drifted."
+          },
+          {
+            "text": "Proposes new versioned docs and a follow-up card linked back to APP-9",
+            "passed": true,
+            "evidence": "Resolution 1 says to \"create new versioned documentation for the changed intent, create a follow-up card, and link both the new docs and follow-up card back to APP-9.\""
+          },
+          {
+            "text": "Proposes reopening APP-9 and rerunning verification for changed completed scope",
+            "passed": true,
+            "evidence": "Resolution 2 says to \"Reopen APP-9\" and then \"rerun canonical project verification and the external Ginflow harness\" before completing the card again."
+          },
+          {
+            "text": "Allows baseline advancement only after explicit human classification as editorial",
+            "passed": true,
+            "evidence": "Resolution 3 makes the editorial path available \"only after explicit human classification that the change is non-material/editorial\" and only then permits advancing the baseline commit; it also notes that the stated material change is ineligible unless a human explicitly overturns that classification."
+          },
+          {
+            "text": "Does not silently replace the completion commit",
+            "passed": true,
+            "evidence": "The gate decision explicitly says, \"Do not resume work from APP-9 or silently advance its completion commit,\" and each permitted baseline change requires a recorded human resolution."
+          },
+          {
+            "text": "Uses the supplied path-scoped completion commit rather than replacing it with a mandatory per-file SHA baseline",
+            "passed": true,
+            "evidence": "The answer calls APP-9's baseline path-scoped, identifies completion commit `abc123`, and says the gate compares only the two linked paths against that commit."
+          },
+          {
+            "text": "Blocks only use of APP-9 as authority while leaving unrelated cards and unlinked work available",
+            "passed": true,
+            "evidence": "The answer says to block resume, handoff, or derived work using APP-9 as authority and explicitly states that unrelated cards and work outside the linked paths remain unblocked."
+          }
+        ],
+        "notes": []
+      }
+    },
+    {
+      "eval_id": 7,
+      "eval_name": "completed-card-linked-doc-drift",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5714,
+        "passed": 4,
+        "failed": 3,
+        "total": 7,
+        "time_seconds": 0.0,
+        "tokens": 1426,
+        "tool_calls": 0,
+        "errors": 0,
+        "expectations": [
+          {
+            "text": "Blocks resume or authority use for APP-9 because a linked artifact differs from the completion commit",
+            "passed": true,
+            "evidence": "The answer says the later material change to `docs/specs/APP-9.md` \"would produce a hash mismatch against any valid completion-time baseline\" and directs, \"Do not resume from APP-9.\" Although its baseline model conflicts with the supplied completion-commit framing, it substantively blocks APP-9 because the linked artifact changed after completion."
+          },
+          {
+            "text": "Proposes new versioned docs and a follow-up card linked back to APP-9",
+            "passed": true,
+            "evidence": "Resolution 1 says to \"create new versioned documentation and a follow-up card for the changed intent, and link both back to APP-9.\""
+          },
+          {
+            "text": "Proposes reopening APP-9 and rerunning verification for changed completed scope",
+            "passed": true,
+            "evidence": "Resolution 2 says to \"Reopen APP-9\" and \"rerun the Ginflow harness\" before completing APP-9 again, which provides a rerun-verification path for changed completed scope."
+          },
+          {
+            "text": "Allows baseline advancement only after explicit human classification as editorial",
+            "passed": false,
+            "evidence": "The answer provides only new-intent and changed-scope options. It never presents an editorial-only classification path or conditions baseline advancement on explicit human classification as editorial."
+          },
+          {
+            "text": "Does not silently replace the completion commit",
+            "passed": true,
+            "evidence": "The answer explicitly says, \"do not silently re-baseline it,\" and requires a human to choose and complete a resolution."
+          },
+          {
+            "text": "Uses the supplied path-scoped completion commit rather than replacing it with a mandatory per-file SHA baseline",
+            "passed": false,
+            "evidence": "The answer rejects `abc123` as the required baseline and replaces the supplied commit/path model with mandatory per-file SHA-256 values."
+          },
+          {
+            "text": "Blocks only use of APP-9 as authority while leaving unrelated cards and unlinked work available",
+            "passed": false,
+            "evidence": "The answer opens by blocking all target-project execution, which is broader than card-scoped authority use and does not preserve unrelated work."
+          }
+        ],
+        "notes": []
+      }
+    },
+    {
+      "eval_id": 8,
+      "eval_name": "unrelated-change-does-not-drift",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 907,
+        "tool_calls": 0,
+        "errors": 0,
+        "expectations": [
+          {
+            "text": "Does not report artifact drift for unrelated src/cache.py changes",
+            "passed": true,
+            "evidence": "The answer explicitly says: \"A later change to `src/cache.py` is outside `APP-10`\u2019s linked-artifact baseline, so it is not completed-card artifact drift.\""
+          },
+          {
+            "text": "Scopes comparison to target-local paths linked from APP-10",
+            "passed": true,
+            "evidence": "The answer states that the comparison is path-scoped to artifact paths recorded for APP-10 and identifies the exact scope as `docs/briefs/APP-10.md`, adding: \"Do not compare the whole repository.\""
+          },
+          {
+            "text": "Does not block unrelated project work merely because repository HEAD advanced",
+            "passed": true,
+            "evidence": "The answer concludes that because the linked brief has not changed, \"the unrelated work may continue,\" while normal verification and scope checks apply separately."
+          },
+          {
+            "text": "Uses def456 as the path-scoped completion baseline without requiring a per-file SHA fallback",
+            "passed": true,
+            "evidence": "The answer says to compare only APP-10's recorded artifact paths against completion commit `def456` and never introduces a per-file SHA fallback."
+          }
+        ],
+        "notes": []
+      }
+    },
+    {
+      "eval_id": 8,
+      "eval_name": "unrelated-change-does-not-drift",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 906,
+        "tool_calls": 0,
+        "errors": 0,
+        "expectations": [
+          {
+            "text": "Does not report artifact drift for unrelated src/cache.py changes",
+            "passed": true,
+            "evidence": "The answer explicitly says: \"the change to `src/cache.py` is outside the completed-card artifact comparison and does not itself create drift.\""
+          },
+          {
+            "text": "Scopes comparison to target-local paths linked from APP-10",
+            "passed": true,
+            "evidence": "The answer states: \"Because the card links only `docs/briefs/APP-10.md`, the comparison scope is that brief, not the whole repository.\""
+          },
+          {
+            "text": "Does not block unrelated project work merely because repository HEAD advanced",
+            "passed": true,
+            "evidence": "The answer says the gate passes when the linked brief's SHA-256 matches its baseline \"even though other repository files changed after completion,\" and concludes that unrelated work may proceed."
+          },
+          {
+            "text": "Uses def456 as the path-scoped completion baseline without requiring a per-file SHA fallback",
+            "passed": false,
+            "evidence": "The answer rejects `def456` as sufficient baseline metadata and requires a per-file SHA-256 value instead."
+          }
+        ],
+        "notes": []
+      }
+    },
+    {
+      "eval_id": 9,
+      "eval_name": "uncommitted-artifact-completion-block",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 524,
+        "tool_calls": 0,
+        "errors": 0,
+        "expectations": [
+          {
+            "text": "Blocks completion because the recorded commit does not contain the current linked artifact content",
+            "passed": true,
+            "evidence": "The output says, \"No. The card is not ready to mark done because every target-local linked artifact must be committed, and `artifact_baseline.commit` must identify the completion commit containing those exact linked paths.\" It also directs recording a new commit rather than the current HEAD, directly recognizing that the recorded HEAD does not contain the edited brief."
+          },
+          {
+            "text": "Requires committing linked artifact edits before completion",
+            "passed": true,
+            "evidence": "The smallest safe action explicitly says, \"keep APP-11 incomplete and commit the linked brief.\""
+          },
+          {
+            "text": "Records the resulting completion commit and linked paths on the card",
+            "passed": true,
+            "evidence": "The output says, \"Then record that new commit (not the current HEAD) plus the exact linked-artifact paths in `artifact_baseline`.\""
+          },
+          {
+            "text": "Reruns project verification and the external harness",
+            "passed": true,
+            "evidence": "The output requires the developer to \"rerun the required verification and external Ginflow harness before completing the card.\""
+          },
+          {
+            "text": "Does not propose a per-file SHA fallback",
+            "passed": true,
+            "evidence": "The output explicitly says, \"Do not use per-file SHA fallback.\""
+          }
+        ],
+        "notes": []
+      }
+    },
+    {
+      "eval_id": 9,
+      "eval_name": "uncommitted-artifact-completion-block",
+      "configuration": "old_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 486,
+        "tool_calls": 0,
+        "errors": 0,
+        "expectations": [
+          {
+            "text": "Blocks completion because the recorded commit does not contain the current linked artifact content",
+            "passed": true,
+            "evidence": "The output says, \"APP-11 cannot be marked done yet: the linked brief has changed, and the recorded `artifact_baseline` does not satisfy the required linked-artifact baseline contract.\" This correctly ties the completion block to drift between the changed brief and recorded baseline."
+          },
+          {
+            "text": "Requires committing linked artifact edits before completion",
+            "passed": false,
+            "evidence": "The output never instructs the developer to commit the linked brief. Instead, its smallest action is to \"clarify or repair the approved baseline method,\" which does not ensure the uncommitted artifact edits enter a completion commit."
+          },
+          {
+            "text": "Records the resulting completion commit and linked paths on the card",
+            "passed": false,
+            "evidence": "The output does not say to record a resulting completion commit or the exact linked paths on APP-11; it only refers generically to repairing an approved baseline method."
+          },
+          {
+            "text": "Reruns project verification and the external harness",
+            "passed": true,
+            "evidence": "The output says to \"run the required verification and Ginflow harness against that valid baseline.\""
+          },
+          {
+            "text": "Does not propose a per-file SHA fallback",
+            "passed": true,
+            "evidence": "The output explicitly acknowledges that \"per-file SHA-256 fallback is explicitly disallowed\" and does not propose using it."
+          }
+        ],
+        "notes": []
+      }
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 1039.3333,
+        "stddev": 592.6857,
+        "min": 524,
+        "max": 1687
+      }
+    },
+    "old_skill": {
+      "pass_rate": {
+        "mean": 0.6405,
+        "stddev": 0.0959,
+        "min": 0.5714,
+        "max": 0.75
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 939.3333,
+        "stddev": 470.8857,
+        "min": 486,
+        "max": 1426
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.3595",
+      "time_seconds": "+0.0",
+      "tokens": "+100.0"
+    }
+  },
+  "notes": [
+    "Each delegated evaluator produced both paired outputs, so per-configuration timing is unavailable. Combined paired durations were 43.53s, 56.55s, and 59.95s; parallel batch wall clock was 60.02s.",
+    "Grading durations were 120.03s, 132.81s, and 115.77s; grading batch wall clock was 132.87s.",
+    "Output characters are reported as a size proxy, not token counts.",
+    "Eval 8 preserves the unrelated-change regression while also checking the commit-baseline mechanism; evals 7 and 9 cover drift resolution and completion blocking.",
+    "One run per configuration measures correctness but not variance; stddev is therefore zero and should not be interpreted as stability evidence."
+  ]
+}

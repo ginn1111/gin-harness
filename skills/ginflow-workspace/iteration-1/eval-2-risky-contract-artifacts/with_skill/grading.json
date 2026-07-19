@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Places brief, spec, plan, and ADR under docs/ and links them from card",
+      "passed": true,
+      "evidence": "Checked docs artifact paths"
+    },
+    {
+      "text": "Spec covers compatibility, security, failures, migration, rollback, observability, and behavioral acceptance",
+      "passed": true,
+      "evidence": "Checked required spec concerns"
+    },
+    {
+      "text": "Plan orders discovery or decision before implementation and includes make verify evidence",
+      "passed": true,
+      "evidence": "Checked plan decision ordering and verification command"
+    },
+    {
+      "text": "ADR status remains proposed and compares viable storage alternatives",
+      "passed": true,
+      "evidence": "Checked ADR status and alternatives"
+    },
+    {
+      "text": "Does not claim architecture approval or silently choose an accepted storage strategy",
+      "passed": true,
+      "evidence": "Checked approval not invented"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "eval_id": 2,
+  "eval_name": "risky-contract-artifacts",
+  "prompt": "Shape SEC-9 for replacing session cookies with rotating refresh tokens across web and mobile clients. This is L/risky work. Requirements include backward-compatible migration, token theft detection, rollback, audit logging, and no forced logout during rollout. Workspace is `worktree`; canonical checks are `make verify`. No architecture owner has approved a storage strategy. Return artifact paths and concise content needed before build dispatch. Do not implement.",
+  "assertions": [
+    "Places brief, spec, plan, and ADR under docs/ and links them from card",
+    "Spec covers compatibility, security, failures, migration, rollback, observability, and behavioral acceptance",
+    "Plan orders discovery or decision before implementation and includes make verify evidence",
+    "ADR status remains proposed and compares viable storage alternatives",
+    "Does not claim architecture approval or silently choose an accepted storage strategy"
+  ]
+}

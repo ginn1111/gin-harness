@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Blocks dispatch because Acceptance is a required live-card field",
+      "passed": true,
+      "evidence": "answer.md explicitly states: \"Ginflow must not dispatch the task because `acceptance` is a required field on the selected Kanban card\" and that \"dispatch and all target-project execution remain blocked.\""
+    },
+    {
+      "text": "Does not invent acceptance criteria",
+      "passed": true,
+      "evidence": "answer.md instructs: \"do not infer criteria from the objective, scope, links, chat, or repository state.\" It only permits copying or faithfully summarizing already-approved criteria without changing their meaning."
+    },
+    {
+      "text": "Requests an observable Acceptance section from the human",
+      "passed": true,
+      "evidence": "answer.md requires an Acceptance section with \"approved, observable, testable criteria\" and says that if no approved criteria exist, Ginflow must \"ask the requirement owner to supply them.\""
+    },
+    {
+      "text": "Reruns the live-card harness after repair before dispatch",
+      "passed": false,
+      "evidence": "No evidence says to rerun the live-card harness after the Acceptance section is repaired and before dispatch. The answer only says the card \"can pass this dispatch gate\" once explicit criteria exist, which omits the required harness rerun."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "evaluation": "single-review-block-live-lifecycle",
+  "task_id": "t_76cd1faf",
+  "target": "/tmp/ginflow-ginb-e2e10.lqcelwki",
+  "expected_baseline": {
+    "commit": "39236e0363a5030bf8a1d48d3f4dea3d12ef089f",
+    "paths": [
+      "docs/briefs/GINFLOW-E2E10.md"
+    ]
+  },
+  "assertions": {
+    "created_initially_blocked_without_setup_block_event": true,
+    "assigned_to_ginb_after_artifact_commit": true,
+    "candidate_baseline_passed_before_dispatch": true,
+    "ginb_created_expected_artifact": true,
+    "ginb_project_verification_passed": true,
+    "ginb_commented_exact_baseline": true,
+    "ginb_did_not_complete": true,
+    "first_explicit_block_was_review_handoff": true,
+    "card_remained_blocked_without_triage_or_decomposition": true,
+    "gintary_revalidated_candidate": true,
+    "gintary_completed_once_with_exact_metadata": true,
+    "completed_card_harness_passed_without_overrides": true
+  },
+  "result": "pass"
+}

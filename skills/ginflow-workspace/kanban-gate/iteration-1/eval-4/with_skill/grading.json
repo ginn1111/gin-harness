@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Blocks implementation because no Kanban card is selected",
+      "passed": true,
+      "evidence": "Checked answer.md for required decision and terms."
+    },
+    {
+      "text": "Allows pre-card brainstorming, routing, sizing, read-only shaping, artifact choice, and proposed card drafting",
+      "passed": true,
+      "evidence": "Permitted list includes routing, sizing, brainstorming, read-only inspection, artifact choice, and card drafting."
+    },
+    {
+      "text": "Requires creating or selecting a card before target artifacts, code, investigation execution, or dispatch",
+      "passed": true,
+      "evidence": "Answer explicitly prohibits target artifacts, investigation, code, dispatch, progress, verification, completion, and handoff until complete card exists."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  }
+}

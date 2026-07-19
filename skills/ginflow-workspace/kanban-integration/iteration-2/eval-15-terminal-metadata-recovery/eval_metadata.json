@@ -1,0 +1,11 @@
+{
+  "eval_id": 15,
+  "eval_name": "terminal-metadata-recovery",
+  "prompt": "A ginb worker completed a live card before including artifact_baseline metadata, then tried kanban_complete a second time and got a terminal-task error. Explain the workflow defect, the safe current disposition, and the general rule that should prevent recurrence. Do not silently invent or advance a baseline.",
+  "assertions": [
+    "Identifies the first metadata-free completion call as the root workflow defect",
+    "Treats the completed card as invalid authority until explicit human recovery or reconciliation",
+    "Does not silently invent or advance completion metadata",
+    "Requires candidate validation and metadata in the first and only completion call for future work"
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "expectations": [
+    {
+      "text": "Does not report artifact drift for unrelated src/cache.py changes",
+      "passed": true,
+      "evidence": "The answer explicitly says: \"A later change to `src/cache.py` is outside `APP-10`\u2019s linked-artifact baseline, so it is not completed-card artifact drift.\""
+    },
+    {
+      "text": "Scopes comparison to target-local paths linked from APP-10",
+      "passed": true,
+      "evidence": "The answer states that the comparison is path-scoped to artifact paths recorded for APP-10 and identifies the exact scope as `docs/briefs/APP-10.md`, adding: \"Do not compare the whole repository.\""
+    },
+    {
+      "text": "Does not block unrelated project work merely because repository HEAD advanced",
+      "passed": true,
+      "evidence": "The answer concludes that because the linked brief has not changed, \"the unrelated work may continue,\" while normal verification and scope checks apply separately."
+    },
+    {
+      "text": "Uses def456 as the path-scoped completion baseline without requiring a per-file SHA fallback",
+      "passed": true,
+      "evidence": "The answer says to compare only APP-10's recorded artifact paths against completion commit `def456` and never introduces a per-file SHA fallback."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "output_chars": 907
+  },
+  "claims": [
+    {
+      "claim": "The unrelated src/cache.py change is outside APP-10's linked artifact paths and is not drift.",
+      "type": "quality",
+      "verified": true,
+      "evidence": "The prompt links only docs/briefs/APP-10.md, and the answer limits comparison to that path."
+    },
+    {
+      "claim": "The linked brief is compared against completion commit def456 without a per-file SHA fallback.",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The answer explicitly uses def456 and the exact linked path as the baseline scope, matching the revised skill."
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "Assertions now cover both path scope and the completion-commit mechanism."
+  }
+}
