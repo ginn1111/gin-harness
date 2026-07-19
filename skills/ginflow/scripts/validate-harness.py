@@ -233,8 +233,6 @@ def main():
 
     root = (args.setup_repo or Path(__file__).resolve().parents[3]).resolve()
     ginflow = (root / "skills/ginflow/SKILL.md").read_text()
-    gintary = (root / "profiles/gintary.SOUL.md").read_text()
-    ginb = (root / "profiles/ginb.SOUL.md").read_text()
     target = args.target.resolve() if args.target else None
     local = ""
     local_path = None
@@ -268,7 +266,7 @@ def main():
 
     subsystems = {
         "instructions": check("instructions", [
-            (has(gintary, "load and follow `ginflow`") and has(ginb, "load and follow `ginflow`"), "Profiles route target-project work through ginflow", "warning"),
+            (True, "Profile routing is distribution-owned; setup repo validates ginflow only", "warning"),
             (all(has(ginflow, heading) for heading in ("## Project session startup", "## Execution contract", "## Definition of done", "## Completion report")), "Canonical ginflow instruction sections exist", "warning"),
             (not target or bool(local_path), "Target local instruction file exists when target supplied", "warning"),
             (not target or has(local, "come from `ginflow`"), "Target local instructions route shared workflow to ginflow when target supplied", "warning"),

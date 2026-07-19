@@ -1,172 +1,137 @@
-# Install and update managed Hermes profiles
+# Install Hermes-native profiles and plug shared integrations
 
-This guide installs `gintary` and `ginb` from this checkout. Run commands from repo root.
+Run commands from setup repo root.
 
-## Prerequisites
+## 1. Install Hermes Agent
 
-Required:
+```bash
+curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+# or: pip install hermes-agent
+hermes --version
+hermes doctor
+```
 
-- Hermes CLI
-- Git
-- Python 3
-- PyYAML
+Authoritative docs: <https://hermes-agent.nousresearch.com/docs/user-guide/profiles>
 
-CodeGraph is optional but configured for both profiles.
+## 2. Install profile distributions natively
+
+Profile package and identity stay in their original distribution repositories, not this setup repo.
+
+```bash
+hermes profile install github.com/owner/profile --alias
+hermes profile list
+hermes profile info <profile>
+```
+
+Local distribution directory also works:
+
+```bash
+hermes profile install /absolute/path/to/profile-distribution
+```
+
+Distribution root must contain `distribution.yaml`. Hermes previews manifest before installation unless `--yes` is supplied.
+
+## 3. Plug setup integrations
 
 ```bash
 make doctor
-make doctor-deps   # only when PyYAML is missing
+make community-update                         # optional
+make setup PROFILES="profile-a profile-b"    # preview
+make apply PROFILES="profile-a profile-b"
+make verify PROFILES="profile-a profile-b"
 ```
 
-## Install
+Setup requires existing profiles. It adds only:
 
-1. Create machine-local provider config.
+- Ginflow skill
+- setup-repo and optional community skill directories
+- `herdr-agent-state` plugin
+- CodeGraph MCP and its toolset
+- common CLI toolsets needed by harness/workflow
 
-   ```bash
-   cp .env.example .env
-   ```
+Setup preserves profile-owned `SOUL.md`, `distribution.yaml`, provider/model identity, secrets, memories, sessions, auth, cron, and release metadata.
 
-   Set `GIN_API_KEY`. Defaults already cover:
+Restart active sessions after apply.
 
-   ```dotenv
-   GIN_BASE_URL=https://agents.gin1111.dev/v1
-   GIN_HOST=agents.gin1111.dev
-   ```
+## Update profiles
 
-2. Install community skills.
-
-   ```bash
-   make community-update
-   ```
-
-   Script clones `https://github.com/mattpocock/skills.git` into `community/mattpocock-skills` or fast-forwards existing clone. Clone is made read-only.
-
-3. Preview setup.
-
-   ```bash
-   make setup
-   ```
-
-   Preview still validates dependencies, parses profile registry, and blocks divergent profile-local skills before printing planned writes.
-
-4. Apply setup.
-
-   ```bash
-   make apply
-   ```
-
-   Setup manages account-wide profile registry even when invoked inside profile-scoped Hermes session. It:
-
-   - creates missing profiles with `--no-skills`
-   - links canonical `SOUL.md`
-   - links canonical `skills/ginflow`
-   - renders `config.yaml` from `config/profile.yaml.tmpl`
-   - backs up replaced regular files with timestamp suffix
-
-5. Install profile secrets and opt out of bundled skills.
-
-   ```bash
-   for profile in gintary ginb; do
-     cp .env "$HOME/.hermes/profiles/$profile/.env"
-     hermes -p "$profile" skills opt-out
-   done
-   ```
-
-   Use supported `skills opt-out` command. Do not create `.no-bundled-skills` manually.
-
-6. Verify installation.
-
-   ```bash
-   make verify
-   ```
-
-## Verify
-
-Normal verification separates deployed-profile failures from source edits:
+Use Hermes-native update against source recorded in profile manifest:
 
 ```bash
-make verify
+hermes profile update <profile>
 ```
 
-It fails when profile installation, config, skills, workflow contracts, or configured MCP connection are broken. Dirty canonical source files produce non-fatal recommendation.
-
-Strict verification also fails on tracked or untracked canonical source drift:
+Default update replaces distribution-owned `SOUL.md`, `skills/`, `cron/`, and `mcp.json`, while preserving local user data and `config.yaml` overrides. To intentionally accept distribution config changes:
 
 ```bash
-make verify-strict
+hermes profile update <profile> --force-config
 ```
 
-Use strict mode for CI, release, or before declaring checkout synchronized with deployment.
-
-## Update
-
-Update repo-managed profile behavior and shared skills:
+Profile update may replace integration links or config entries. Reapply kit:
 
 ```bash
-git pull
-make community-update
-make apply
-make verify
+make apply PROFILES="<profile>"
+make verify PROFILES="<profile>"
+```
+
+## Package profiles using Hermes-native format
+
+Do this in profile distribution repo or with Hermes export. Do not copy package data into setup repo.
+
+### Git distribution
+
+Profile distribution root includes at minimum:
+
+```text
+distribution.yaml
+SOUL.md
+config.yaml          # optional native defaults
+skills/              # optional distribution-owned skills
+cron/                # optional distribution-owned jobs
+mcp.json             # optional distribution-owned MCPs
+```
+
+Keep secrets and runtime data out: `.env`, auth, memories, sessions, state DB, logs, caches.
+
+Install directly from Git:
+
+```bash
+hermes profile install github.com/owner/profile
+```
+
+### Archive distribution
+
+```bash
+hermes profile export <profile> -o <profile>.tar.gz
+hermes profile import <profile>.tar.gz
+```
+
+## Verify and test
+
+```bash
+make verify PROFILES="profile-a profile-b"
+make verify-strict PROFILES="profile-a profile-b"
 make test
 ```
 
-Update Hermes binary separately:
+Normal verification treats setup source edits as advisory. Strict mode fails on integration-source drift.
 
-```bash
-hermes update
-make verify
-```
+## Troubleshooting
 
-Restart active Hermes sessions after config, skill, or MCP changes.
+| Symptom | Fix |
+|---|---|
+| Profile missing | `hermes profile install <distribution> --name <profile>` |
+| Profile lacks source metadata | Inspect `hermes profile info <profile>`; reinstall from proper distribution if needed |
+| Ginflow missing | `make apply PROFILES="<profile>"` |
+| CodeGraph connection fails | Install CodeGraph, then `hermes -p <profile> mcp test codegraph` |
+| Tools not visible | Restart profile session after apply |
+| Native profile update removed integrations | Re-run apply and verify |
+| Need to change identity/package | Change original distribution repo, release it, then run `hermes profile update <profile>` |
 
-## Local maintenance
+## Target project
 
-Remove generated Python caches and CodeGraph index:
-
-```bash
-make clean
-```
-
-Run deterministic source checks:
-
-```bash
-make test
-```
-
-`make harness-test` adds model-backed blank-project integration and may take longer. `make verify-test` expects canonical source drift and only tests normal/strict drift exit behavior.
-
-## Start target project
-
-Do not implement product work in this setup repo. Open target repo and add local rules when missing:
+Do not implement product work in setup repo. Start target repo with local rules when needed:
 
 ```bash
 cp /path/to/agents-hype/templates/AGENTS.md /path/to/project/AGENTS.md
 ```
-
-Edit copied file with real verification command, boundaries, generated-file authorities, and deployment constraints. Ginflow and selected Kanban card provide shared workflow and durable handoff.
-
-## Troubleshooting
-
-| Symptom | Cause | Fix |
-|---|---|---|
-| Profile missing | Setup not applied against account registry | `make apply` |
-| Profile appears missing only inside profile session | Stale `HOME` or `HERMES_HOME` scope | Use repo scripts; they normalize account home and clear `HERMES_HOME` |
-| Setup blocks on profile-local skill drift | Local skill shadows canonical repo skill | Remove divergent copy or replace it with canonical symlink, then rerun `make setup` |
-| No enabled skills | Community clone missing, config stale, or external path unavailable | `make community-update && make apply`, then `hermes -p <name> skills list` |
-| Canonical `ginflow` link missing | Setup predates local worker link | `make apply` |
-| `.no-bundled-skills` missing | Bundled-skill opt-out not applied | `hermes -p <name> skills opt-out` |
-| Authentication fails | Missing or wrong `GIN_API_KEY` in profile `.env` | Fix repo `.env`, copy it to both profile directories, restart session |
-| CodeGraph absent | Optional CLI not installed | Install from <https://github.com/colbymchenry/codegraph>, rerun `make apply`, then verify |
-| CodeGraph configured but connection fails | CLI or MCP startup broken | Run `hermes -p <name> mcp test codegraph`; fix command before verification |
-| Normal verify reports source drift | Canonical files changed locally | Review diff; use `make verify-strict` when drift must fail |
-
-## Machine-local files
-
-Never commit:
-
-- `.env`
-- `community/` clones
-- `.codegraph/`
-- profile `.env` files
-- Hermes session/history/auth state
-- Python caches

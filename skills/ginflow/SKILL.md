@@ -1,11 +1,11 @@
 ---
 name: ginflow
-description: Use for target-project startup, task shaping, execution, completion, Kanban handoff, project-doc layout, or setup-repo versus target-repo decisions under gin Hermes profiles.
+description: Use for target-project startup, task shaping, execution, completion, Kanban handoff, project-doc layout, or setup-repo versus target-repo decisions under Hermes profiles.
 ---
 
 # ginflow
 
-Global workflow guide shared by installed profiles from setup repo.
+Global workflow integration that Hermes-native profile distributions may load from setup repo.
 
 ## When to use
 
@@ -14,13 +14,14 @@ Use when any of these apply:
 - starting, executing, closing, or resuming target-project work
 - deciding where docs belong
 - deciding brief vs spec vs plan
-- shaping Kanban task for `ginb`
+- shaping Kanban task for selected worker profile
 - exporting an optional session handoff from Kanban
 - explaining setup-repo vs target-repo split
 
 ## Core split
 
-- **Setup repo** owns global profiles, shared skills, setup/update scripts
+- **Profile distribution** owns identity, manifest, native config defaults, and release/update lifecycle
+- **Setup repo** owns optional shared skills, harness, MCP/plugin/tool wiring, and integration checks
 - **Target repo** owns code, tests, local docs, local task artifacts
 - **Task workspace** must point at real target repo
 
@@ -146,7 +147,7 @@ Links:
 
 Hermes stores workspace, status, assignee, and ID on the task row. It stores `artifact_baseline` in the latest completion run metadata. The harness reads both locations; do not create a second shadow card JSON format.
 
-To avoid dispatch racing ahead of linked artifacts, draft card and artifact contents in memory, then create the card without an assignee, with complete future `Links:` paths and `--initial-status blocked`. Do not emit a setup `needs_input` block: reserve the card's first explicit block for `ginb`'s review handoff so recurrence protection does not move the card to triage. Write and commit linked target artifacts, assign `ginb`, and run project checks plus the external candidate-baseline harness. Unblock only after dispatch readiness passes. The assigned `ginb` profile loads its canonical local Ginflow skill; do not force `--skill ginflow` because the claiming dispatcher profile resolves task skills and multi-profile gateways may not share that skill.
+To avoid dispatch racing ahead of linked artifacts, draft card and artifact contents in memory, then create card without an assignee, with complete future `Links:` paths and `--initial-status blocked`. Do not emit a setup `needs_input` block: reserve the card's first explicit block for worker review handoff so recurrence protection does not move card to triage. Write and commit linked target artifacts, assign selected worker profile, then run project checks and external candidate-baseline harness. Unblock only after dispatch readiness passes. Assigned worker profile loads its configured Ginflow skill; do not force `--skill ginflow` because the claiming dispatcher profile resolves task skills and multi-profile gateways may not share that skill.
 
 If an existing live body is missing required sections, keep it blocked and ask the human to edit the title/body in the Kanban dashboard, then rerun the harness. The current CLI `hermes kanban edit` only backfills completed-task result/summary/metadata; do not invent a `--body` option. If dashboard repair is unavailable, create a corrected replacement card only with human approval and preserve a link/comment back to the malformed card.
 
@@ -156,13 +157,13 @@ Use real target repo workspace:
 
 ## Required fields for build-ready handoff
 
-A task for `ginb` should answer:
+A task for selected worker profile should answer:
 - what to change
 - where to change it
 - how done is judged
 - what not to touch
 
-If any missing and risk is material, block back to `gintary`.
+If any missing and risk is material, block back to selected orchestrator profile.
 
 ## Session close and restart
 
@@ -189,8 +190,8 @@ Immediately before reporting completion:
 6. Quote canonical project command and exact fresh result.
 7. Record same evidence on selected Kanban card before completing it.
 8. Require every target-local linked artifact to be committed. If the worker lacks commit permission, block completion and ask the human to commit; never create a commit implicitly. Record that Git commit and the exact linked paths in card `artifact_baseline`.
-9. Before completion, validate candidate metadata against the live card with `--kanban-task-id`, `--baseline-commit`, and repeated `--baseline-path` arguments. `ginb` then comments verification evidence plus the exact `artifact_baseline` payload and blocks with `review-required: Ginflow completion baseline ready`; it does not call `kanban_complete` for tasks with target-local artifact links. `gintary` revalidates and makes the first and only terminal completion call with that payload, then reruns the harness without candidate arguments.
-10. Review target workspace using `references/workspace-health-warnings.md`. Record concise findings under `Workspace warnings` on the card and in completion report. Warnings do not block by default; promote only when acceptance, canonical verification, security, privacy, data integrity, or restartability is affected. Do not copy warning policy or scanner files into target repo.
+9. Before completion, validate candidate metadata against live card with `--kanban-task-id`, `--baseline-commit`, and repeated `--baseline-path` arguments. Worker comments verification evidence plus exact `artifact_baseline` payload and blocks with `review-required: Ginflow completion baseline ready`; worker does not call `kanban_complete` for tasks with target-local artifact links. Orchestrator revalidates and makes first and only terminal completion call with that payload, then reruns harness without candidate arguments.
+10. Review target workspace using `references/workspace-health-warnings.md`. Record concise findings under `Workspace warnings` on card and in completion report. Warnings do not block by default; promote only when acceptance, canonical verification, security, privacy, data integrity, or restartability is affected. Do not copy warning policy or scanner files into target repo.
 
 Project verification proves product behavior and blocks completion when it fails. Ginflow harness proves workflow readiness and drift: report failures as warnings, but treat missing card, wrong workspace, missing acceptance, missing required artifact, missing completion verification path, missing completed-card artifact baseline, or changed completed-card linked artifact as blockers for the affected lifecycle stage. Harness unavailable is a warning and never substitutes for project verification.
 
@@ -217,7 +218,7 @@ Add harness `--board <slug>` when the task is not on the current board. For dire
 
 | Subsystem | Ginflow implementation |
 |---|---|
-| Instructions | profiles route to `ginflow`; target `AGENTS.md` stores local context |
+| Instructions | profile distribution chooses whether to route to `ginflow`; target `AGENTS.md` stores local context |
 | State | Hermes Kanban card and linked artifacts |
 | Verification | project-native canonical command and card evidence |
 | Scope | card objective, scope, acceptance, workspace, and one active card |
@@ -250,8 +251,8 @@ Use drift detection in 2 layers, in this order:
    - examples: `./verify.sh`, `make verify`, or project-native command
    - proves project behavior; ginflow does not force script location
 2. **Global setup drift second** — setup repo `scripts/verify.sh`
-   - checks deployed profiles still match setup repo
-   - checks symlinks, config paths, shared skills, bundled-skill opt-out
+   - checks requested profiles retain native identity while setup integrations are present
+   - checks skill/plugin links, MCP/tool wiring, and shared harness health
 
 Rule:
 - target repo drift check comes first during real work

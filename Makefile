@@ -14,19 +14,23 @@ doctor-deps:
 # === Setup ===
 ## Preview profile setup
 setup:
-	./scripts/setup.sh
+	@test -n "$(PROFILES)" || (echo 'Usage: make setup PROFILES="profile-a profile-b"' >&2; exit 2)
+	./scripts/setup.sh $(PROFILES)
 
-## Apply setup (creates/modifies profiles)
+## Apply integrations to existing Hermes-native profiles
 apply:
-	./scripts/setup.sh --apply
+	@test -n "$(PROFILES)" || (echo 'Usage: make apply PROFILES="profile-a profile-b"' >&2; exit 2)
+	./scripts/setup.sh --apply $(PROFILES)
 
-## Verify profiles match repo
+## Verify integrations in existing profiles
 verify:
-	./scripts/verify.sh
+	@test -n "$(PROFILES)" || (echo 'Usage: make verify PROFILES="profile-a profile-b"' >&2; exit 2)
+	./scripts/verify.sh $(PROFILES)
 
 ## Verify profiles and fail on canonical repo drift
 verify-strict:
-	./scripts/verify.sh --strict
+	@test -n "$(PROFILES)" || (echo 'Usage: make verify-strict PROFILES="profile-a profile-b"' >&2; exit 2)
+	./scripts/verify.sh --strict $(PROFILES)
 
 ## Test verify default and strict drift behavior
 verify-test:

@@ -16,7 +16,7 @@ CARD_FIELDS = {
     "acceptance": ["check passes"],
     "workspace": "",
     "status": "ready",
-    "assignee": "ginb",
+    "assignee": "worker",
     "links": ["docs/briefs/TEST-1.md"],
 }
 
@@ -59,7 +59,7 @@ def create_live_card(env, target, body, board=None):
         create_command + [
             "create", "TEST-1 — Test",
             "--body", body,
-            "--assignee", "ginb",
+            "--assignee", "worker",
             "--workspace", f"dir:{target}",
             "--initial-status", "blocked",
             "--json",
@@ -107,7 +107,7 @@ def main():
                     "Acceptance:\n- check passes\n"
                     "Links:\n- docs/briefs/TEST-1.md"
                 ),
-                "assignee": "ginb",
+                "assignee": "worker",
                 "status": "ready",
                 "workspace_kind": "dir",
                 "workspace_path": str(target),

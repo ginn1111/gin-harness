@@ -32,7 +32,8 @@ PY
 task="$(printf '%s\n' 'slugify CLI' 'line counter CLI' 'JSON key sorter CLI' | shuf -n 1)"
 prompt="You are in a blank target git repo. Load and follow ginflow. Test card TEST-001 requests: $task. Copy the canonical AGENTS template from $ROOT/templates/AGENTS.md, then tailor only local sections and retain ginflow routing. Create docs/briefs/TEST-001.md. Implement a small standard-library-only solution and tests. Create executable verify.sh using set -eu; document ./verify.sh as canonical verification. Do not create spec or plan unless needed. Do not create session handoff. Before final report run ./verify.sh and git status --short in this target repo. Report only this repo's files and fresh canonical output."
 
-(cd "$TARGET" && env -u TERMINAL_CWD hermes -p gintary -s ginflow -z "$prompt") >"$OUTPUT"
+PROFILE="${HERMES_TEST_PROFILE:-default}"
+(cd "$TARGET" && env -u TERMINAL_CWD hermes -p "$PROFILE" -s ginflow -z "$prompt") >"$OUTPUT"
 
 test -f "$TARGET/AGENTS.md"
 test -f "$TARGET/docs/briefs/TEST-001.md"
