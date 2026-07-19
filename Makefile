@@ -1,4 +1,6 @@
-.PHONY: setup apply verify verify-strict verify-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test
+.PHONY: setup apply verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test
+
+PROFILES ?= gintary ginb
 
 # === Pre-flight ===
 doctor:
@@ -14,12 +16,10 @@ doctor-deps:
 # === Setup ===
 ## Preview profile setup
 setup:
-	@test -n "$(PROFILES)" || (echo 'Usage: make setup PROFILES="profile-a profile-b"' >&2; exit 2)
 	./scripts/setup.sh $(PROFILES)
 
 ## Apply integrations to existing Hermes-native profiles
 apply:
-	@test -n "$(PROFILES)" || (echo 'Usage: make apply PROFILES="profile-a profile-b"' >&2; exit 2)
 	./scripts/setup.sh --apply $(PROFILES)
 
 ## Verify integrations in existing profiles
@@ -35,6 +35,10 @@ verify-strict:
 ## Test verify default and strict drift behavior
 verify-test:
 	bash scripts/test-verify.sh
+
+## Test active-profile default selection
+setup-test:
+	bash scripts/test-setup.sh
 
 # === Community assets ===
 ## Clone/pull community skill repos
@@ -56,7 +60,7 @@ lint:
 	@echo "lint ok"
 
 ## Run deterministic repository tests
-test: lint artifact-guidance-test kanban-harness-test
+test: lint setup-test artifact-guidance-test kanban-harness-test
 
 ## Check ginflow docs layout and artifact content guidance
 artifact-guidance-test:

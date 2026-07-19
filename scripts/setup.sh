@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # Plug setup-repo integrations into existing Hermes-native profiles.
-# Usage: ./scripts/setup.sh [--apply] <profile> [profile ...]
+# Usage: ./scripts/setup.sh [--apply] [<profile> ...]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 APPLY=0
 if [[ "${1:-}" == "--apply" ]]; then APPLY=1; shift; fi
-[[ "$#" -gt 0 ]] || { printf 'Usage: %s [--apply] <profile> [profile ...]\n' "$0" >&2; exit 2; }
 
 info() { printf 'ℹ️  %s\n' "$*"; }
 ok() { printf '✅ %s\n' "$*"; }
@@ -15,13 +14,13 @@ die() { printf '❌ %s\n' "$*" >&2; exit 1; }
 command -v hermes >/dev/null || die "Missing: hermes"
 command -v python3 >/dev/null || die "Missing: python3"
 
-REAL_HOME="$(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f6)"
-REAL_HOME="${REAL_HOME:-$HOME}"
+REAL_HOME="${HERMES_REAL_HOME:-$(python3 -c 'import os, pwd; print(pwd.getpwuid(os.getuid()).pw_dir)')}"
 PROFILES_DIR="$REAL_HOME/.hermes/profiles"
 export HOME="$REAL_HOME"
 unset HERMES_HOME
 
 existing="$(hermes profile list 2>/dev/null || true)"
+[[ "$#" -gt 0 ]] || { printf 'Usage: %s [--apply] <profile> [profile ...]\n' "$0" >&2; exit 2; }
 for profile in "$@"; do
   [[ "$profile" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || die "$profile: invalid profile name"
   grep -qw "$profile" <<<"$existing" || die "$profile: profile missing; install it first with 'hermes profile install <distribution> --name $profile'"

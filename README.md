@@ -38,7 +38,8 @@ Hermes owns update safety: `SOUL.md`, skills, cron, and MCP distribution files u
 ```bash
 make doctor
 make community-update              # optional community skill checkout
-make setup PROFILES="profile-a profile-b"   # preview
+make setup                              # preview pinned gintary + ginb profiles
+make setup PROFILES="profile-a profile-b"   # preview named profiles
 make apply PROFILES="profile-a profile-b"   # apply integration wiring
 make verify PROFILES="profile-a profile-b"
 make test
