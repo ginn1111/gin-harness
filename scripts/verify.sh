@@ -23,6 +23,10 @@ require_command hermes
 REAL_HOME="$(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f6)"
 REAL_HOME="${REAL_HOME:-$HOME}"
 HERMES_PROFILES_DIR="$REAL_HOME/.hermes/profiles"
+# Profile-scoped sessions may override HOME and HERMES_HOME. Verification must
+# inspect the machine's named-profile registry, not a nested profile home.
+export HOME="$REAL_HOME"
+unset HERMES_HOME
 
 profiles=(gintary ginb)
 
@@ -110,7 +114,8 @@ done
 echo ""
 echo "--- Skills availability ---"
 for p in "${profiles[@]}"; do
-  count=$(hermes -p "$p" skills list 2>/dev/null | grep -c "enabled" || echo "0")
+  count=$(hermes -p "$p" skills list 2>/dev/null | grep -c "enabled" || true)
+  count="${count:-0}"
   if [[ "$count" -gt 0 ]]; then ok "$p: $count skills enabled"; else warn "$p: 0 skills enabled"; fi
 done
 
@@ -134,6 +139,12 @@ for profile in gintary ginb; do
     ok "$profile: routes target-project work through ginflow"
   else
     warn "$profile: missing mandatory ginflow routing"
+  fi
+  ginflow_link="$HERMES_PROFILES_DIR/$profile/skills/ginflow"
+  if [[ -L "$ginflow_link" && "$(readlink -f "$ginflow_link")" == "$ROOT/skills/ginflow" ]]; then
+    ok "$profile: ginflow skill symlinked to canonical source"
+  else
+    warn "$profile: canonical ginflow skill symlink missing"
   fi
 done
 

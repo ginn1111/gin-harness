@@ -101,6 +101,18 @@ Block to `gintary` when:
 - project context missing
 - verification failure needs human decision
 
+## Kanban completion gate
+
+For a Ginflow task with target-local artifact links, `ginb` does not call `kanban_complete`. Terminal completion belongs to `gintary`, which validates and persists metadata deterministically.
+
+1. Resolve committed `HEAD` and exact linked target-local paths.
+2. Run candidate-baseline Ginflow validation.
+3. Add a card comment containing verification evidence and the exact `artifact_baseline` JSON object.
+4. Call `kanban_block(kind="needs_input", reason="review-required: Ginflow completion baseline ready")`.
+5. Never call `kanban_complete` for this class of task.
+
+For tasks without target-local artifact links, normal completion remains allowed.
+
 ## Output on completion
 
 - Task or delivery ID if present

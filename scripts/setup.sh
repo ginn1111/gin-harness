@@ -28,6 +28,10 @@ command -v codegraph >/dev/null 2>&1 || warn "CodeGraph not installed — recomm
 REAL_HOME="$(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f6)"
 REAL_HOME="${REAL_HOME:-$HOME}"
 HERMES_PROFILES_DIR="$REAL_HOME/.hermes/profiles"
+# Profile-scoped sessions may override HOME and HERMES_HOME. Setup manages the
+# machine's named-profile registry, so run Hermes against the real user home.
+export HOME="$REAL_HOME"
+unset HERMES_HOME
 require_command python3
 
 # === load config ===
@@ -102,7 +106,22 @@ for i in "${!NAMES[@]}"; do
     warn "$name: SOUL.md source missing at $source_soul"
   fi
 
-  # 3. Generate config.yaml
+  # 3. Install canonical workflow skill locally so Kanban --skill ginflow
+  # resolves inside spawned profile workers, not only in interactive external_dirs.
+  ginflow_source="$ROOT/skills/ginflow"
+  ginflow_link="$profile_dir/skills/ginflow"
+  if [[ -d "$ginflow_source" ]]; then
+    if [[ "$APPLY" == "1" ]]; then
+      mkdir -p "$profile_dir/skills"
+      [[ -e "$ginflow_link" && ! -L "$ginflow_link" ]] && mv "$ginflow_link" "$ginflow_link.bak.$(date +%s)" && info "  backed up local ginflow skill"
+      ln -sfn "$ginflow_source" "$ginflow_link"
+      ok "$name: ginflow skill symlinked"
+    else
+      info "$name: would symlink ginflow skill → $ginflow_source"
+    fi
+  fi
+
+  # 4. Generate config.yaml
   if [[ "$APPLY" == "1" ]]; then
     mkdir -p "$profile_dir"
     [[ -f "$config_file" && ! -L "$config_file" ]] && cp "$config_file" "$config_file.bak.$(date +%s)" && info "  backed up config.yaml"
