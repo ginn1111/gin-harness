@@ -33,6 +33,11 @@ Community skills are machine-local clones under `community/` and are not committ
 ## Quick start
 
 ```bash
+# 1. Install Hermes Agent if missing
+pip install hermes-agent    # or download from github.com/nousresearch/hermes-agent/releases
+hermes --version
+
+# 2. Setup managed profiles
 make doctor
 cp .env.example .env
 # Set GIN_API_KEY. Override GIN_BASE_URL or GIN_HOST only when needed.

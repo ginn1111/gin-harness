@@ -6,7 +6,6 @@ This guide installs `gintary` and `ginb` from this checkout. Run commands from r
 
 Required:
 
-- Hermes CLI
 - Git
 - Python 3
 - PyYAML
@@ -18,7 +17,29 @@ make doctor
 make doctor-deps   # only when PyYAML is missing
 ```
 
-## Install
+## 1. Install Hermes Agent
+
+If Hermes CLI is not yet installed, get it from the upstream project:
+
+**Option A — pip (recommended)**
+
+```bash
+pip install hermes-agent
+```
+
+**Option B — standalone binary**
+
+Download from [github.com/nousresearch/hermes-agent/releases](https://github.com/nousresearch/hermes-agent/releases).
+
+Verify installation:
+
+```bash
+hermes --version
+```
+
+See [hermes-agent.nousresearch.com/docs](https://hermes-agent.nousresearch.com/docs) for full setup guide, provider config, and gateway connectivity.
+
+## 2. Setup managed profiles
 
 1. Create machine-local provider config.
 
