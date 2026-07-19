@@ -40,6 +40,7 @@ community-update:
 # === Hygiene ===
 lint:
 	bash -n scripts/*.sh
+	python3 -m py_compile scripts/*.py
 	bash -n skills/ginflow/scripts/*.sh
 	python3 -m py_compile skills/ginflow/scripts/*.py
 	@echo "lint ok"

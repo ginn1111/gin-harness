@@ -72,6 +72,14 @@ for name, cfg in data.get('profiles', {}).items():
     print(f'{name}|{desc}|{skin}')
 ")
 
+# === reject profile-local copies that shadow repo-managed skills ===
+if python3 "$ROOT/scripts/detect-skill-drift.py" \
+  --repo "$ROOT" --profiles-dir "$HERMES_PROFILES_DIR" "${NAMES[@]}"; then
+  ok "No profile-local skill drift"
+else
+  die "Profile-local skills shadow setup-repo skills; remove or replace them with canonical symlinks"
+fi
+
 # === main loop ===
 for i in "${!NAMES[@]}"; do
   name="${NAMES[$i]}"
