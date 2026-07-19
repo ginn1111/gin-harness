@@ -150,7 +150,38 @@ for p in "${profiles[@]}"; do
   if [[ -f "$marker" ]]; then ok "$p: .no-bundled-skills present"; else warn "$p: .no-bundled-skills missing"; fi
 done
 
-# === 7. Workflow harness ===
+# === 7. herdr-agent-state plugin ===
+echo ""
+echo "--- herdr-agent-state plugin ---"
+for p in "${profiles[@]}"; do
+  plugin_link="$HERMES_PROFILES_DIR/$p/plugins/herdr-agent-state"
+  plugin_source="$ROOT/plugins/herdr-agent-state"
+  if [[ -L "$plugin_link" && "$(readlink -f "$plugin_link")" == "$(readlink -f "$plugin_source")" ]]; then
+    ok "$p: herdr-agent-state symlinked to repo"
+  elif [[ -L "$plugin_link" ]]; then
+    warn "$p: herdr-agent-state symlinked to wrong target: $(readlink "$plugin_link") (expected $plugin_source)"
+  elif [[ -d "$plugin_link" ]]; then
+    warn "$p: herdr-agent-state is real directory (not symlink)"
+  else
+    warn "$p: herdr-agent-state plugin missing"
+  fi
+
+  cfg="$HERMES_PROFILES_DIR/$p/config.yaml"
+  if python3 - "$cfg" <<'PY'
+import sys, yaml
+with open(sys.argv[1]) as f:
+    config = yaml.safe_load(f) or {}
+enabled = config.get("plugins", {}).get("enabled", [])
+assert "herdr-agent-state" in enabled, f"herdr-agent-state not in plugins.enabled ({enabled})"
+PY
+  then
+    ok "$p: herdr-agent-state enabled in config"
+  else
+    warn "$p: herdr-agent-state not in plugins.enabled"
+  fi
+done
+
+# === 8. Workflow harness ===
 echo ""
 echo "--- Workflow harness ---"
 ginflow="$ROOT/skills/ginflow/SKILL.md"
@@ -190,7 +221,7 @@ else
   warn "ginflow: five-subsystem static validation failed"
 fi
 
-# === 8. Repo drift ===
+# === 9. Repo drift ===
 echo ""
 echo "--- Repo drift ---"
 mapfile -t drift_files < <(cd "$ROOT" && git status --porcelain --untracked-files=all 2>/dev/null | sed 's/^...//' | grep -E "^(profiles/|config/|scripts/|skills/|templates/|README\.md$|INSTALL\.md$)" || true)

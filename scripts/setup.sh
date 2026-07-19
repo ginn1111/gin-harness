@@ -137,7 +137,24 @@ for i in "${!NAMES[@]}"; do
     fi
   fi
 
-  # 4. Generate config.yaml
+  # 4. Symlink herdr-agent-state plugin
+  REPO_PLUGINS_DIR="$ROOT/plugins"
+  if [[ -d "$REPO_PLUGINS_DIR/herdr-agent-state" ]]; then
+    if [[ "$APPLY" == "1" ]]; then
+      mkdir -p "$profile_dir/plugins"
+      [[ -e "$profile_dir/plugins/herdr-agent-state" && ! -L "$profile_dir/plugins/herdr-agent-state" ]] && \
+        mv "$profile_dir/plugins/herdr-agent-state" "$profile_dir/plugins/herdr-agent-state.bak.$(date +%s)" && \
+        info "  backed up local herdr-agent-state plugin"
+      ln -sfn "$REPO_PLUGINS_DIR/herdr-agent-state" "$profile_dir/plugins/herdr-agent-state"
+      ok "$name: herdr-agent-state plugin symlinked"
+    else
+      info "$name: would symlink herdr-agent-state plugin → $REPO_PLUGINS_DIR/herdr-agent-state"
+    fi
+  else
+    warn "$name: plugin source missing at $REPO_PLUGINS_DIR/herdr-agent-state"
+  fi
+
+  # 5. Generate config.yaml
   if [[ "$APPLY" == "1" ]]; then
     mkdir -p "$profile_dir"
     [[ -f "$config_file" && ! -L "$config_file" ]] && cp "$config_file" "$config_file.bak.$(date +%s)" && info "  backed up config.yaml"
