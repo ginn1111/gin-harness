@@ -29,6 +29,17 @@ export HOME="$REAL_HOME"
 unset HERMES_HOME
 
 profiles=(gintary ginb)
+declare -A expected_descriptions
+while IFS='|' read -r name description; do
+  expected_descriptions["$name"]="$description"
+done < <(python3 - "$ROOT/config/profiles.yaml" <<'PY'
+import sys, yaml
+with open(sys.argv[1]) as f:
+    profiles = (yaml.safe_load(f) or {}).get("profiles", {})
+for name, config in profiles.items():
+    print(f"{name}|{config.get('description', '')}")
+PY
+)
 
 echo "===== Global Profile Verification ====="
 
@@ -40,7 +51,19 @@ for p in "${profiles[@]}"; do
   if grep -qw "$p" <<<"$existing"; then ok "$p: exists"; else warn "$p: NOT FOUND"; fi
 done
 
-# === 2. SOUL.md ===
+# === 2. Routing descriptions ===
+echo ""
+echo "--- Routing descriptions ---"
+for p in "${profiles[@]}"; do
+  actual_description="$(hermes profile describe "$p" 2>/dev/null || true)"
+  if [[ "$actual_description" == "${expected_descriptions[$p]:-}" ]]; then
+    ok "$p: description matches registry"
+  else
+    warn "$p: description drift (run ./scripts/setup.sh --apply)"
+  fi
+done
+
+# === 3. SOUL.md ===
 echo ""
 echo "--- SOUL.md (symlink check) ---"
 for p in "${profiles[@]}"; do
@@ -60,7 +83,7 @@ for p in "${profiles[@]}"; do
   fi
 done
 
-# === 3. Config ===
+# === 4. Config ===
 echo ""
 echo "--- Config checks ---"
 for p in "${profiles[@]}"; do
@@ -110,7 +133,7 @@ PY
   fi
 done
 
-# === 4. Skills loaded ===
+# === 5. Skills loaded ===
 echo ""
 echo "--- Skills availability ---"
 for p in "${profiles[@]}"; do
@@ -119,7 +142,7 @@ for p in "${profiles[@]}"; do
   if [[ "$count" -gt 0 ]]; then ok "$p: $count skills enabled"; else warn "$p: 0 skills enabled"; fi
 done
 
-# === 5. Bundled skills opt-out ===
+# === 6. Bundled skills opt-out ===
 echo ""
 echo "--- Bundled skills opt-out ---"
 for p in "${profiles[@]}"; do
@@ -127,7 +150,7 @@ for p in "${profiles[@]}"; do
   if [[ -f "$marker" ]]; then ok "$p: .no-bundled-skills present"; else warn "$p: .no-bundled-skills missing"; fi
 done
 
-# === 6. Workflow harness ===
+# === 7. Workflow harness ===
 echo ""
 echo "--- Workflow harness ---"
 ginflow="$ROOT/skills/ginflow/SKILL.md"
@@ -167,7 +190,7 @@ else
   warn "ginflow: five-subsystem static validation failed"
 fi
 
-# === 7. Repo drift ===
+# === 8. Repo drift ===
 echo ""
 echo "--- Repo drift ---"
 mapfile -t drift_files < <(cd "$ROOT" && git status --porcelain --untracked-files=all 2>/dev/null | sed 's/^...//' | grep -E "^(profiles/|config/|scripts/|skills/|templates/|README\.md$|INSTALL\.md$)" || true)

@@ -101,6 +101,14 @@ for i in "${!NAMES[@]}"; do
     run_or_print hermes profile create "$name" --no-skills --description "$desc"
   fi
 
+  # Keep Kanban routing metadata aligned for existing profiles too.
+  current_desc="$(hermes profile describe "$name" 2>/dev/null || true)"
+  if [[ "$current_desc" == "$desc" ]]; then
+    ok "$name: description matches registry"
+  else
+    run_or_print hermes profile describe "$name" --text "$desc"
+  fi
+
   # 2. Symlink SOUL.md
   if [[ -f "$source_soul" ]]; then
     if [[ "$APPLY" == "1" ]]; then
