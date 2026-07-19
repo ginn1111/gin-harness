@@ -1,0 +1,12 @@
+{
+  "name": "ginflow-gate-rejections",
+  "iteration": 1,
+  "assertions": 8,
+  "passed": 8,
+  "pass_rate": 1.0,
+  "command": "python3 skills/ginflow/scripts/test-ginflow-gate.py",
+  "claim_gate": {
+    "status": "blocked_on_hermes_core",
+    "policy": "one active card per mutable workspace; isolated worktrees and different workspaces may run concurrently"
+  }
+}
