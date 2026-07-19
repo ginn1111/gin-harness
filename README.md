@@ -38,7 +38,7 @@ Hermes owns update safety: `SOUL.md`, skills, cron, and MCP distribution files u
 ```bash
 make doctor
 make community-update              # optional community skill checkout
-make setup                         # preview default gintary profile
+make setup                         # preview currently active profile
 make setup PROFILES="profile-a"   # preview named profile
 make apply PROFILES="profile-a"   # apply integration wiring
 make verify PROFILES="profile-a"
@@ -64,9 +64,12 @@ Restart profile sessions after apply.
 | Path | Purpose |
 |---|---|
 | `skills/ginflow/` | Shared workflow, templates, validator, tests |
+| `skills/ginflow-workspace/` | Eval evidence, including gate rejection and independent-profile coverage |
 | `plugins/ginflow-gate/` | Blocking Kanban completion policy |
-| `scripts/setup.sh` | Generic integration preview/apply for named existing profiles |
+| `Makefile` | Active-profile default selection plus setup, verification, and test entry points |
+| `scripts/setup.sh` | Integration preview/apply for active or explicitly named profiles |
 | `scripts/verify.sh` | Generic integration and harness verification |
+| `scripts/test-setup.sh` | Regression test for active-profile-only default selection |
 | `scripts/community-setup.sh` | Optional community skill checkout |
 | `scripts/detect-skill-drift.py` | Shared-skill shadow detector utility |
 | `templates/AGENTS.md` | Target-project starter |
@@ -75,6 +78,8 @@ Restart profile sessions after apply.
 ## Verification boundary
 
 `make verify PROFILES="..."` checks selected profiles exist and retain profile-owned identity files while setup integrations work. It does not compare profile identity or distribution metadata against this repo.
+
+Without `PROFILES`, setup/apply/verify target only profile marked active by `hermes profile use <name>`. Profiles stay independent; harness does not coordinate or hand work between them.
 
 `make verify-strict PROFILES="..."` additionally fails on uncommitted setup integration changes.
 

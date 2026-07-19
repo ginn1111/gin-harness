@@ -9,15 +9,15 @@ printf '{}\n' > "$TMP/home/.hermes/profiles/gintary/config.yaml"
 printf '{}\n' > "$TMP/home/.hermes/profiles/ginb/config.yaml"
 cat > "$TMP/bin/hermes" <<'EOF'
 #!/usr/bin/env bash
-printf 'Profile  Model\n ◆gintary  model\n  ginb  model\n'
+printf 'Profile  Model\n  gintary  model\n ◆ginb  model\n'
 EOF
 chmod +x "$TMP/bin/hermes"
 
 output="$(HERMES_REAL_HOME="$TMP/home" PATH="$TMP/bin:$PATH" make -s -C "$ROOT" setup)"
-grep -q 'Integrating gintary' <<<"$output"
-if grep -q 'Integrating ginb' <<<"$output"; then
-  printf 'default setup must not integrate ginb\n' >&2
+grep -q 'Integrating ginb' <<<"$output"
+if grep -q 'Integrating gintary' <<<"$output"; then
+  printf 'default setup must not integrate inactive profile\n' >&2
   exit 1
 fi
 grep -q 'Dry-run complete' <<<"$output"
-printf 'setup single-profile default test ok\n'
+printf 'setup active-profile default test ok\n'

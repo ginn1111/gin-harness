@@ -23,7 +23,8 @@
 
 ## Phase 4.5 — Collapse profile default
 
-- Default integration targets one profile: `gintary`.
+- Default integration targets one profile: current profile selected by `hermes profile use <name>`.
+- Multiple profiles may install harness independently; switching never creates collaboration or handoff.
 - Completion review is mechanical through `ginflow-gate`; no second review profile is implied.
 - Live harness uses current board only and exposes no board-selection option.
 - Setup and verification remain generic when explicit profile names are supplied.

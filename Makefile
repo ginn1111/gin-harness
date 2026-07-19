@@ -1,6 +1,7 @@
 .PHONY: setup apply verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test harness-core-test ginflow-gate-test
 
-PROFILES ?= gintary
+ACTIVE_PROFILE := $(shell hermes profile list 2>/dev/null | python3 -c 'import re,sys; m=re.search(r"^\s*[◆*]\s*([A-Za-z0-9._-]+)", sys.stdin.read(), re.M); print(m.group(1) if m else "")')
+PROFILES ?= $(ACTIVE_PROFILE)
 
 # === Pre-flight ===
 doctor:
@@ -24,12 +25,12 @@ apply:
 
 ## Verify integrations in existing profiles
 verify:
-	@test -n "$(PROFILES)" || (echo 'Usage: make verify PROFILES="gintary"' >&2; exit 2)
+	@test -n "$(PROFILES)" || (echo 'No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES="<name>"' >&2; exit 2)
 	./scripts/verify.sh $(PROFILES)
 
 ## Verify profiles and fail on canonical repo drift
 verify-strict:
-	@test -n "$(PROFILES)" || (echo 'Usage: make verify-strict PROFILES="gintary"' >&2; exit 2)
+	@test -n "$(PROFILES)" || (echo 'No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES="<name>"' >&2; exit 2)
 	./scripts/verify.sh --strict $(PROFILES)
 
 ## Test verify default and strict drift behavior

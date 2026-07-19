@@ -36,7 +36,7 @@ Distribution root must contain `distribution.yaml`. Hermes previews manifest bef
 ```bash
 make doctor
 make community-update                         # optional
-make setup                                # preview default gintary profile
+make setup                                # preview currently active profile
 make setup PROFILES="profile-a"          # preview named profile
 make apply PROFILES="profile-a"
 make verify PROFILES="profile-a"
