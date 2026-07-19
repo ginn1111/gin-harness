@@ -1,0 +1,12 @@
+{
+  "eval_id": 25,
+  "eval_name": "route-warning-no-selected-card",
+  "prompt": "In /work/app, user says: \"fix all workspace-health warnings.\" No Kanban card is selected; warning list and affected paths are not supplied. Decide what Ginflow permits and give smallest safe next action.",
+  "assertions": [
+    "Blocks target edits because no card is selected",
+    "Does not invent warning findings or affected paths",
+    "Allows read-only inspection and task shaping",
+    "Requests concrete warning evidence and scope",
+    "Requires a selected complete card before implementation or dispatch"
+  ]
+}

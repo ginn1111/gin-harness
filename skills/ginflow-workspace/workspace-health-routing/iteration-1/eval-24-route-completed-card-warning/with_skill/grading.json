@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Does not silently modify completed APP-24 scope",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Routes fix as new follow-up card linked to APP-24",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Requires selected complete card before target changes",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Leaves APP-24 artifact baseline unchanged for ordinary follow-up",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Mentions reopening APP-24 only if the finding changes completed acceptance or scope",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

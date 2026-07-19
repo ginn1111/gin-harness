@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Classifies omission as non-blocking warning",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Does not revoke completion readiness solely for warning",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Asks user to choose fix-now on APP-22 versus follow-up because request does not define scope intent",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "If fixed now, keeps change bounded to config documentation and reruns relevant verification",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Does not silently expand APP-22 scope",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

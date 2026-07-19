@@ -23,4 +23,18 @@ Use `Workspace warnings: none` when review finds nothing. Do not invent findings
 - **Manifest/generated drift** — block only when build, runtime, verification, or restartability is affected.
 - **Debug residue and unresolved TODOs** — warn unless they affect scoped behavior or completion conditions.
 
+## Route healing requests
+
+When the user asks to fix, heal, or clear workspace warnings, route each finding before changing files:
+
+1. Confirm concrete evidence, affected paths, selected card, and current card status. If no complete card is selected, permit read-only inspection and task shaping only. Do not invent findings or start execution.
+2. Classify impact:
+   - **Current blocker** — finding affects selected card acceptance, canonical verification, security, privacy, data integrity, or restartability. Keep fix on selected active card, block completion, add regression coverage when behavior changed, then rerun canonical verification and workspace review. Do not create a follow-up merely to move a blocker away.
+   - **Optional in-scope warning** — finding is bounded to selected card but does not block completion. Preserve completion readiness. If user intent does not say whether to expand current scope, ask whether to fix now on selected card or create a linked follow-up. If approved now, change only warning source and rerun relevant verification.
+   - **Unrelated warning** — finding is outside selected card scope. Preserve unrelated edits and keep selected card unblocked when evidence remains clear. Shape a separate linked follow-up and require that complete card to be selected before implementation or dispatch.
+   - **Completed-card warning** — treat repair as new intent. Create and select a linked follow-up; leave completed card and `artifact_baseline` unchanged. Reopen completed card only when finding changes its completed scope or acceptance.
+3. Record route and next action on selected card. Never silently expand scope, modify unrelated work, or advance a completed baseline.
+
+For broad requests such as “fix all workspace warnings,” group findings into one card only when they share workspace, objective, acceptance, and verification path. Otherwise split by independent scope or risk.
+
 Do not copy this policy into target repo. Do not add scanner or policy files there. Use project-native tools and direct inspection; suggest follow-up work only when worthwhile.

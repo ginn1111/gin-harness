@@ -1,0 +1,12 @@
+{
+  "eval_id": 22,
+  "eval_name": "route-optional-in-scope-warning",
+  "prompt": "Active card APP-22 adds optional CACHE_TTL with a safe runtime default. Acceptance and canonical verification pass, but .env.example omits CACHE_TTL. User says: \"fix the workspace warning.\" Route the request without silently expanding scope.",
+  "assertions": [
+    "Classifies omission as non-blocking warning",
+    "Does not revoke completion readiness solely for warning",
+    "Asks user to choose fix-now on APP-22 versus follow-up because request does not define scope intent",
+    "If fixed now, keeps change bounded to config documentation and reruns relevant verification",
+    "Does not silently expand APP-22 scope"
+  ]
+}

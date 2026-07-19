@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Blocks target edits because no card is selected",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Does not invent warning findings or affected paths",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Allows read-only inspection and task shaping",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Requests concrete warning evidence and scope",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Requires a selected complete card before implementation or dispatch",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

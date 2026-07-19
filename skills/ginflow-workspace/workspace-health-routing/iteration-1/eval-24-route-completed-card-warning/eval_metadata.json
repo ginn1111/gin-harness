@@ -1,0 +1,12 @@
+{
+  "eval_id": 24,
+  "eval_name": "route-completed-card-warning",
+  "prompt": "Card APP-24 is already completed with a valid artifact baseline. Its completion report recorded a non-blocking missing config-doc warning. User now says: \"fix the workspace warning.\" Route the work without mutating completed scope silently.",
+  "assertions": [
+    "Does not silently modify completed APP-24 scope",
+    "Routes fix as new follow-up card linked to APP-24",
+    "Requires selected complete card before target changes",
+    "Leaves APP-24 artifact baseline unchanged for ordinary follow-up",
+    "Mentions reopening APP-24 only if the finding changes completed acceptance or scope"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Does not modify or revert docs/roadmap.md under APP-23",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Keeps APP-23 completion unblocked when evidence remains clear",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Routes unrelated cleanup to a separate follow-up card",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Requires selecting a complete follow-up card before implementation",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Does not dispatch or execute from the vague request alone",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

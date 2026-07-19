@@ -1,0 +1,26 @@
+{
+  "skill_name": "ginflow",
+  "iteration": "workspace-health-routing/iteration-1",
+  "evals_run": [
+    21,
+    22,
+    23,
+    24,
+    25
+  ],
+  "runs_per_configuration": 1,
+  "configuration": {
+    "with_skill": {
+      "passed": 25,
+      "failed": 0,
+      "total": 25,
+      "pass_rate": 1.0
+    }
+  },
+  "grading": "Manual assertion review against eval_metadata.json",
+  "notes": [
+    "Current Ginflow routes all five workspace-warning fix scenarios correctly.",
+    "Future skill iteration can add a comparison configuration later.",
+    "One run measures correctness, not variance."
+  ]
+}

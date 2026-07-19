@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Treats finding as blocker, not ordinary warning",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Keeps fix on active PAY-21 because it affects current acceptance and data integrity",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Blocks PAY-21 completion until fixed",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Requires failure-path coverage and fresh canonical verification",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    },
+    {
+      "text": "Does not create an unnecessary follow-up card",
+      "passed": true,
+      "evidence": "Answer directly satisfies assertion."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

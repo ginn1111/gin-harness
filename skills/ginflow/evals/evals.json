@@ -266,6 +266,76 @@
         "Does not invent warnings",
         "Does not create policy or scanner files in target repo"
       ]
+    },
+    {
+      "id": 21,
+      "name": "route-blocker-fix-active-card",
+      "prompt": "Active card PAY-21 added payment capture. Workspace review finds `except Exception: pass` can mark invoices paid after charge failure. User says: \"fix the workspace warning now.\" Route the work: decide whether to fix on PAY-21 or create another card, state completion status, and give next steps.",
+      "expected_output": "Keep data-integrity blocker on active PAY-21, fix before completion, add failure-path coverage, rerun canonical verification and workspace review.",
+      "files": [],
+      "expectations": [
+        "Treats finding as blocker, not ordinary warning",
+        "Keeps fix on active PAY-21 because it affects current acceptance and data integrity",
+        "Blocks PAY-21 completion until fixed",
+        "Requires failure-path coverage and fresh canonical verification",
+        "Does not create an unnecessary follow-up card"
+      ]
+    },
+    {
+      "id": 22,
+      "name": "route-optional-in-scope-warning",
+      "prompt": "Active card APP-22 adds optional CACHE_TTL with a safe runtime default. Acceptance and canonical verification pass, but .env.example omits CACHE_TTL. User says: \"fix the workspace warning.\" Route the request without silently expanding scope.",
+      "expected_output": "Identify non-blocking in-scope documentation warning, ask whether to include it now or create follow-up when intent is ambiguous, and preserve completion readiness.",
+      "files": [],
+      "expectations": [
+        "Classifies omission as non-blocking warning",
+        "Does not revoke completion readiness solely for warning",
+        "Asks user to choose fix-now on APP-22 versus follow-up because request does not define scope intent",
+        "If fixed now, keeps change bounded to config documentation and reruns relevant verification",
+        "Does not silently expand APP-22 scope"
+      ]
+    },
+    {
+      "id": 23,
+      "name": "route-unrelated-warning-follow-up",
+      "prompt": "Active card APP-23 changes CSV export. Workspace warning notes pre-existing docs/roadmap.md edits unrelated to APP-23. User says: \"fix that warning too.\" Decide whether ginb should edit it now and route exact next action.",
+      "expected_output": "Preserve unrelated edits, refuse scope expansion on APP-23, shape/select a separate follow-up card before execution.",
+      "files": [],
+      "expectations": [
+        "Does not modify or revert docs/roadmap.md under APP-23",
+        "Keeps APP-23 completion unblocked when evidence remains clear",
+        "Routes unrelated cleanup to a separate follow-up card",
+        "Requires selecting a complete follow-up card before implementation",
+        "Does not dispatch or execute from the vague request alone"
+      ]
+    },
+    {
+      "id": 24,
+      "name": "route-completed-card-warning",
+      "prompt": "Card APP-24 is already completed with a valid artifact baseline. Its completion report recorded a non-blocking missing config-doc warning. User now says: \"fix the workspace warning.\" Route the work without mutating completed scope silently.",
+      "expected_output": "Create/select follow-up work for new intent; do not alter completed APP-24 or advance its baseline unless completed scope itself must be reopened.",
+      "files": [],
+      "expectations": [
+        "Does not silently modify completed APP-24 scope",
+        "Routes fix as new follow-up card linked to APP-24",
+        "Requires selected complete card before target changes",
+        "Leaves APP-24 artifact baseline unchanged for ordinary follow-up",
+        "Mentions reopening APP-24 only if the finding changes completed acceptance or scope"
+      ]
+    },
+    {
+      "id": 25,
+      "name": "route-warning-no-selected-card",
+      "prompt": "In /work/app, user says: \"fix all workspace-health warnings.\" No Kanban card is selected; warning list and affected paths are not supplied. Decide what Ginflow permits and give smallest safe next action.",
+      "expected_output": "Allow read-only shaping only; request warning evidence and select/create complete card before edits, verification, or dispatch.",
+      "files": [],
+      "expectations": [
+        "Blocks target edits because no card is selected",
+        "Does not invent warning findings or affected paths",
+        "Allows read-only inspection and task shaping",
+        "Requests concrete warning evidence and scope",
+        "Requires a selected complete card before implementation or dispatch"
+      ]
     }
   ]
 }

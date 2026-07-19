@@ -1,0 +1,12 @@
+{
+  "eval_id": 21,
+  "eval_name": "route-blocker-fix-active-card",
+  "prompt": "Active card PAY-21 added payment capture. Workspace review finds `except Exception: pass` can mark invoices paid after charge failure. User says: \"fix the workspace warning now.\" Route the work: decide whether to fix on PAY-21 or create another card, state completion status, and give next steps.",
+  "assertions": [
+    "Treats finding as blocker, not ordinary warning",
+    "Keeps fix on active PAY-21 because it affects current acceptance and data integrity",
+    "Blocks PAY-21 completion until fixed",
+    "Requires failure-path coverage and fresh canonical verification",
+    "Does not create an unnecessary follow-up card"
+  ]
+}

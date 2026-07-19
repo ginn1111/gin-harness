@@ -1,0 +1,12 @@
+{
+  "eval_id": 23,
+  "eval_name": "route-unrelated-warning-follow-up",
+  "prompt": "Active card APP-23 changes CSV export. Workspace warning notes pre-existing docs/roadmap.md edits unrelated to APP-23. User says: \"fix that warning too.\" Decide whether ginb should edit it now and route exact next action.",
+  "assertions": [
+    "Does not modify or revert docs/roadmap.md under APP-23",
+    "Keeps APP-23 completion unblocked when evidence remains clear",
+    "Routes unrelated cleanup to a separate follow-up card",
+    "Requires selecting a complete follow-up card before implementation",
+    "Does not dispatch or execute from the vague request alone"
+  ]
+}

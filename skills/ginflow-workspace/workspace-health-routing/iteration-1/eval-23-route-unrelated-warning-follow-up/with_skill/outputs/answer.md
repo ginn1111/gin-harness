@@ -1,0 +1,1 @@
+Keep APP-23 limited to CSV export. The pre-existing docs/roadmap.md issue is unrelated and non-blocking, so preserve that file and record the finding under Workspace warnings. Finish and verify APP-23 against its acceptance criteria. Shape a separate linked follow-up with explicit docs/roadmap.md scope and acceptance, then select that complete card before fixing it.

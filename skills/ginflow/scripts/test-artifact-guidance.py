@@ -81,11 +81,18 @@ def main():
         "Missing runtime config contract",
         "Error suppression anti-pattern",
         "Unrelated workspace changes",
+        "## Route healing requests",
+        "Current blocker",
+        "Optional in-scope warning",
+        "Unrelated warning",
+        "Completed-card warning",
+        "permit read-only inspection and task shaping only",
+        "Never silently expand scope",
         "Do not copy this policy into target repo",
     ), "workspace-health-warnings.md")
     eval_ids = [case["id"] for case in evals]
     assert len(eval_ids) == len(set(eval_ids)), "eval IDs must be unique"
-    warning_evals = {case.get("name") for case in evals if case["id"] >= 16}
+    warning_evals = {case.get("name") for case in evals if 16 <= case["id"] <= 20}
     assert warning_evals == {
         "workspace-missing-config-warning",
         "workspace-secret-risk-blocker",
