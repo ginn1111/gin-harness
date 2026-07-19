@@ -26,6 +26,7 @@ Help user create minimum local setup:
 - deploy/release rules if any
 - done = exact verification path
 - one canonical verification command (`verify.sh`, `make verify`, package script, or equivalent)
+- a drift-detection section naming local authorities, generated-file relationships, and remediation order
 - file/git conventions and project-specific completion additions
 
 If executable project files already exist, run baseline verification before implementation. For a truly blank repo, record `baseline unavailable: no implementation yet`, then verify after scaffold.

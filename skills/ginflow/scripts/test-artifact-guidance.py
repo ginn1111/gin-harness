@@ -17,6 +17,7 @@ def main():
     content = (SKILL / "references/artifact-content-guide.md").read_text()
     kanban = (SKILL / "references/kanban-guide.md").read_text()
     drift = (SKILL / "references/drift-detect.md").read_text()
+    agents_template = (ROOT / "templates/AGENTS.md").read_text()
 
     artifact_paths = (
         "docs/briefs/<CARD-ID>.md",
@@ -43,13 +44,42 @@ def main():
         "docs/adrs/NNNN-<kebab-title>.md",
     ), "artifact-content-guide.md")
 
+    target_drift_contract = (
+        "## Drift detection",
+        "canonical verification command",
+        "generated",
+        "authority",
+        "unresolved drift on the selected Kanban card",
+    )
     require(skill, (
         "No selected card blocks project execution",
         "Never copy harness script into target repo",
         "Report project verification and ginflow harness as separate results",
+        "Completed-card artifact gate",
+        "artifact_baseline",
+        "Unrelated cards and unlinked project work may continue",
+        "Do not compare the whole repository",
+        "Do not use per-file SHA fallback",
+        "--kanban-task-id",
+        "--baseline-commit",
+        "Hermes-generated task ID",
+        "--initial-status blocked",
+        "Do not emit a setup `needs_input` block",
+        "do not force `--skill ginflow`",
+        "without an assignee",
+        "reserve the card's first explicit block",
+        "do not invent a `--body` option",
+        "first and only terminal completion call",
     ), "SKILL.md")
-    require(kanban, ("No selected card blocks execution", "never copy harness into target repo"), "kanban-guide.md")
-    require(drift, ("Never copy harness script into target repo", "Project verification: pass|fail|blocked"), "drift-detect.md")
+    require(kanban, ("No selected card blocks execution", "never copy harness into target repo", "artifact_baseline", "Never silently advance", "Unrelated paths and cards remain unblocked", "Objective:", "Acceptance:", "Links:", "--kanban-task-id"), "kanban-guide.md")
+    require(drift, ("Never copy harness script into target repo", "Project verification: pass|fail|blocked", "artifact_baseline", "Advancing repository `HEAD` with unrelated changes does not cause drift", "Unrelated work may continue", "Editorial only", "hermes kanban show", "--baseline-commit", *target_drift_contract), "drift-detect.md")
+
+    duplicate_snapshots = []
+    for candidate in (ROOT / "skills" / "ginflow-workspace").rglob("SKILL.md"):
+        if "\nname: ginflow\n" in f"\n{candidate.read_text()}\n":
+            duplicate_snapshots.append(str(candidate.relative_to(ROOT)))
+    assert not duplicate_snapshots, f"evaluation snapshots must not shadow live ginflow skill: {duplicate_snapshots}"
+    require(agents_template, (*target_drift_contract, "artifact_baseline", "blocks use of that card", "Unrelated work remains unblocked"), "templates/AGENTS.md")
 
     for template in ("brief.md", "spec.md", "plan.md", "kanban-task.md", "session-handoff.md"):
         text = (SKILL / "templates" / template).read_text()

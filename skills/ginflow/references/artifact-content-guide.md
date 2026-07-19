@@ -88,6 +88,7 @@ During work or close, record:
 - changed files
 - canonical verification command and fresh result
 - blockers, risks, decisions, artifact drift, and related cards when present
+- immediately before completion, a Git completion commit and exact linked target-local paths in `artifact_baseline`; linked artifacts must be committed
 
 Link all artifacts individually. Never use card body to replace missing required artifact.
 

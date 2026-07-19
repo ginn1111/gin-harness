@@ -1,4 +1,4 @@
-Title: <short objective>
+Title: <CARD-ID> — <short objective>
 
 Content rules: `references/artifact-content-guide.md` in `ginflow`.
 
@@ -14,5 +14,9 @@ Acceptance:
 Workspace:
 - dir:/abs/path/to/project  # or worktree
 
-Artifact link:
-- <optional brief/spec/plan path>
+Links:
+- <optional docs/briefs/<CARD-ID>.md, spec, or plan path>
+
+`artifact_baseline` (completion only):
+- commit: <git-commit-containing-all-linked-artifacts>
+- paths: [<linked target-local artifact paths>]

@@ -80,6 +80,126 @@
         "Reports project verification and ginflow harness separately",
         "Treats harness drift as warning or blocker based on lifecycle materiality"
       ]
+    },
+    {
+      "id": 7,
+      "name": "completed-card-linked-doc-drift",
+      "prompt": "Solo-dev repo card APP-9 is done. Its artifact baseline records completion commit abc123 and links docs/briefs/APP-9.md plus docs/specs/APP-9.md. A later commit materially changes the linked spec. Explain the gate decision and exact resolution options before any work resumes from APP-9.",
+      "expected_output": "Block use of APP-9 as authority and propose restoring/versioning into a linked follow-up, reopening APP-9, or explicit editorial baseline advancement only when the human classifies it non-material.",
+      "files": [],
+      "expectations": [
+        "Blocks resume or authority use for APP-9 because a linked artifact differs from the completion commit",
+        "Proposes new versioned docs and a follow-up card linked back to APP-9",
+        "Proposes reopening APP-9 and rerunning verification for changed completed scope",
+        "Allows baseline advancement only after explicit human classification as editorial",
+        "Does not silently replace the completion commit",
+        "Uses the supplied path-scoped completion commit rather than replacing it with a mandatory per-file SHA baseline",
+        "Blocks only use of APP-9 as authority while leaving unrelated cards and unlinked work available"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "unrelated-change-does-not-drift",
+      "prompt": "Card APP-10 is done at completion commit def456 and links only docs/briefs/APP-10.md. Since then, I committed changes to src/cache.py but did not change the linked brief. Should the solo-dev drift gate block unrelated work? Explain the comparison scope and decision.",
+      "expected_output": "Do not block: compare only card-linked target-local artifact paths against the completion commit, not the whole repository.",
+      "files": [],
+      "expectations": [
+        "Does not report artifact drift for unrelated src/cache.py changes",
+        "Scopes comparison to target-local paths linked from APP-10",
+        "Does not block unrelated project work merely because repository HEAD advanced",
+        "Uses def456 as the path-scoped completion baseline without requiring a per-file SHA fallback"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "uncommitted-artifact-completion-block",
+      "prompt": "I am a solo developer completing card APP-11. The linked brief has uncommitted edits, while artifact_baseline points at the current HEAD commit. Can I mark the card done? Give the smallest safe next action; do not use per-file SHA fallback.",
+      "expected_output": "Block completion, require committing the linked artifact and recording that completion commit, then rerun project verification and the external harness.",
+      "files": [],
+      "expectations": [
+        "Blocks completion because the recorded commit does not contain the current linked artifact content",
+        "Requires committing linked artifact edits before completion",
+        "Records the resulting completion commit and linked paths on the card",
+        "Reruns project verification and the external harness",
+        "Does not propose a per-file SHA fallback"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "live-kanban-startup-adapter",
+      "prompt": "I have a live Hermes Kanban task t_ab12 on board product. Its body uses Objective, Scope, Acceptance, and Links sections; workspace/status/assignee are normal task fields. I need to run the external Ginflow harness before resuming work. Should I create a separate normalized card JSON? Give the exact integration path and explain where Ginflow reads each required field.",
+      "expected_output": "Use --kanban-task-id and --board so the harness calls hermes kanban show --json, normalizes task/body/run metadata directly, and avoids a shadow card format.",
+      "files": [],
+      "expectations": [
+        "Rejects creating a separate shadow or normalized card JSON",
+        "Provides an external harness command with --kanban-task-id t_ab12 and --board product",
+        "Reads objective, scope, acceptance, and links from the live task body",
+        "Reads ID, workspace, status, and assignee from the Kanban task row",
+        "Reads artifact_baseline from latest completion-run metadata when present"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "kanban-atomic-completion-baseline",
+      "prompt": "I am about to complete live Hermes Kanban task t_cd34. All linked docs are committed at COMMIT, but Hermes only persists completion metadata when kanban_complete runs. Show the safe Ginflow sequence that validates the candidate baseline before closing, stores the exact same artifact_baseline in completion metadata, and verifies the persisted card afterward.",
+      "expected_output": "Run the harness with --kanban-task-id, --baseline-commit, and repeated --baseline-path; pass the identical object to kanban_complete metadata; rerun the harness without candidate overrides.",
+      "files": [],
+      "expectations": [
+        "Prevalidates the candidate with --kanban-task-id, --baseline-commit, and one or more --baseline-path arguments",
+        "Passes the identical commit and path list as artifact_baseline in kanban_complete metadata",
+        "Reruns the live-card harness after completion without candidate baseline overrides",
+        "Uses the persisted completion-run metadata as the post-completion authority",
+        "Does not substitute per-file hashes"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "malformed-live-kanban-body-block",
+      "prompt": "A live Hermes Kanban task has a target workspace and assignee, but its body has Objective, Scope, and Links sections with no Acceptance section. Can Ginflow dispatch it? Explain the blocker and smallest repair without inventing acceptance criteria.",
+      "expected_output": "Block dispatch because the live card cannot normalize required acceptance criteria; ask the human to add an observable Acceptance section, then rerun the harness.",
+      "files": [],
+      "expectations": [
+        "Blocks dispatch because Acceptance is a required live-card field",
+        "Does not invent acceptance criteria",
+        "Requests an observable Acceptance section from the human",
+        "Reruns the live-card harness after repair before dispatch"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "You are gintary preparing a live Hermes Kanban card for ginb. The body already has Objective, Scope, Acceptance, and a future docs/briefs/DM-42.md link, but that brief is not written yet. The gateway continuously recomputes blocked tasks. Give the exact safe CLI/order from card creation through parking, writing artifacts, assigning ginb, harness validation, and unblocking. Explain why each transition is safe.",
+      "expected_output": "A no-race setup sequence: create unassigned, explicitly sticky-block with needs_input, write linked artifacts, assign ginb, validate, then unblock.",
+      "files": [],
+      "expectations": [
+        "Creates the card without assigning ginb before setup is parked",
+        "Uses hermes kanban block --kind needs_input with options before the task ID",
+        "Explains that initial blocked status alone lacks the sticky blocked event and may auto-promote",
+        "Assigns ginb only after artifacts are written and unblocks only after harness validation"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "You are ginb on live task t_example. Canonical verification and candidate-baseline validation have passed. HEAD is abc123 and the only linked target artifact is docs/briefs/DM-42.md. Show the exact completion sequence and metadata. The card becomes terminal on completion, so the answer must prevent an incomplete first call.",
+      "expected_output": "Construct and inspect the exact artifact_baseline, make one completion call with metadata, then validate persisted live-card metadata.",
+      "files": [],
+      "expectations": [
+        "Constructs artifact_baseline with commit abc123 and exactly docs/briefs/DM-42.md",
+        "States that the first and only completion call includes metadata",
+        "Does not propose completing first and editing or retrying metadata afterward",
+        "Reruns the harness against the completed live card without candidate overrides"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "A ginb worker completed a live card before including artifact_baseline metadata, then tried kanban_complete a second time and got a terminal-task error. Explain the workflow defect, the safe current disposition, and the general rule that should prevent recurrence. Do not silently invent or advance a baseline.",
+      "expected_output": "Identify non-atomic terminal completion, block authority until explicit recovery, and require metadata on the first completion call.",
+      "files": [],
+      "expectations": [
+        "Identifies the first metadata-free completion call as the root workflow defect",
+        "Treats the completed card as invalid authority until explicit human recovery or reconciliation",
+        "Does not silently invent or advance completion metadata",
+        "Requires candidate validation and metadata in the first and only completion call for future work"
+      ]
     }
   ]
 }

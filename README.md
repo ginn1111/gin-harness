@@ -93,6 +93,8 @@ When working in blank project or real project:
 - switch workspace to project repo
 - keep using global profiles installed from this repo
 - let project repo define local build/test/style rules in `AGENTS.md` or `.hermes.md`
+- document target-project drift detection there: canonical verification, local authorities, generated-file relationships, and remediation order
+- baseline completed-card linked artifacts with a path-scoped Git completion commit; block use of that card on drift until a human chooses a linked follow-up, reopens it, or approves an editorial baseline advance
 - keep project task artifacts in project repo if needed
 
 ## Blank project behavior

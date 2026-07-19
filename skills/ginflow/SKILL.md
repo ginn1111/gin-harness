@@ -40,6 +40,10 @@ Put these in target repo when project needs them:
 | `docs/handoffs/<CARD-ID>.md` | optional exported resume snapshot |
 | `docs/adrs/` | durable architectural decisions |
 
+`<CARD-ID>` is the stable human-facing work key chosen before card creation (for example `APP-9`) and used in the title and artifact paths. `$TASK_ID` is the Hermes-generated task ID (for example `t_ab12`) returned after creation and used by Kanban tools and `--kanban-task-id`. Do not rename artifacts to the generated ID; the harness follows explicit `Links:` paths.
+
+Do not store artifacts in setup repo unless task explicitly changes global profile system.
+
 Starter local context:
 - copy `templates/AGENTS.md` from setup repo into target repo
 
@@ -86,10 +90,11 @@ Before target-project work:
 3. Require and read selected or assigned Kanban card. Stop if absent.
 4. Confirm all required card fields and workspace. Stop if incomplete.
 5. Read linked brief/spec/plan when present.
-6. Inspect git state and run project baseline verification.
-7. Run external ginflow harness against target repo and selected card; do not copy harness into target repo.
-8. Report project verification and ginflow harness separately.
-9. Route execution as investigation or implementation. Brainstorming may occur before card selection.
+6. If the selected card is completed, run the linked-artifact drift gate before any project action.
+7. Inspect git state and run project baseline verification.
+8. Run external ginflow harness against target repo and selected card; do not copy harness into target repo.
+9. Report project verification and ginflow harness separately.
+10. Route execution as investigation or implementation. Brainstorming may occur before card selection.
 
 Stop when any required input is missing and risk is material.
 
@@ -97,6 +102,7 @@ Stop when any required input is missing and risk is material.
 
 - One active card per worker.
 - No target-project execution without selected, complete card.
+- Do not resume, hand off, or derive work from a completed card while its linked-artifact drift is unresolved. Unrelated cards and unlinked project work may continue.
 - Stay inside card scope and target workspace.
 - Use project-native commands and local conventions.
 - Block on material ambiguity; do not invent requirements.
@@ -123,6 +129,26 @@ Include only:
 - scope
 - acceptance criteria
 - link to project artifact if present
+
+At completion, also store a path-scoped `artifact_baseline` with the Git completion commit and exact target-local linked artifact paths. This is verification metadata, not duplicated artifact content.
+
+For a live Hermes Kanban card, use these exact body labels so the external harness can normalize `hermes kanban show --json` output:
+
+```text
+Objective: <what to achieve>
+Scope:
+- <files/dirs/areas>
+Acceptance:
+- <observable completion check>
+Links:
+- docs/briefs/<CARD-ID>.md
+```
+
+Hermes stores workspace, status, assignee, and ID on the task row. It stores `artifact_baseline` in the latest completion run metadata. The harness reads both locations; do not create a second shadow card JSON format.
+
+To avoid dispatch racing ahead of linked artifacts, draft card and artifact contents in memory, then create the card without an assignee, with complete future `Links:` paths and `--initial-status blocked`. Do not emit a setup `needs_input` block: reserve the card's first explicit block for `ginb`'s review handoff so recurrence protection does not move the card to triage. Write and commit linked target artifacts, assign `ginb`, and run project checks plus the external candidate-baseline harness. Unblock only after dispatch readiness passes. The assigned `ginb` profile loads its canonical local Ginflow skill; do not force `--skill ginflow` because the claiming dispatcher profile resolves task skills and multi-profile gateways may not share that skill.
+
+If an existing live body is missing required sections, keep it blocked and ask the human to edit the title/body in the Kanban dashboard, then rerun the harness. The current CLI `hermes kanban edit` only backfills completed-task result/summary/metadata; do not invent a `--body` option. If dashboard repair is unavailable, create a corrected replacement card only with human approval and preserve a link/comment back to the malformed card.
 
 Use real target repo workspace:
 - `--workspace dir:/abs/path/to/project`
@@ -162,10 +188,29 @@ Immediately before reporting completion:
 5. Report only files under selected card workspace.
 6. Quote canonical project command and exact fresh result.
 7. Record same evidence on selected Kanban card before completing it.
+8. Require every target-local linked artifact to be committed. If the worker lacks commit permission, block completion and ask the human to commit; never create a commit implicitly. Record that Git commit and the exact linked paths in card `artifact_baseline`.
+9. Before completion, validate candidate metadata against the live card with `--kanban-task-id`, `--baseline-commit`, and repeated `--baseline-path` arguments. `ginb` then comments verification evidence plus the exact `artifact_baseline` payload and blocks with `review-required: Ginflow completion baseline ready`; it does not call `kanban_complete` for tasks with target-local artifact links. `gintary` revalidates and makes the first and only terminal completion call with that payload, then reruns the harness without candidate arguments.
 
-Project verification proves product behavior and blocks completion when it fails. Ginflow harness proves workflow readiness and drift: report failures as warnings, but treat missing card, wrong workspace, missing acceptance, missing required artifact, or missing completion verification path as blockers for affected lifecycle stage. Harness unavailable is a warning and never substitutes for project verification.
+Project verification proves product behavior and blocks completion when it fails. Ginflow harness proves workflow readiness and drift: report failures as warnings, but treat missing card, wrong workspace, missing acceptance, missing required artifact, missing completion verification path, missing completed-card artifact baseline, or changed completed-card linked artifact as blockers for the affected lifecycle stage. Harness unavailable is a warning and never substitutes for project verification.
 
 Temporary or ad-hoc checks are not completion evidence unless selected card explicitly targets that temporary artifact. Do not create or report unrelated temporary checks when canonical project verification exists. If canonical verification is unavailable or fails, report blocked/not done.
+
+Live harness examples:
+
+```bash
+# Startup/resume: reads the task row, body, and latest run metadata directly.
+python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
+  --setup-repo <setup-repo> --target <target-repo> \
+  --kanban-task-id "$TASK_ID" --json
+
+# Pre-completion: validates the exact baseline that will be sent to kanban_complete.
+python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
+  --setup-repo <setup-repo> --target <target-repo> \
+  --kanban-task-id "$TASK_ID" --baseline-commit "$COMMIT" \
+  --baseline-path docs/briefs/<CARD-ID>.md --json
+```
+
+Add harness `--board <slug>` when the task is not on the current board. For direct CLI operations, board selection is a Kanban-level option: `hermes kanban --board <slug> show|create|complete ...`. `--card <json-file>` remains available for fixtures and accepts either normalized Ginflow JSON or saved `hermes kanban show --json` output.
 
 ## Harness subsystem mapping
 
@@ -213,6 +258,17 @@ Rule:
 - do not mix them
 - ginflow harness remains in setup/deployed skill and runs externally against target repo; never copy it into target repo
 
+### Completed-card artifact gate
+
+- Before completion, require each target-local linked artifact to be committed. Store `artifact_baseline.commit` and `artifact_baseline.paths`; paths must exactly match the card's linked local docs. Lack of commit permission blocks completion and requires a human commit rather than an implicit agent commit.
+- On startup, resume, handoff, or derived work involving that completed card, compare only those paths against the completion commit. Do not compare the whole repository.
+- A missing/unavailable commit, path-list mismatch, missing artifact, committed change, or uncommitted change is suspected drift and blocks use of that card as authority. Unrelated paths and unrelated cards remain unblocked.
+- The harness cannot reliably identify the editor or determine materiality, so a human chooses one resolution.
+- Resolution A — new intent: restore the completed artifact, create new versioned docs and a follow-up card, and link both back to the completed card.
+- Resolution B — changed completed scope: reopen the card, reconcile artifacts with implementation, acceptance, and verification evidence, commit the result, record the new completion commit, rerun verification and the harness, then complete again.
+- Resolution C — editorial only: after explicit human classification, commit the editorial change, advance the baseline commit, and record an approval note without reopening implementation work.
+- Never silently advance a completion commit. Do not use per-file SHA fallback.
+
 ## Blank project flow
 
 If user starts in blank project:
@@ -233,6 +289,7 @@ Minimum local setup:
 - key directories
 - forbidden/sensitive paths
 - definition of done / verification path
+- drift-detection contract: local authorities, generated-file relationships, and remediation order
 - project summary and commands
 - file/git conventions and project-specific completion additions
 
@@ -247,6 +304,8 @@ Stop and clarify when:
 - wrong repo
 - no selected Kanban card after pre-card shaping
 - selected card missing required fields
+- completed card missing a valid path-scoped completion commit for linked local docs
+- completed card linked artifact missing, committed after, or uncommitted relative to its completion commit
 - fuzzy requirement
 - unclear cause but user expects direct fix
 - acceptance criteria missing
