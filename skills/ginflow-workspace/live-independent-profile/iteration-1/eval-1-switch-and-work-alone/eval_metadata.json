@@ -1,0 +1,15 @@
+{
+  "eval_id": 1,
+  "eval_name": "switch-and-work-alone",
+  "prompt": "You are running as profile PROFILE after user switched to it. User asks: \"Use this harness for my next project task. Should you contact, assign, or wait for another Hermes profile? Explain exact operating model.\"",
+  "assertions": [
+    "States PROFILE works independently",
+    "Rejects contacting, assigning, or waiting for another profile",
+    "Uses current profile for task shaping and execution",
+    "States ginflow-gate mechanically validates completion"
+  ],
+  "profiles": [
+    "gintary",
+    "ginb"
+  ]
+}

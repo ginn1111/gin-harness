@@ -1,0 +1,15 @@
+{
+  "eval_id": 3,
+  "eval_name": "explicit-no-handoff-boundary",
+  "prompt": "You are running as profile PROFILE. User says: \"Finish this task alone; do not collaborate with OTHER.\" Describe lifecycle from request through completion.",
+  "assertions": [
+    "Keeps full lifecycle in PROFILE",
+    "Uses Kanban as durable state rather than inter-profile messaging",
+    "Does not hand off implementation or review to OTHER",
+    "Includes gate-backed completion evidence"
+  ],
+  "profiles": [
+    "gintary",
+    "ginb"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "skill_name": "ginflow",
+  "behavior": "Live independent profile switching without collaboration",
+  "iteration": "live-independent-profile/iteration-1",
+  "evals_run": [
+    1,
+    2,
+    3
+  ],
+  "profiles_run": [
+    "gintary",
+    "ginb"
+  ],
+  "runs_per_profile_per_configuration": 1,
+  "live_agent_runs": 12,
+  "configurations": {
+    "with_skill": {
+      "passed": 10,
+      "failed": 2,
+      "total": 12,
+      "pass_rate": 0.8333
+    },
+    "old_skill": {
+      "passed": 10,
+      "failed": 2,
+      "total": 12,
+      "pass_rate": 0.8333
+    }
+  },
+  "delta": {
+    "passed_assertions": 0,
+    "pass_rate": 0.0
+  },
+  "grading": "Manual assertion review of captured live Hermes responses; each assertion requires both profile sections to satisfy it",
+  "limits": [
+    "One run per profile/configuration measures correctness only, not variance or confidence.",
+    "Prompts explicitly request solo behavior, reducing discrimination between current and baseline.",
+    "Both configurations run through current installed profile runtime; policy snapshot differs, but model/provider/config remain current.",
+    "Agent responses included profile config warnings; these did not affect policy grading.",
+    "No project files, Kanban cards, or remote systems were mutated during live prompts."
+  ]
+}

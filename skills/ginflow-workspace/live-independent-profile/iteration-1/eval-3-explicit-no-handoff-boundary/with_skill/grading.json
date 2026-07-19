@@ -1,0 +1,31 @@
+{
+  "grader": "Manual assertion review of both live profile outputs",
+  "expectations": [
+    {
+      "text": "Keeps full lifecycle in PROFILE",
+      "passed": true,
+      "evidence": "Both profile sections cover shaping, card creation, execution, verification, and completion under current profile."
+    },
+    {
+      "text": "Uses Kanban as durable state rather than inter-profile messaging",
+      "passed": true,
+      "evidence": "ginb line 48 and gintary line 107 use Kanban/card state for restart, not inter-profile messaging."
+    },
+    {
+      "text": "Does not hand off implementation or review to OTHER",
+      "passed": true,
+      "evidence": "ginb lines 5/30 and gintary lines 61/87 reject handoff or collaboration."
+    },
+    {
+      "text": "Includes gate-backed completion evidence",
+      "passed": true,
+      "evidence": "Both require completion metadata, exact commit/paths, and pre-completion harness/gate checks."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "grader": "Manual assertion review of both live profile outputs",
+  "expectations": [
+    {
+      "text": "Says OTHER needs no setup/card/notification",
+      "passed": true,
+      "evidence": "ginb line 5 and gintary line 20 explicitly say other profile needs no setup, card, or notification."
+    },
+    {
+      "text": "Does not invent shared state or collaboration",
+      "passed": true,
+      "evidence": "Both answers treat other profile as unrelated and untouched."
+    },
+    {
+      "text": "Keeps work and evidence under PROFILE",
+      "passed": false,
+      "evidence": "Answers do not state where completion evidence is kept."
+    },
+    {
+      "text": "Does not claim OTHER reviews completion",
+      "passed": true,
+      "evidence": "Neither answer claims other profile reviews completion."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  }
+}

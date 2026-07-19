@@ -1,0 +1,31 @@
+{
+  "grader": "Manual assertion review of both live profile outputs",
+  "expectations": [
+    {
+      "text": "States PROFILE works independently",
+      "passed": true,
+      "evidence": "ginb lines 5-14 and gintary lines 47-67 identify current profile as executor."
+    },
+    {
+      "text": "Rejects contacting, assigning, or waiting for another profile",
+      "passed": true,
+      "evidence": "ginb line 10 and gintary line 50 reject contact, assignment, or waiting."
+    },
+    {
+      "text": "Uses current profile for task shaping and execution",
+      "passed": true,
+      "evidence": "ginb lines 16-32 and gintary lines 54-68 keep shaping and execution in current profile."
+    },
+    {
+      "text": "States ginflow-gate mechanically validates completion",
+      "passed": false,
+      "evidence": "Neither profile states ginflow-gate mechanically validates completion; output mentions harness/lifecycle gates only."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  }
+}

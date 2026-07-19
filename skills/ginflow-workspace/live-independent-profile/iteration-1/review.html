@@ -1,0 +1,445 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Live independent-profile comparison</title><style>body{margin:0;background:#f7f6f2;color:#181817;font:15px system-ui}header{padding:24px;background:#181817;color:#fff}main{max-width:1500px;margin:auto;padding:24px}article,section{background:#fff;border:1px solid #deddd7;border-radius:8px;padding:16px;margin-bottom:20px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}pre{white-space:pre-wrap;max-height:520px;overflow:auto;background:#f3f2ee;padding:12px}li{margin:9px 0}.pass{color:#176b36}.fail{color:#a52323}small{display:block;color:#555;margin-top:3px}@media(max-width:900px){.pair{grid-template-columns:1fr}}</style></head><body><header><h1>Live independent-profile behavior</h1><p>Current 10/12 · Baseline 10/12 · 12 live runs</p></header><main><article id="eval-1"><h2>Eval 1: switch-and-work-alone</h2><p><b>Prompt:</b> You are running as profile PROFILE after user switched to it. User asks: &quot;Use this harness for my next project task. Should you contact, assign, or wait for another Hermes profile? Explain exact operating model.&quot;</p><div class="pair"><section><h3>Current skill — 3/4</h3><pre>## Profile `ginb`
+
+Exit: `0`
+
+Use harness as ginb, current execution profile.
+
+Operating model:
+
+- ginb owns task execution in real target repo.
+- Do not contact, assign to, or wait for gintary by default.
+- Current profile loads configured Ginflow skill. Do not force another profile or `--skill ginflow`.
+- Hermes Kanban selected card is authority for task, assignee, status, workspace, scope, acceptance, and links.
+- One active card per mutable workspace. Parallel work needs isolated worktree or different workspace.
+- Kanban dispatcher claim is mechanical authority. No profile-to-profile coordination substitutes for it.
+
+Before work, ginb must:
+
+1. Confirm workspace is real target repo, not setup repo.
+2. Read `AGENTS.md` and `.hermes.md`.
+3. Require one selected/assigned, complete Kanban card assigned to ginb.
+4. Validate ID, title, objective, scope, acceptance, workspace, status, assignee, and links.
+5. Read linked brief/spec/plan.
+6. Check completed-card artifact drift when applicable.
+7. Inspect git state and run canonical baseline verification.
+8. Run external Ginflow harness against target repo/card.
+9. Report project verification and harness separately.
+
+If card is absent, incomplete, assigned to gintary, points at wrong workspace, lacks acceptance/verification path, or has unresolved completed-card drift: stop. Ask Gin to select, repair, reassign, or resolve card. Do not contact gintary or wait for it unless Gin explicitly chooses cross-profile coordination.
+
+During work, ginb stays inside card scope/workspace, records progress and evidence on card, and blocks on material ambiguity.
+
+Completion requires passing canonical project checks, scope review, recorded evidence, accurate Kanban state, restartable repo, explicit limits, and external harness validation. Harness warnings do not replace project verification; lifecycle-critical harness failures block completion.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_015954_b51aea
+
+## Profile `gintary`
+
+Exit: `0`
+
+Warning: Unknown toolsets: messaging, moa
+Use harness from setup repo externally against real target repo. Do not use setup repo as code workspace or copy harness into target repo.
+
+Operating model:
+
+- Active executor: `gintary`.
+- Do not contact, assign to, or wait for `ginb` by default.
+- Current profile loads configured Ginflow skill; do not force `--skill ginflow`.
+- Kanban card is durable authority and handoff—not chat, memory, or another profile.
+
+Before execution:
+
+1. Confirm workspace is real target repo.
+2. Read target `AGENTS.md` and `.hermes.md`.
+3. Shape task if needed, then require one selected/assigned Kanban card.
+4. Card must contain ID, title, objective, scope, acceptance, workspace, status, assignee, and links.
+5. Assignee should be `gintary` for current-profile execution.
+6. Read linked brief/spec/plan.
+7. Check completed-card artifact drift when applicable.
+8. Inspect git state; run canonical project baseline verification.
+9. Run external Ginflow harness against target repo and `$TASK_ID`.
+10. Report project verification and harness separately.
+
+Execution starts only after complete card exists. One active card per mutable workspace; parallel work requires isolated worktree or different workspace.
+
+Contact or assign `ginb` only when user explicitly chooses cross-profile delegation or card is deliberately assigned there. Then Kanban card, linked artifacts, workspace, and status provide handoff. Do not coordinate through inferred chat state. If `ginb` owns card, `gintary` should not mutate same workspace or wait implicitly; either select work assigned to `gintary`, use isolated workspace, or ask user to resolve ownership.
+
+Stop when card absent/incomplete, repo wrong, acceptance or verification path missing, requirement materially unclear, or completed-card drift unresolved.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [33m⚠[0m Unknown top-level config key &#x27;profile&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_015954_5b83c2
+</pre><ul><li class=pass><b>PASS</b> — States PROFILE works independently<small>ginb lines 5-14 and gintary lines 47-67 identify current profile as executor.</small></li><li class=pass><b>PASS</b> — Rejects contacting, assigning, or waiting for another profile<small>ginb line 10 and gintary line 50 reject contact, assignment, or waiting.</small></li><li class=pass><b>PASS</b> — Uses current profile for task shaping and execution<small>ginb lines 16-32 and gintary lines 54-68 keep shaping and execution in current profile.</small></li><li class=fail><b>FAIL</b> — States ginflow-gate mechanically validates completion<small>Neither profile states ginflow-gate mechanically validates completion; output mentions harness/lifecycle gates only.</small></li></ul></section><section><h3>Pinned baseline — 3/4</h3><pre>## Profile `ginb`
+
+Exit: `0`
+
+Use harness as external workflow gate for target repo. Do not copy it into project.
+
+Operating model:
+
+- Current executor: `ginb`.
+- `ginb` owns selected card from startup through completion.
+- Do not contact, assign to, dispatch to, or wait for `gintary` by default.
+- Another profile becomes relevant only when user explicitly assigns work there or parallel work gets separate card plus isolated worktree/workspace.
+- One active card per mutable workspace. Dispatcher claim is mechanical authority.
+
+Before execution, `ginb` must:
+
+1. Confirm workspace is real target repo, not setup repo.
+2. Read target `AGENTS.md` and `.hermes.md`.
+3. Require one selected/assigned Kanban card.
+4. Validate ID, title, objective, scope, acceptance, workspace, status, assignee, and links.
+5. Read linked brief/spec/plan.
+6. Check completed-card artifact drift when applicable.
+7. Inspect git state and run canonical project baseline verification.
+8. Run external Ginflow harness against target repo and card.
+9. Report project verification and harness separately.
+
+Missing card, wrong assignee/workspace, incomplete fields, material ambiguity, or missing verification path: stop and ask Gin. Do not wait for `gintary`.
+
+During work:
+
+- Stay inside card scope and workspace.
+- Keep card assigned to `ginb`.
+- Record progress, blockers, changed files, checks, and next step on card.
+- Use isolated worktree/workspace for any parallel card.
+
+Completion:
+
+- Run canonical project verification first.
+- Review scoped changes and workspace warnings.
+- Run external harness second.
+- Record exact verification result and path-scoped artifact baseline on card.
+- Complete only when acceptance and lifecycle gates pass.
+
+Kanban card plus linked target-repo artifacts form durable handoff. Session transcript and memory are supporting context only. `gintary` does not need contact, assignment, or synchronization unless Gin deliberately transfers or separately assigns work.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_020011_a79765
+
+## Profile `gintary`
+
+Exit: `0`
+
+Warning: Unknown toolsets: messaging, moa
+Use harness as profile `gintary`, operating directly in real target repo—not setup repo.
+
+Operating model:
+
+- `gintary` owns current task execution. Do not contact, assign, or wait for `ginb` by default.
+- Hermes Kanban card is authority and durable handoff—not chat, memory, or another profile.
+- Before execution: confirm target workspace, read local rules, select one complete card assigned to `gintary`, read linked artifacts, inspect Git state, run baseline project verification, then external Ginflow harness.
+- No selected complete card means stop. Pre-card brainstorming and read-only shaping allowed; implementation investigation, edits, dispatch, and verification blocked.
+- One active card per mutable workspace. Parallel work requires isolated worktree or different workspace.
+- Keep task inside card objective, scope, acceptance, workspace, and links. Block on material ambiguity.
+- Store brief/spec/plan in target repo under card ID paths. Harness stays external in setup repo.
+- Completion requires acceptance met, canonical project checks passed, scope reviewed, evidence recorded on card, accurate status, committed linked artifacts, and successful lifecycle gate.
+- Report project verification and Ginflow harness separately. Harness-unavailable is warning; missing card/workspace/acceptance/artifacts or artifact drift blocks affected stage.
+- Unfinished work resumes from card, linked artifacts, repo state, and local rules.
+
+Use `ginb` only when human explicitly selects or assigns work to it, or gives it separate card plus isolated workspace. Do not coordinate with, auto-dispatch to, or wait for `ginb` merely because profile exists.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [33m⚠[0m Unknown top-level config key &#x27;profile&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_015954_6c8176
+</pre><ul><li class=pass><b>PASS</b> — States PROFILE works independently<small>Both profile sections identify current profile as task owner/executor.</small></li><li class=pass><b>PASS</b> — Rejects contacting, assigning, or waiting for another profile<small>ginb line 11 and gintary lines 61/72 reject implicit contact or waiting.</small></li><li class=pass><b>PASS</b> — Uses current profile for task shaping and execution<small>Both sections keep task shaping and execution in current profile.</small></li><li class=fail><b>FAIL</b> — States ginflow-gate mechanically validates completion<small>Neither profile names ginflow-gate as mechanical completion validator.</small></li></ul></section></div></article><article id="eval-2"><h2>Eval 2: other-profile-exists-clean-control</h2><p><b>Prompt:</b> You are running as profile PROFILE. Another installed profile named OTHER exists but has no relation to this task. User asks: &quot;Does OTHER need setup, a card, or notification before you start?&quot;</p><div class="pair"><section><h3>Current skill — 3/4</h3><pre>## Profile `ginb`
+
+Exit: `0`
+
+No. gintary needs no setup, card, or notification. Work runs as ginb; only selected task, ginb assignment, and real target workspace matter. Leave unrelated gintary unchanged.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_020012_17e235
+
+## Profile `gintary`
+
+Exit: `0`
+
+Warning: Unknown toolsets: messaging, moa
+No. ginb needs no setup, card, or notification.
+
+Only gintary and selected task matter. Before execution, require one complete Kanban card assigned/selected for gintary with real target-repo workspace. ginb remains untouched.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [33m⚠[0m Unknown top-level config key &#x27;profile&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_020011_495ab9
+</pre><ul><li class=pass><b>PASS</b> — Says OTHER needs no setup/card/notification<small>ginb line 5 and gintary line 18 explicitly say other profile needs no setup, card, or notification.</small></li><li class=pass><b>PASS</b> — Does not invent shared state or collaboration<small>Both answers leave unrelated profile untouched and invent no collaboration.</small></li><li class=fail><b>FAIL</b> — Keeps work and evidence under PROFILE<small>Answers identify current profile/task but do not state where completion evidence is kept.</small></li><li class=pass><b>PASS</b> — Does not claim OTHER reviews completion<small>Neither answer claims other profile reviews completion.</small></li></ul></section><section><h3>Pinned baseline — 3/4</h3><pre>## Profile `ginb`
+
+Exit: `0`
+
+No. gintary needs no setup, card, or notification. Task unrelated.
+
+For work under ginb, require selected complete Kanban card before target-project execution. Pre-card shaping may proceed without one.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_020027_e73651
+
+## Profile `gintary`
+
+Exit: `0`
+
+Warning: Unknown toolsets: messaging, moa
+No. ginb needs no setup, card, or notification.
+
+Only gintary and selected task matter. Before execution, require one complete Kanban card assigned/selected for gintary with real target workspace. ginb remains untouched.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [33m⚠[0m Unknown top-level config key &#x27;profile&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_020021_ee968c
+</pre><ul><li class=pass><b>PASS</b> — Says OTHER needs no setup/card/notification<small>ginb line 5 and gintary line 20 explicitly say other profile needs no setup, card, or notification.</small></li><li class=pass><b>PASS</b> — Does not invent shared state or collaboration<small>Both answers treat other profile as unrelated and untouched.</small></li><li class=fail><b>FAIL</b> — Keeps work and evidence under PROFILE<small>Answers do not state where completion evidence is kept.</small></li><li class=pass><b>PASS</b> — Does not claim OTHER reviews completion<small>Neither answer claims other profile reviews completion.</small></li></ul></section></div></article><article id="eval-3"><h2>Eval 3: explicit-no-handoff-boundary</h2><p><b>Prompt:</b> You are running as profile PROFILE. User says: &quot;Finish this task alone; do not collaborate with OTHER.&quot; Describe lifecycle from request through completion.</p><div class="pair"><section><h3>Current skill — 4/4</h3><pre>## Profile `ginb`
+
+Exit: `0`
+
+1. Honor constraint: ginb works alone. Do not dispatch, hand off to, or collaborate with gintary.
+
+2. Shape task before execution:
+   - Confirm real target-repo workspace.
+   - Read-only inspect enough to choose mode and size.
+   - Draft objective, scope, acceptance, exclusions, and `Links:`.
+   - Choose stable card ID and required brief; add plan/spec when needed.
+
+3. Require one Kanban card assigned to ginb. Card must include ID, title, objective, scope, acceptance, workspace, status, assignee, and links. If absent or incomplete, stop and ask Gin to create/repair it. Keep malformed card blocked.
+
+4. For new card:
+   - Create blocked, assigned to ginb, with future artifact paths.
+   - Write linked artifacts in target repo.
+   - Commit artifacts; lack of commit permission blocks readiness.
+   - Run project checks and candidate-baseline harness.
+   - Unblock only after dispatch readiness passes.
+
+5. Start work:
+   - Read `AGENTS.md`, `.hermes.md`, selected card, and linked artifacts.
+   - Check completed-card artifact drift if relevant.
+   - Inspect git state.
+   - Run canonical baseline verification first.
+   - Run external Ginflow harness separately.
+   - Stop on wrong repo, material ambiguity, missing acceptance, missing verification path, or blocking drift.
+
+6. Execute inside card scope and workspace only. Use project-native commands. Keep one active card in mutable workspace. Record progress/evidence on card. No gintary involvement.
+
+7. Complete:
+   - Satisfy acceptance.
+   - Run fresh canonical project verification.
+   - Review changed files against scope and inspect `git status --short`.
+   - Run external pre-completion harness with completion commit and exact linked artifact paths.
+   - Review workspace-health warnings.
+   - Record project result, harness result, warnings, limits, `verification_result`, and matching `artifact_baseline` on card.
+   - Complete card only if blocking gates pass.
+
+8. Report concise results:
+   - Changed files under selected workspace.
+   - Exact canonical command and fresh result.
+   - Ginflow harness result separately.
+   - Workspace warnings and remaining limits.
+   - Accurate final Kanban status.
+
+If unfinished or blocked, update card with outcome, changed files, checks, blocker, exact next step, and accurate status. Kanban remains durable handoff, but no handoff to gintary.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_020031_3fbef6
+
+## Profile `gintary`
+
+Exit: `0`
+
+Warning: Unknown toolsets: messaging, moa
+1. Honor constraint: profile `gintary` works alone. Do not dispatch, collaborate with, assign to, or request input from `ginb`.
+
+2. Shape request before execution:
+   - Confirm real target repo.
+   - Choose investigation, implementation, or brainstorming.
+   - Define objective, scope, acceptance, exclusions, workspace, and needed brief/spec/plan.
+   - Read-only inspection and drafting allowed here.
+
+3. Require one selected Kanban card assigned to `gintary`. Card must have ID, title, objective, scope, acceptance, workspace, status, assignee, and links. If absent or incomplete, stop; keep blocked and ask Gin for repair.
+
+4. Create linked artifacts safely:
+   - Draft card and artifact content first.
+   - Create card assigned to `gintary`, initially `blocked`, with future `Links:` paths.
+   - Write target-repo brief always; add spec/plan when required.
+   - Commit linked artifacts, run readiness checks, then unblock.
+   - If commit permission missing, stop for human commit.
+
+5. Start project work:
+   - Verify workspace matches card.
+   - Read `AGENTS.md`, `.hermes.md`, card, and linked artifacts.
+   - Run completed-card drift gate if applicable.
+   - Inspect git state.
+   - Run canonical baseline verification.
+   - Run external Ginflow harness separately.
+   - Stop on material ambiguity, missing verification path, wrong workspace, card defect, or blocking drift.
+
+6. Execute only card scope in that workspace. Use project-native commands and local rules. Keep one active card per mutable workspace. Record progress and evidence on card. No involvement from `ginb`.
+
+7. Complete only after:
+   - Acceptance passes.
+   - Canonical project verification passes.
+   - Changed files match scope.
+   - Workspace warnings reviewed.
+   - Linked target artifacts are committed.
+   - Pre-completion harness validates exact completion commit and linked paths.
+
+8. Record on card:
+   - Verification command and exact result.
+   - Completion commit.
+   - Exact `artifact_baseline.paths`.
+   - Workspace warnings.
+   - Remaining limits or blockers.
+   - Accurate final status.
+
+9. Run `kanban_complete` with matching `metadata.verification_result` and `metadata.artifact_baseline`. Report project verification and Ginflow harness separately. If canonical verification fails or required lifecycle gate blocks, report not done and leave card status accurate.
+
+10. If unfinished, card becomes durable handoff: record outcome, changed files, checks, blockers, and exact next step. Future `gintary` session resumes from card, artifacts, local rules, and repo state—not from `ginb` or chat history.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [33m⚠[0m Unknown top-level config key &#x27;profile&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_020031_4e908c
+</pre><ul><li class=pass><b>PASS</b> — Keeps full lifecycle in PROFILE<small>Both profile sections cover shaping, card creation, execution, verification, and completion under current profile.</small></li><li class=pass><b>PASS</b> — Uses Kanban as durable state rather than inter-profile messaging<small>ginb line 48 and gintary line 107 use Kanban/card state for restart, not inter-profile messaging.</small></li><li class=pass><b>PASS</b> — Does not hand off implementation or review to OTHER<small>ginb lines 5/30 and gintary lines 61/87 reject handoff or collaboration.</small></li><li class=pass><b>PASS</b> — Includes gate-backed completion evidence<small>Both require completion metadata, exact commit/paths, and pre-completion harness/gate checks.</small></li></ul></section><section><h3>Pinned baseline — 4/4</h3><pre>## Profile `ginb`
+
+Exit: `0`
+
+1. Respect solo constraint: ginb does not dispatch to, collaborate with, or hand off to gintary.
+
+2. Shape request before execution:
+   - Confirm real target repo.
+   - Inspect read-only context.
+   - Choose mode: investigation, implementation, or brainstorming.
+   - Choose stable card ID and artifact level: brief always; spec/plan when needed.
+   - Draft card and artifact content in memory.
+
+3. Require one Kanban card assigned to ginb. Card must contain ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Keep blocked if incomplete or materially ambiguous.
+
+4. Create card with real target workspace, complete future `Links:`, assignee ginb, and initial status `blocked`. Write linked artifacts in target repo, commit them, run readiness checks, then unblock. No gintary involvement.
+
+5. Start work:
+   - Read `AGENTS.md`, `.hermes.md`, selected card, and linked brief/spec/plan.
+   - Validate workspace and card fields.
+   - Check completed-card artifact drift if applicable.
+   - Inspect git state.
+   - Run canonical baseline verification.
+   - Run external Ginflow harness separately.
+   - Stop on blocking input, drift, or ambiguity.
+
+6. Execute alone inside card scope and workspace. Use project-native commands. Keep one active card in mutable workspace. Record real progress and verification evidence on card.
+
+7. Before completion:
+   - Satisfy acceptance criteria.
+   - Run fresh canonical project verification.
+   - Review changed files against scope.
+   - Read `git status --short`; use `git diff --stat` if useful.
+   - Review workspace-health warnings.
+   - Commit linked artifacts and obtain completion commit. If commit permission is absent, stop for human commit.
+   - Run external pre-completion harness using exact completion commit and linked paths.
+
+8. Record on card:
+   - Verification command and exact result.
+   - Changed files, limits, blockers, and workspace warnings.
+   - `metadata.verification_result` with commit, command, result.
+   - Matching `metadata.artifact_baseline` with commit and exact linked target-local paths.
+
+9. Complete card only after `ginflow-gate` accepts metadata and required fields. Project verification failure blocks completion. Material harness lifecycle failures block affected stage; harness unavailability alone is warning.
+
+10. Report concise completion:
+    - Acceptance outcome.
+    - Project verification result.
+    - Ginflow harness result, separately.
+    - Files within selected workspace.
+    - Remaining warnings or limits.
+    - Accurate completed status.
+
+If interrupted, update Kanban card with outcome, files, checks, blockers, exact next step, and accurate status. Kanban remains durable handoff, still assigned to ginb; no handoff or collaboration with gintary.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_020050_4f6285
+
+## Profile `gintary`
+
+Exit: `0`
+
+Warning: Unknown toolsets: messaging, moa
+1. Honor solo constraint: gintary owns work; do not dispatch to, collaborate with, or hand off to ginb.
+
+2. Shape request before execution:
+   - Confirm real target-repo workspace.
+   - Read local `AGENTS.md` / `.hermes.md`.
+   - Classify mode: investigation, implementation, or brainstorming.
+   - Choose stable card ID and artifact level.
+   - Draft thin card plus brief; add spec/plan when needed.
+
+3. Require one selected Kanban card assigned to gintary. Card must include ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Keep blocked if fields, acceptance, verification path, or material requirements are missing.
+
+4. For new card:
+   - Create with complete future `Links:` paths and initial status `blocked`.
+   - Write target-repo artifacts under `docs/briefs/`, optionally `docs/specs/` and `docs/plans/`.
+   - Commit linked artifacts; lack of commit permission blocks completion.
+   - Run readiness harness.
+   - Unblock only when dispatch-ready.
+
+5. Start execution:
+   - Validate workspace and card.
+   - Read linked artifacts.
+   - If card was completed, pass path-scoped artifact drift gate first.
+   - Inspect Git state.
+   - Run canonical baseline verification.
+   - Run external Ginflow harness separately.
+   - Report both results separately.
+
+6. Execute alone inside card scope and workspace. Use project-native commands. Block on material ambiguity. Keep one active card in mutable workspace. Preserve verification evidence.
+
+7. Before completion:
+   - Satisfy acceptance criteria.
+   - Run fresh canonical project verification.
+   - Review changed files against scope.
+   - Read `git status --short`; use `git diff --stat` if useful.
+   - Review workspace-health warnings.
+   - Run pre-completion external harness with completion commit and exact linked artifact paths.
+
+8. Record same evidence on card: outcome, changed files, exact verification command/result, blockers or limits, workspace warnings, completion commit, `metadata.verification_result`, and matching path-scoped `metadata.artifact_baseline`.
+
+9. Complete only if project checks pass, card/harness blockers are clear, linked artifacts are committed, status is accurate, and repo is restartable. Harness unavailability is warning; failed or unavailable canonical verification means not done.
+
+10. Report concise completion: acceptance met, scoped files, canonical command plus exact result, separate harness result, workspace warnings, and remaining limits.
+
+If interrupted, update card with outcome, changed files, checks, blockers, exact next step, and accurate status. Resume later from card and linked artifacts—still as gintary, without ginb.
+[33m⚠ Config issues detected in config.yaml:[0m
+  [33m⚠[0m Unknown top-level config key &#x27;known_plugin_toolsets&#x27; — it will be ignored
+  [33m⚠[0m Unknown top-level config key &#x27;profile&#x27; — it will be ignored
+  [2mRun &#x27;hermes doctor&#x27; for fix suggestions.[0m
+
+
+session_id: 20260720_020035_618fc0
+</pre><ul><li class=pass><b>PASS</b> — Keeps full lifecycle in PROFILE<small>Both profile sections keep request-through-completion lifecycle under current profile.</small></li><li class=pass><b>PASS</b> — Uses Kanban as durable state rather than inter-profile messaging<small>ginb line 54 and gintary line 110 use Kanban/card state for durable resume.</small></li><li class=pass><b>PASS</b> — Does not hand off implementation or review to OTHER<small>ginb lines 5/54 and gintary lines 67/110 reject handoff or collaboration.</small></li><li class=pass><b>PASS</b> — Includes gate-backed completion evidence<small>ginb lines 35-44 and gintary lines 96-106 require gate-backed completion evidence.</small></li></ul></section></div></article></main><script id="embedded-eval-data" type="application/json">{&quot;benchmark&quot;: {&quot;skill_name&quot;: &quot;ginflow&quot;, &quot;behavior&quot;: &quot;Live independent profile switching without collaboration&quot;, &quot;iteration&quot;: &quot;live-independent-profile/iteration-1&quot;, &quot;evals_run&quot;: [1, 2, 3], &quot;profiles_run&quot;: [&quot;gintary&quot;, &quot;ginb&quot;], &quot;runs_per_profile_per_configuration&quot;: 1, &quot;live_agent_runs&quot;: 12, &quot;configurations&quot;: {&quot;with_skill&quot;: {&quot;passed&quot;: 10, &quot;failed&quot;: 2, &quot;total&quot;: 12, &quot;pass_rate&quot;: 0.8333}, &quot;old_skill&quot;: {&quot;passed&quot;: 10, &quot;failed&quot;: 2, &quot;total&quot;: 12, &quot;pass_rate&quot;: 0.8333}}, &quot;delta&quot;: {&quot;passed_assertions&quot;: 0, &quot;pass_rate&quot;: 0.0}, &quot;grading&quot;: &quot;Manual assertion review of captured live Hermes responses; each assertion requires both profile sections to satisfy it&quot;, &quot;limits&quot;: [&quot;One run per profile/configuration measures correctness only, not variance or confidence.&quot;, &quot;Prompts explicitly request solo behavior, reducing discrimination between current and baseline.&quot;, &quot;Both configurations run through current installed profile runtime; policy snapshot differs, but model/provider/config remain current.&quot;, &quot;Agent responses included profile config warnings; these did not affect policy grading.&quot;, &quot;No project files, Kanban cards, or remote systems were mutated during live prompts.&quot;]}, &quot;eval_ids&quot;: [1, 2, 3]}</script></body></html>

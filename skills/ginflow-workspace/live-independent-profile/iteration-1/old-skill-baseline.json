@@ -1,0 +1,7 @@
+{
+  "source_commit": "f0d634c29f2b1fbd45c838c4aad216268b6fa512",
+  "path": "skills/ginflow/SKILL.md",
+  "sha256": "3fe386e60a10cfc341c39cdd1f2db8cf303ce07af100fc0bcc8aeda7d80cb5a6",
+  "current_source_commit": "ca1f210",
+  "behavior": "pre-collapse orchestrator/worker handoff"
+}

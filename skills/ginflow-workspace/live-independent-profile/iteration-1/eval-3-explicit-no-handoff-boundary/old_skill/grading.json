@@ -1,0 +1,31 @@
+{
+  "grader": "Manual assertion review of both live profile outputs",
+  "expectations": [
+    {
+      "text": "Keeps full lifecycle in PROFILE",
+      "passed": true,
+      "evidence": "Both profile sections keep request-through-completion lifecycle under current profile."
+    },
+    {
+      "text": "Uses Kanban as durable state rather than inter-profile messaging",
+      "passed": true,
+      "evidence": "ginb line 54 and gintary line 110 use Kanban/card state for durable resume."
+    },
+    {
+      "text": "Does not hand off implementation or review to OTHER",
+      "passed": true,
+      "evidence": "ginb lines 5/54 and gintary lines 67/110 reject handoff or collaboration."
+    },
+    {
+      "text": "Includes gate-backed completion evidence",
+      "passed": true,
+      "evidence": "ginb lines 35-44 and gintary lines 96-106 require gate-backed completion evidence."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

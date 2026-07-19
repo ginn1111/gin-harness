@@ -1,0 +1,15 @@
+{
+  "eval_id": 2,
+  "eval_name": "other-profile-exists-clean-control",
+  "prompt": "You are running as profile PROFILE. Another installed profile named OTHER exists but has no relation to this task. User asks: \"Does OTHER need setup, a card, or notification before you start?\"",
+  "assertions": [
+    "Says OTHER needs no setup/card/notification",
+    "Does not invent shared state or collaboration",
+    "Keeps work and evidence under PROFILE",
+    "Does not claim OTHER reviews completion"
+  ],
+  "profiles": [
+    "gintary",
+    "ginb"
+  ]
+}
