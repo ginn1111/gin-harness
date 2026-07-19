@@ -1,160 +1,124 @@
-# agents-hype — Global Hermes Profile Setup Repo
+# agents-hype
 
-Portable Hermes Agent profile source for shared global setup and update flow.
+Source repo for two managed Hermes profiles and their shared Ginflow workflow.
 
-This repo is **not** target project workspace.
-It is used only when you:
-- install profiles on new machine
-- update global profile rules
-- update shared skills/config
-- verify deployed profiles still match repo
+This repo installs and verifies global profile behavior. It is not a day-to-day project workspace. Product code, tests, local rules, and task artifacts belong in target project repos.
 
-## Purpose
+## Managed profiles
 
-Repo owns global profile setup:
-- `profiles/*.SOUL.md` — canonical profile behavior
-- `config/profile.yaml.tmpl` — generated profile config template
-- `config/profiles.yaml` — per-profile display/description overrides
-- `scripts/setup.sh` — create/update deployed profiles
-- `scripts/verify.sh` — verify deployed profiles still match repo
-- `scripts/community-setup.sh` — clone/update shared community skills
-- `skills/` — repo-versioned shared custom skills, including workflow guide skill
+| Profile | Role | Source |
+|---|---|---|
+| `gintary` | Planner, dispatcher, escalation sink | `profiles/gintary.SOUL.md` |
+| `ginb` | Builder, verifier, shipper | `profiles/ginb.SOUL.md` |
 
-Real project repos own:
-- code
-- tests
-- project docs
-- project-local `AGENTS.md` / `.hermes.md`
-- task briefs/specs/plans if project wants them
+Both profiles route target-project work through the canonical [`ginflow`](skills/ginflow/SKILL.md) skill.
 
-## Architecture
+## Repository map
 
-```text
-agents-hype/
-├── profiles/*.SOUL.md    ← canonical personality contracts
-├── config/
-│   ├── profiles.yaml     ← per-profile overrides
-│   └── profile.yaml.tmpl ← config template ({{PLACEHOLDER}} vars)
-├── community/            ← cloned community skill repos
-├── skills/               ← repo-versioned shared custom skills
-├── scripts/
-│   ├── setup.sh          ← bootstrap/update profiles
-│   ├── verify.sh         ← profile setup verification
-│   └── community-setup.sh← clone/update community skills
-├── INSTALL.md
-├── Makefile
-└── .gitignore
-```
+| Path | Purpose |
+|---|---|
+| `profiles/*.SOUL.md` | Canonical profile contracts |
+| `config/profiles.yaml` | Managed profile names, descriptions, and display skins |
+| `config/profile.yaml.tmpl` | Generated profile config template |
+| `scripts/setup.sh` | Preview or apply profile installation |
+| `scripts/verify.sh` | Verify deployed profiles and workflow contracts |
+| `scripts/community-setup.sh` | Clone or fast-forward community skills |
+| `scripts/detect-skill-drift.py` | Block profile-local copies that shadow canonical skills |
+| `skills/ginflow/` | Live shared workflow skill, templates, harness, and tests |
+| `skills/ginflow-workspace/` | Archived evaluation evidence; not loaded for live work |
+| `templates/AGENTS.md` | Starter local rules for target repos |
 
-Deployed profiles reference repo via symlinks and repo-local skill dirs:
-
-```text
-~/.hermes/profiles/ginb/
-├── SOUL.md → /path/to/agents-hype/profiles/ginb.SOUL.md
-├── config.yaml            ← generated from template + .env
-├── .env                   ← per-profile secrets (never commit)
-└── .no-bundled-skills
-```
+Community skills are machine-local clones under `community/` and are not committed.
 
 ## Quick start
 
 ```bash
-# 1. Prerequisites
 make doctor
-
-# 2. Setup local repo .env
 cp .env.example .env
-# edit: GIN_API_KEY, GIN_BASE_URL, GIN_HOST
-
-# 3. Clone/update community skills
+# Set GIN_API_KEY. Override GIN_BASE_URL or GIN_HOST only when needed.
 make community-update
+make setup       # preview
+make apply       # writes deployed profile files
 
-# 4. Bootstrap profiles
-make setup   # dry-run
-make apply   # create/update profiles
+for profile in gintary ginb; do
+  cp .env "$HOME/.hermes/profiles/$profile/.env"
+  hermes -p "$profile" skills opt-out
+done
 
-# 5. Verify deployed profiles match repo
 make verify
 ```
 
-## Operating model
+`setup.sh` resolves real account home, clears profile-scoped `HERMES_HOME`, creates missing profiles, links each `SOUL.md`, links `ginflow` into each profile, and renders `config.yaml`. Existing regular `SOUL.md`, `config.yaml`, or local `ginflow` files are backed up before replacement.
 
-### One-time or update-time: use this repo
+`GIN_BASE_URL` defaults to `https://agents.gin1111.dev/v1`; `GIN_HOST` defaults to `agents.gin1111.dev`. Missing `GIN_API_KEY` does not block setup, but model authentication will fail until profile `.env` files contain it.
 
-Use this repo when you need to:
-- create `gintary` / `ginb` on new machine
-- change global profile behavior
-- update shared skills/config
-- re-run verification after pull/update
+See [INSTALL.md](INSTALL.md) for update and troubleshooting commands.
 
-### Day-to-day: use target project repo
+## Commands
 
-When working in blank project or real project:
-- switch workspace to project repo
-- keep using global profiles installed from this repo
-- let project repo define local build/test/style rules in `AGENTS.md` or `.hermes.md`
-- document target-project drift detection there: canonical verification, local authorities, generated-file relationships, and remediation order
-- baseline completed-card linked artifacts with a path-scoped Git completion commit; block use of that card on drift until a human chooses a linked follow-up, reopens it, or approves an editorial baseline advance
-- keep project task artifacts in project repo if needed
+| Command | Action |
+|---|---|
+| `make doctor` | Show Hermes, optional CodeGraph, Python, Git, and PyYAML status |
+| `make doctor-deps` | Install PyYAML with current Python |
+| `make community-update` | Clone or fast-forward configured community skill repos |
+| `make setup` | Preview profile setup |
+| `make apply` | Apply profile setup |
+| `make verify` | Verify deployed profiles; source drift is advisory |
+| `make verify-strict` | Same checks; fail on canonical source drift |
+| `make clean` | Remove Python caches and local `.codegraph/` index |
+| `make lint` | Check shell syntax and compile Python files |
+| `make test` | Run lint and deterministic Ginflow tests |
+| `make verify-test` | Test default versus strict verification drift behavior; requires a dirty canonical file |
+| `make harness-test` | Run model-backed blank-project integration test after deterministic harness tests |
 
-## Blank project behavior
+## Installation model
 
-In blank project, profiles should inherit:
-- **global behavior** from deployed `SOUL.md` linked to this repo
-- **global config/tooling** from deployed `config.yaml` generated by this repo
-- **shared skills** from repo `skills/` and `community/`
+Deployed profile state looks like:
 
-Blank project may then add local context with either:
-- `AGENTS.md` for cross-agent portable rules, or
-- `.hermes.md` for Hermes-specific project rules
-
-Starter template included here:
-
-```bash
-cp /path/to/agents-hype/templates/AGENTS.md /path/to/your-project/AGENTS.md
+```text
+~/.hermes/profiles/<name>/
+├── SOUL.md -> <repo>/profiles/<name>.SOUL.md
+├── config.yaml
+├── .env
+├── .no-bundled-skills
+└── skills/ginflow -> <repo>/skills/ginflow
 ```
 
-Then edit project-specific commands, constraints, and forbidden areas.
+Generated config exposes repo `skills/` and cloned community skills through `skills.external_dirs`. It enables ByteRover memory, configured CLI toolsets, and optional CodeGraph MCP. Missing CodeGraph prints a recommendation; configured but broken CodeGraph makes verification fail.
 
-## Update flow
+## Verification semantics
 
-### Update repo-driven profile setup
+`make verify` checks:
+
+- both profiles exist in account-wide Hermes registry
+- `SOUL.md` and local `ginflow` links resolve to this checkout
+- generated config avoids legacy global skill paths
+- ByteRover memory, model API-key reference, and CodeGraph config exist
+- configured skills load and bundled skills are opted out
+- profile contracts, Ginflow sections, handoff template, target starter, and five-subsystem static harness agree
+
+Uncommitted changes under canonical setup paths are reported but do not fail normal verification. Use `make verify-strict` for CI or release checks.
+
+Verification does not prove target-project behavior. Target repos own their canonical build/test command and local acceptance evidence.
+
+## Target-project workflow
+
+Open real project repo before implementation. Add `AGENTS.md` or `.hermes.md` for local commands, boundaries, generated-file authorities, and deployment rules. Copy starter when useful:
+
+```bash
+cp /path/to/agents-hype/templates/AGENTS.md /path/to/project/AGENTS.md
+```
+
+Ginflow requires selected Kanban card for project execution. Card points at real target workspace and links target-local artifacts under `docs/{briefs,specs,plans,handoffs,adrs}`. Completed linked artifacts use path-scoped completion commit baseline; unresolved drift blocks use of affected card as authority.
+
+## Maintenance
 
 ```bash
 git pull
 make community-update
 make apply
 make verify
+make test
 ```
 
-### Update Hermes itself
-
-```bash
-hermes update
-make verify
-```
-
-Bundled skills are opted out. Global profile behavior stays sourced from this repo.
-
-## Verification scope
-
-`make verify` checks profile setup only:
-- profiles exist
-- `SOUL.md` symlinks point to repo
-- `config.yaml` uses repo-local skill paths
-- expected memory provider present
-- skills available
-- `.no-bundled-skills` marker present
-- no uncommitted drift in canonical repo files
-
-It does **not** verify any target project workflow or project delivery state.
-
-## Migration from old delivery-oriented scaffold
-
-Old delivery examples can be removed or ignored. Keep this repo focused on global profile setup, not project execution history.
-
-## Rule of thumb
-
-- `agents-hype` answers **how profiles are installed and behave globally**
-- target repo answers **what to build and how this project works**
-- Hermes kanban/task workspace answers **where agent should act**
+After `hermes update`, run `make verify` again. Restart active Hermes sessions after config or MCP changes.

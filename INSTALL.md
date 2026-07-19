@@ -1,170 +1,172 @@
-# agents-hype — Install / Update Global Hermes Profiles
+# Install and update managed Hermes profiles
 
-Use this repo only for **one-time setup** and **update-time maintenance** of global Hermes profiles.
+This guide installs `gintary` and `ginb` from this checkout. Run commands from repo root.
 
-Profiles installed from this repo:
-- `gintary` — planner / dispatcher / escalation sink
-- `ginb` — builder / verifier / shipper
+## Prerequisites
 
----
+Required:
 
-## 1. Prerequisites
+- Hermes CLI
+- Git
+- Python 3
+- PyYAML
+
+CodeGraph is optional but configured for both profiles.
 
 ```bash
-# Hermes
-hermes --version
-
-# Runtime deps
-python3 --version
-git --version
-python3 -m pip install pyyaml
+make doctor
+make doctor-deps   # only when PyYAML is missing
 ```
 
----
+## Install
 
-## 2. Clone repo
+1. Create machine-local provider config.
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Set `GIN_API_KEY`. Defaults already cover:
+
+   ```dotenv
+   GIN_BASE_URL=https://agents.gin1111.dev/v1
+   GIN_HOST=agents.gin1111.dev
+   ```
+
+2. Install community skills.
+
+   ```bash
+   make community-update
+   ```
+
+   Script clones `https://github.com/mattpocock/skills.git` into `community/mattpocock-skills` or fast-forwards existing clone. Clone is made read-only.
+
+3. Preview setup.
+
+   ```bash
+   make setup
+   ```
+
+   Preview still validates dependencies, parses profile registry, and blocks divergent profile-local skills before printing planned writes.
+
+4. Apply setup.
+
+   ```bash
+   make apply
+   ```
+
+   Setup manages account-wide profile registry even when invoked inside profile-scoped Hermes session. It:
+
+   - creates missing profiles with `--no-skills`
+   - links canonical `SOUL.md`
+   - links canonical `skills/ginflow`
+   - renders `config.yaml` from `config/profile.yaml.tmpl`
+   - backs up replaced regular files with timestamp suffix
+
+5. Install profile secrets and opt out of bundled skills.
+
+   ```bash
+   for profile in gintary ginb; do
+     cp .env "$HOME/.hermes/profiles/$profile/.env"
+     hermes -p "$profile" skills opt-out
+   done
+   ```
+
+   Use supported `skills opt-out` command. Do not create `.no-bundled-skills` manually.
+
+6. Verify installation.
+
+   ```bash
+   make verify
+   ```
+
+## Verify
+
+Normal verification separates deployed-profile failures from source edits:
 
 ```bash
-git clone <your-repo-url> agents-hype
-cd agents-hype
+make verify
 ```
 
----
+It fails when profile installation, config, skills, workflow contracts, or configured MCP connection are broken. Dirty canonical source files produce non-fatal recommendation.
 
-## 3. Create repo `.env`
+Strict verification also fails on tracked or untracked canonical source drift:
 
 ```bash
-cp .env.example .env
+make verify-strict
 ```
 
-Set:
+Use strict mode for CI, release, or before declaring checkout synchronized with deployment.
+
+## Update
+
+Update repo-managed profile behavior and shared skills:
 
 ```bash
-GIN_API_KEY=sk-...your-key...
-GIN_BASE_URL=https://agents.gin1111.dev/v1
-GIN_HOST=agents.gin1111.dev
-```
-
----
-
-## 4. Clone shared community skills
-
-```bash
-bash scripts/community-setup.sh --apply
-```
-
----
-
-## 5. Bootstrap profiles
-
-```bash
-bash scripts/setup.sh        # dry-run
-bash scripts/setup.sh --apply
-```
-
-What setup does:
-- creates missing profiles
-- symlinks `SOUL.md` from repo into deployed profiles
-- generates `config.yaml` from template
-- keeps profiles sourced from repo-managed skill dirs
-
----
-
-## 6. Copy per-profile secrets
-
-Important: secret-writing tools redact keys. Use shell copy, not `write_file`.
-
-```bash
-for p in gintary ginb; do
-  cp .env ~/.hermes/profiles/$p/.env
-done
-```
-
----
-
-## 7. Verify
-
-```bash
-bash scripts/verify.sh
-```
-
-Checks:
-- profile exists
-- `SOUL.md` symlink target correct
-- config uses repo-local skill dirs
-- memory provider expected
-- skills available
-- `.no-bundled-skills` present
-- canonical repo files committed
-
----
-
-## 8. How to use after install
-
-Do **not** use this repo as target project workspace by default.
-
-Instead:
-1. open blank project or real project repo
-2. use installed global profiles there
-3. add project-local `AGENTS.md` or `.hermes.md` if project needs local rules
-
-Global behavior comes from deployed profiles sourced from this repo.
-Local project behavior comes from project repo.
-
----
-
-## 9. Update flow
-
-### Update profile definitions / shared skills
-
-```bash
-cd agents-hype
 git pull
-bash scripts/community-setup.sh --apply
-bash scripts/setup.sh --apply
-bash scripts/verify.sh
+make community-update
+make apply
+make verify
+make test
 ```
 
-### Update Hermes binary
+Update Hermes binary separately:
 
 ```bash
 hermes update
-cd agents-hype
-bash scripts/verify.sh
+make verify
 ```
 
----
+Restart active Hermes sessions after config, skill, or MCP changes.
 
-## 10. Blank-project template
+## Local maintenance
 
-Starter template included in this repo:
+Remove generated Python caches and CodeGraph index:
 
 ```bash
-cp templates/AGENTS.md /path/to/your-project/AGENTS.md
+make clean
 ```
 
-Then edit project-specific commands, constraints, and deployment rules.
+Run deterministic source checks:
 
----
+```bash
+make test
+```
+
+`make harness-test` adds model-backed blank-project integration and may take longer. `make verify-test` expects canonical source drift and only tests normal/strict drift exit behavior.
+
+## Start target project
+
+Do not implement product work in this setup repo. Open target repo and add local rules when missing:
+
+```bash
+cp /path/to/agents-hype/templates/AGENTS.md /path/to/project/AGENTS.md
+```
+
+Edit copied file with real verification command, boundaries, generated-file authorities, and deployment constraints. Ginflow and selected Kanban card provide shared workflow and durable handoff.
 
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| profile missing | setup not applied | `bash scripts/setup.sh --apply` |
-| 0 skills enabled | community skills missing | `bash scripts/community-setup.sh --apply` |
-| config points to global shared-skills | config stale | rerun `bash scripts/setup.sh --apply` |
-| auth fails | wrong or redacted key in `.env` | rewrite `.env`, copy again to each profile |
-| `.no-bundled-skills` missing | profile not opted out | `touch ~/.hermes/profiles/<name>/.no-bundled-skills` or recreate profile |
+| Profile missing | Setup not applied against account registry | `make apply` |
+| Profile appears missing only inside profile session | Stale `HOME` or `HERMES_HOME` scope | Use repo scripts; they normalize account home and clear `HERMES_HOME` |
+| Setup blocks on profile-local skill drift | Local skill shadows canonical repo skill | Remove divergent copy or replace it with canonical symlink, then rerun `make setup` |
+| No enabled skills | Community clone missing, config stale, or external path unavailable | `make community-update && make apply`, then `hermes -p <name> skills list` |
+| Canonical `ginflow` link missing | Setup predates local worker link | `make apply` |
+| `.no-bundled-skills` missing | Bundled-skill opt-out not applied | `hermes -p <name> skills opt-out` |
+| Authentication fails | Missing or wrong `GIN_API_KEY` in profile `.env` | Fix repo `.env`, copy it to both profile directories, restart session |
+| CodeGraph absent | Optional CLI not installed | Install from <https://github.com/colbymchenry/codegraph>, rerun `make apply`, then verify |
+| CodeGraph configured but connection fails | CLI or MCP startup broken | Run `hermes -p <name> mcp test codegraph`; fix command before verification |
+| Normal verify reports source drift | Canonical files changed locally | Review diff; use `make verify-strict` when drift must fail |
 
----
+## Machine-local files
 
-## What stays out of repo
+Never commit:
 
-Per-machine only:
-- `~/.hermes/profiles/<name>/.env`
-- session DB / history
-- provider auth state
-- machine-local secrets
-
-Do not commit those files.
+- `.env`
+- `community/` clones
+- `.codegraph/`
+- profile `.env` files
+- Hermes session/history/auth state
+- Python caches

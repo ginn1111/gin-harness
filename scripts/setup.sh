@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# setup.sh — Bootstrap delivery profiles from repo templates.
+# setup.sh — Bootstrap managed profiles from repo templates.
 #
 # Usage: ./scripts/setup.sh [--apply]
 #
 # Reads:   config/profiles.yaml, config/profile.yaml.tmpl, profiles/*.SOUL.md
-# Requires: .env in repo root with GIN_API_KEY, GIN_BASE_URL, GIN_HOST
+# Optional: .env in repo root with GIN_API_KEY, GIN_BASE_URL, GIN_HOST
 # Requires: hermes CLI, python3 (PyYAML)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -145,7 +145,7 @@ for i in "${!NAMES[@]}"; do
     info "$name: would generate config.yaml from template"
   fi
 
-  # 4. Warn about missing external_dirs
+  # 5. Warn about missing external_dirs
   if [[ "$APPLY" == "1" ]]; then
     for d in "$CUSTOM_SKILLS_DIR" "$COMMUNITY_SKILLS_DIR"; do
       [[ -n "$d" && ! -d "$d" ]] && warn "$name: external_dir $d not found (silently skipped by Hermes)"
