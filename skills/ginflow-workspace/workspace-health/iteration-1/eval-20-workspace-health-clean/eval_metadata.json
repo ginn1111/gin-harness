@@ -1,0 +1,11 @@
+{
+  "eval_id": 20,
+  "eval_name": "workspace-health-clean",
+  "prompt": "Card APP-20 is in scope, canonical verification passes, required config is documented, manifests and generated files agree, no secrets/debug residue/TODOs exist, and git status contains only expected card files. Produce the final workspace-health section. Do not create files.",
+  "assertions": [
+    "Reports Workspace warnings: none",
+    "Allows completion",
+    "Does not invent warnings",
+    "Does not create policy or scanner files in target repo"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Identifies the broad exception suppression anti-pattern",
+      "passed": true,
+      "evidence": "Identifies except Exception: pass suppressing charge failures."
+    },
+    {
+      "text": "Promotes it from warning to blocker because data integrity and acceptance are affected",
+      "passed": true,
+      "evidence": "Connects false paid records to data-integrity risk and blocks."
+    },
+    {
+      "text": "Requires fixing error handling before completion",
+      "passed": true,
+      "evidence": "Requires explicit failure handling and paid status only after confirmed capture."
+    },
+    {
+      "text": "Requires rerunning canonical verification",
+      "passed": true,
+      "evidence": "Requires rerunning canonical verification."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

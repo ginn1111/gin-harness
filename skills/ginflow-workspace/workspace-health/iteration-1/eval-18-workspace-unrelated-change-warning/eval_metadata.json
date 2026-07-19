@@ -1,0 +1,11 @@
+{
+  "eval_id": 18,
+  "eval_name": "workspace-unrelated-change-warning",
+  "prompt": "Card APP-18 changed src/export.py and its tests. Canonical verification passes. git status also shows pre-existing edits in docs/roadmap.md outside card scope, but current work neither reads nor overwrites them. Report workspace health and completion decision without fixing unrelated work.",
+  "assertions": [
+    "Reports docs/roadmap.md as an unrelated workspace warning",
+    "Does not modify or revert unrelated edits",
+    "Allows completion because acceptance and evidence are unaffected",
+    "Suggests a follow-up only if worthwhile"
+  ]
+}

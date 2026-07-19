@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Reports under Workspace warnings",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Classifies missing CACHE_TTL documentation as warning rather than blocker",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Includes concrete evidence and smallest next action",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Allows completion because runtime default, acceptance, and verification pass",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Does not add Ginflow warning policy or scanner files to target repo",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Reports docs/roadmap.md as an unrelated workspace warning",
+      "passed": false,
+      "evidence": "Calls docs/roadmap.md out of scope and non-blocking, but does not report it as a workspace warning."
+    },
+    {
+      "text": "Does not modify or revert unrelated edits",
+      "passed": true,
+      "evidence": "States edits are untouched."
+    },
+    {
+      "text": "Allows completion because acceptance and evidence are unaffected",
+      "passed": false,
+      "evidence": "Keeps completion blocked on unspecified harness/baseline steps instead of allowing completion from supplied passing evidence."
+    },
+    {
+      "text": "Suggests a follow-up only if worthwhile",
+      "passed": true,
+      "evidence": "Does not prescribe unrelated cleanup or an unnecessary follow-up."
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 2,
+    "total": 4,
+    "pass_rate": 0.5
+  }
+}

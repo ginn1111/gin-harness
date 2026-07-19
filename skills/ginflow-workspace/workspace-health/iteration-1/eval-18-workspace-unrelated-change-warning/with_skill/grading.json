@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Reports docs/roadmap.md as an unrelated workspace warning",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Does not modify or revert unrelated edits",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Allows completion because acceptance and evidence are unaffected",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Suggests a follow-up only if worthwhile",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

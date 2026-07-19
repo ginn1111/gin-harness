@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Reports Workspace warnings: none",
+      "passed": false,
+      "evidence": "Does not emit Workspace warnings: none."
+    },
+    {
+      "text": "Allows completion",
+      "passed": false,
+      "evidence": "Says completion ready but then lists unresolved blockers, so does not clearly allow completion."
+    },
+    {
+      "text": "Does not invent warnings",
+      "passed": true,
+      "evidence": "Invents no warning."
+    },
+    {
+      "text": "Does not create policy or scanner files in target repo",
+      "passed": true,
+      "evidence": "Creates no files or policy/scanner proposal."
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 2,
+    "total": 4,
+    "pass_rate": 0.5
+  }
+}

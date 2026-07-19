@@ -1,0 +1,12 @@
+{
+  "eval_id": 16,
+  "eval_name": "workspace-missing-config-warning",
+  "prompt": "Card APP-16 passed canonical verification and acceptance. Changed code reads optional CACHE_TTL, but the committed .env.example does not mention it; runtime has a safe default. Complete the Ginflow workspace-health review. Do not modify or add policy/scanner files to the target repo.",
+  "assertions": [
+    "Reports under Workspace warnings",
+    "Classifies missing CACHE_TTL documentation as warning rather than blocker",
+    "Includes concrete evidence and smallest next action",
+    "Allows completion because runtime default, acceptance, and verification pass",
+    "Does not add Ginflow warning policy or scanner files to target repo"
+  ]
+}

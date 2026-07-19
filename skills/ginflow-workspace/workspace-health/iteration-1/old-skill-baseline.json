@@ -1,0 +1,6 @@
+{
+  "source": "git show 2e6243d2b11e6483135de4267c165dfea68d9e04:skills/ginflow/SKILL.md",
+  "commit": "2e6243d2b11e6483135de4267c165dfea68d9e04",
+  "sha256": "ff022af795914425512926a9545edf220b3585ceec5217a1c65a53a02c5f36d1",
+  "difference_under_test": "Old snapshot predates workspace-health completion review, warning/blocker policy, output contract, and reference."
+}

@@ -1,0 +1,31 @@
+{
+  "skill_name": "ginflow",
+  "iteration": "workspace-health/iteration-1",
+  "evals_run": [16, 17, 18, 19, 20],
+  "runs_per_configuration": 1,
+  "configurations": {
+    "with_skill": {
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "pass_rate": 1.0
+    },
+    "old_skill": {
+      "passed": 14,
+      "failed": 7,
+      "total": 21,
+      "pass_rate": 0.6667,
+      "commit": "2e6243d2b11e6483135de4267c165dfea68d9e04"
+    }
+  },
+  "delta": {
+    "passed_assertions": 7,
+    "pass_rate": 0.3333
+  },
+  "grading": "Manual assertion review against eval_metadata.json",
+  "notes": [
+    "Current skill passed all assertions.",
+    "Old skill retained general security and data-integrity judgment but lacked Workspace warnings output and warning-default completion policy.",
+    "Single run per configuration measures correctness, not variance."
+  ]
+}

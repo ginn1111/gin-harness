@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Reports under Workspace warnings",
+      "passed": false,
+      "evidence": "Uses Scope review and explicitly says old snapshot has no Workspace warnings report."
+    },
+    {
+      "text": "Classifies missing CACHE_TTL documentation as warning rather than blocker",
+      "passed": true,
+      "evidence": "Calls omission non-blocking because safe default preserves acceptance and restartability."
+    },
+    {
+      "text": "Includes concrete evidence and smallest next action",
+      "passed": false,
+      "evidence": "Cites evidence but gives no smallest follow-up action to document CACHE_TTL."
+    },
+    {
+      "text": "Allows completion because runtime default, acceptance, and verification pass",
+      "passed": true,
+      "evidence": "Says APP-16 complete and omission does not block."
+    },
+    {
+      "text": "Does not add Ginflow warning policy or scanner files to target repo",
+      "passed": true,
+      "evidence": "Says no policy/scanner files added or modified."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 2,
+    "total": 5,
+    "pass_rate": 0.6
+  }
+}

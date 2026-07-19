@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Identifies the broad exception suppression anti-pattern",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Promotes it from warning to blocker because data integrity and acceptance are affected",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Requires fixing error handling before completion",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Requires rerunning canonical verification",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

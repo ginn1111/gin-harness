@@ -1,0 +1,11 @@
+{
+  "eval_id": 19,
+  "eval_name": "workspace-error-suppression-blocker",
+  "prompt": "Card PAY-19 adds payment capture. Tests pass, but changed code wraps the external charge call in `except Exception: pass`, then records the invoice as paid. Evaluate workspace health and completion readiness.",
+  "assertions": [
+    "Identifies the broad exception suppression anti-pattern",
+    "Promotes it from warning to blocker because data integrity and acceptance are affected",
+    "Requires fixing error handling before completion",
+    "Requires rerunning canonical verification"
+  ]
+}

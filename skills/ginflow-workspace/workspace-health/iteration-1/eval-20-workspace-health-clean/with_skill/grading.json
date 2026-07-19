@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Reports Workspace warnings: none",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Allows completion",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Does not invent warnings",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    },
+    {
+      "text": "Does not create policy or scanner files in target repo",
+      "passed": true,
+      "evidence": "Current-skill output directly satisfies assertion."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}
