@@ -23,16 +23,15 @@ run_or_print() {
 require_command() { command -v "$1" >/dev/null 2>&1 || die "Missing: $1"; }
 require_command hermes
 command -v codegraph >/dev/null 2>&1 || warn "CodeGraph not installed — recommended for code-aware MCP tools: https://github.com/colbymchenry/codegraph"
+require_command python3
 
 # Resolve real user home (profile sessions may override $HOME)
-REAL_HOME="$(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f6)"
-REAL_HOME="${REAL_HOME:-$HOME}"
+REAL_HOME="$(python3 -c 'import os, pwd; print(pwd.getpwuid(os.getuid()).pw_dir)')"
 HERMES_PROFILES_DIR="$REAL_HOME/.hermes/profiles"
 # Profile-scoped sessions may override HOME and HERMES_HOME. Setup manages the
 # machine's named-profile registry, so run Hermes against the real user home.
 export HOME="$REAL_HOME"
 unset HERMES_HOME
-require_command python3
 
 # === load config ===
 PROFILES_YAML="$ROOT/config/profiles.yaml"

@@ -190,6 +190,7 @@ Immediately before reporting completion:
 7. Record same evidence on selected Kanban card before completing it.
 8. Require every target-local linked artifact to be committed. If the worker lacks commit permission, block completion and ask the human to commit; never create a commit implicitly. Record that Git commit and the exact linked paths in card `artifact_baseline`.
 9. Before completion, validate candidate metadata against the live card with `--kanban-task-id`, `--baseline-commit`, and repeated `--baseline-path` arguments. `ginb` then comments verification evidence plus the exact `artifact_baseline` payload and blocks with `review-required: Ginflow completion baseline ready`; it does not call `kanban_complete` for tasks with target-local artifact links. `gintary` revalidates and makes the first and only terminal completion call with that payload, then reruns the harness without candidate arguments.
+10. Review target workspace using `references/workspace-health-warnings.md`. Record concise findings under `Workspace warnings` on the card and in completion report. Warnings do not block by default; promote only when acceptance, canonical verification, security, privacy, data integrity, or restartability is affected. Do not copy warning policy or scanner files into target repo.
 
 Project verification proves product behavior and blocks completion when it fails. Ginflow harness proves workflow readiness and drift: report failures as warnings, but treat missing card, wrong workspace, missing acceptance, missing required artifact, missing completion verification path, missing completed-card artifact baseline, or changed completed-card linked artifact as blockers for the affected lifecycle stage. Harness unavailable is a warning and never substitutes for project verification.
 
@@ -318,6 +319,7 @@ Stop and clarify when:
 - `references/kanban-guide.md`
 - `references/drift-detect.md`
 - `references/blank-project-checklist.md`
+- `references/workspace-health-warnings.md`
 - `templates/brief.md`
 - `templates/plan.md`
 - `templates/spec.md`

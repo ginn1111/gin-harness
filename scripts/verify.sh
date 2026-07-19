@@ -19,9 +19,9 @@ recommend() { printf '💡 %s\n' "$*"; }
 die()   { printf '❌ %s\n' "$*" >&2; exit 1; }
 require_command() { command -v "$1" >/dev/null 2>&1 || die "Missing: $1"; }
 require_command hermes
+require_command python3
 
-REAL_HOME="$(getent passwd "$(whoami)" 2>/dev/null | cut -d: -f6)"
-REAL_HOME="${REAL_HOME:-$HOME}"
+REAL_HOME="$(python3 -c 'import os, pwd; print(pwd.getpwuid(os.getuid()).pw_dir)')"
 HERMES_PROFILES_DIR="$REAL_HOME/.hermes/profiles"
 # Profile-scoped sessions may override HOME and HERMES_HOME. Verification must
 # inspect the machine's named-profile registry, not a nested profile home.
@@ -29,17 +29,14 @@ export HOME="$REAL_HOME"
 unset HERMES_HOME
 
 profiles=(gintary ginb)
-declare -A expected_descriptions
-while IFS='|' read -r name description; do
-  expected_descriptions["$name"]="$description"
-done < <(python3 - "$ROOT/config/profiles.yaml" <<'PY'
+expected_description() {
+  python3 - "$ROOT/config/profiles.yaml" "$1" <<'PY'
 import sys, yaml
 with open(sys.argv[1]) as f:
     profiles = (yaml.safe_load(f) or {}).get("profiles", {})
-for name, config in profiles.items():
-    print(f"{name}|{config.get('description', '')}")
+print(profiles.get(sys.argv[2], {}).get("description", ""))
 PY
-)
+}
 
 echo "===== Global Profile Verification ====="
 
@@ -56,7 +53,7 @@ echo ""
 echo "--- Routing descriptions ---"
 for p in "${profiles[@]}"; do
   actual_description="$(hermes profile describe "$p" 2>/dev/null || true)"
-  if [[ "$actual_description" == "${expected_descriptions[$p]:-}" ]]; then
+  if [[ "$actual_description" == "$(expected_description "$p")" ]]; then
     ok "$p: description matches registry"
   else
     warn "$p: description drift (run ./scripts/setup.sh --apply)"
@@ -224,7 +221,10 @@ fi
 # === 9. Repo drift ===
 echo ""
 echo "--- Repo drift ---"
-mapfile -t drift_files < <(cd "$ROOT" && git status --porcelain --untracked-files=all 2>/dev/null | sed 's/^...//' | grep -E "^(profiles/|config/|scripts/|skills/|templates/|README\.md$|INSTALL\.md$)" || true)
+drift_files=()
+while IFS= read -r drift_file; do
+  [[ -n "$drift_file" ]] && drift_files+=("$drift_file")
+done < <(cd "$ROOT" && git status --porcelain --untracked-files=all 2>/dev/null | sed 's/^...//' | grep -E "^(profiles/|config/|scripts/|skills/|templates/|README\.md$|INSTALL\.md$)" || true)
 if [[ "${#drift_files[@]}" -gt 0 ]]; then
   if [[ "$STRICT" == "1" ]]; then
     warn "Uncommitted canonical setup changes detected"

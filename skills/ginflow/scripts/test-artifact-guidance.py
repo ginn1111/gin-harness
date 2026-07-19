@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 from pathlib import Path
 
 
@@ -17,6 +18,8 @@ def main():
     content = (SKILL / "references/artifact-content-guide.md").read_text()
     kanban = (SKILL / "references/kanban-guide.md").read_text()
     drift = (SKILL / "references/drift-detect.md").read_text()
+    workspace_warnings = (SKILL / "references/workspace-health-warnings.md").read_text()
+    evals = json.loads((SKILL / "evals/evals.json").read_text())["evals"]
     agents_template = (ROOT / "templates/AGENTS.md").read_text()
 
     artifact_paths = (
@@ -70,7 +73,26 @@ def main():
         "reserve the card's first explicit block",
         "do not invent a `--body` option",
         "first and only terminal completion call",
+        "references/workspace-health-warnings.md",
+        "Workspace warnings",
     ), "SKILL.md")
+    require(workspace_warnings, (
+        "Warnings do not block completion by default",
+        "Missing runtime config contract",
+        "Error suppression anti-pattern",
+        "Unrelated workspace changes",
+        "Do not copy this policy into target repo",
+    ), "workspace-health-warnings.md")
+    eval_ids = [case["id"] for case in evals]
+    assert len(eval_ids) == len(set(eval_ids)), "eval IDs must be unique"
+    warning_evals = {case.get("name") for case in evals if case["id"] >= 16}
+    assert warning_evals == {
+        "workspace-missing-config-warning",
+        "workspace-secret-risk-blocker",
+        "workspace-unrelated-change-warning",
+        "workspace-error-suppression-blocker",
+        "workspace-health-clean",
+    }, f"workspace warning eval coverage changed: {warning_evals}"
     require(kanban, ("No selected card blocks execution", "never copy harness into target repo", "artifact_baseline", "Never silently advance", "Unrelated paths and cards remain unblocked", "Objective:", "Acceptance:", "Links:", "--kanban-task-id"), "kanban-guide.md")
     require(drift, ("Never copy harness script into target repo", "Project verification: pass|fail|blocked", "artifact_baseline", "Advancing repository `HEAD` with unrelated changes does not cause drift", "Unrelated work may continue", "Editorial only", "hermes kanban show", "--baseline-commit", *target_drift_contract), "drift-detect.md")
 

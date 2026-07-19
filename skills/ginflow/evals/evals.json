@@ -200,6 +200,72 @@
         "Does not silently invent or advance completion metadata",
         "Requires candidate validation and metadata in the first and only completion call for future work"
       ]
+    },
+    {
+      "id": 16,
+      "name": "workspace-missing-config-warning",
+      "prompt": "Card APP-16 passed canonical verification and acceptance. Changed code reads optional CACHE_TTL, but the committed .env.example does not mention it; runtime has a safe default. Complete the Ginflow workspace-health review. Do not modify or add policy/scanner files to the target repo.",
+      "expected_output": "Satisfy workspace-health warning/blocker policy and completion decision without adding target policy files.",
+      "files": [],
+      "expectations": [
+        "Reports under Workspace warnings",
+        "Classifies missing CACHE_TTL documentation as warning rather than blocker",
+        "Includes concrete evidence and smallest next action",
+        "Allows completion because runtime default, acceptance, and verification pass",
+        "Does not add Ginflow warning policy or scanner files to target repo"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "workspace-secret-risk-blocker",
+      "prompt": "Card APP-17 passes tests, but git status shows a newly tracked .env containing a credential-shaped value. Produce completion decision and workspace-health report. Never print the value.",
+      "expected_output": "Satisfy workspace-health warning/blocker policy and completion decision without adding target policy files.",
+      "files": [],
+      "expectations": [
+        "Reports a Workspace warnings blocker for tracked .env",
+        "Does not print or inspect the credential value",
+        "Blocks completion despite passing tests",
+        "Requires safe removal and authorized credential rotation or review"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "workspace-unrelated-change-warning",
+      "prompt": "Card APP-18 changed src/export.py and its tests. Canonical verification passes. git status also shows pre-existing edits in docs/roadmap.md outside card scope, but current work neither reads nor overwrites them. Report workspace health and completion decision without fixing unrelated work.",
+      "expected_output": "Satisfy workspace-health warning/blocker policy and completion decision without adding target policy files.",
+      "files": [],
+      "expectations": [
+        "Reports docs/roadmap.md as an unrelated workspace warning",
+        "Does not modify or revert unrelated edits",
+        "Allows completion because acceptance and evidence are unaffected",
+        "Suggests a follow-up only if worthwhile"
+      ]
+    },
+    {
+      "id": 19,
+      "name": "workspace-error-suppression-blocker",
+      "prompt": "Card PAY-19 adds payment capture. Tests pass, but changed code wraps the external charge call in `except Exception: pass`, then records the invoice as paid. Evaluate workspace health and completion readiness.",
+      "expected_output": "Satisfy workspace-health warning/blocker policy and completion decision without adding target policy files.",
+      "files": [],
+      "expectations": [
+        "Identifies the broad exception suppression anti-pattern",
+        "Promotes it from warning to blocker because data integrity and acceptance are affected",
+        "Requires fixing error handling before completion",
+        "Requires rerunning canonical verification"
+      ]
+    },
+    {
+      "id": 20,
+      "name": "workspace-health-clean",
+      "prompt": "Card APP-20 is in scope, canonical verification passes, required config is documented, manifests and generated files agree, no secrets/debug residue/TODOs exist, and git status contains only expected card files. Produce the final workspace-health section. Do not create files.",
+      "expected_output": "Satisfy workspace-health warning/blocker policy and completion decision without adding target policy files.",
+      "files": [],
+      "expectations": [
+        "Reports Workspace warnings: none",
+        "Allows completion",
+        "Does not invent warnings",
+        "Does not create policy or scanner files in target repo"
+      ]
     }
   ]
 }
