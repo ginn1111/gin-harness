@@ -61,7 +61,7 @@ The adapter reads Objective, Scope, Acceptance, and Links sections from the task
 
 ### Completed-card linked-artifact gate
 
-Before a card becomes `done`, `completed`, or `closed`, commit every linked target-local artifact and record the completion commit plus exact linked paths. If the worker is not authorized to commit, keep the card open and ask the human to create the commit; the gate never grants commit permission.
+Before a card becomes `done`, `completed`, or `closed`, worker commits every linked target-local artifact and records completion commit plus exact linked paths. Ginflow permits this baseline commit without human review. Worker stages only exact linked artifacts plus card-scoped implementation files. If Git identity is absent, commit fails, or unrelated changes cannot be excluded, keep card open and request human help.
 
 ```json
 {

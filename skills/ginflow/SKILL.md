@@ -262,7 +262,7 @@ Rule:
 
 ### Completed-card artifact gate
 
-- Before completion, require each target-local linked artifact to be committed. Store `artifact_baseline.commit` and `artifact_baseline.paths`; paths must exactly match the card's linked local docs. Lack of commit permission blocks completion and requires a human commit rather than an implicit agent commit.
+- Before completion, worker must commit every target-local linked artifact. Worker may create this baseline commit without human review; stage only exact linked artifacts plus card-scoped implementation files, use the target repository's configured Git identity, then store `artifact_baseline.commit` and `artifact_baseline.paths`. Paths must exactly match the card's linked local docs. If Git identity is absent, commit fails, or unrelated changes cannot be excluded, block completion and request human help.
 - On startup, resume, handoff, or derived work involving that completed card, compare only those paths against the completion commit. Do not compare the whole repository.
 - A missing/unavailable commit, path-list mismatch, missing artifact, committed change, or uncommitted change is suspected drift and blocks use of that card as authority. Unrelated paths and unrelated cards remain unblocked.
 - The harness cannot reliably identify the editor or determine materiality, so a human chooses one resolution.

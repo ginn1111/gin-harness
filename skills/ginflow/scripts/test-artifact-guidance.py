@@ -102,6 +102,9 @@ def main():
     }, f"workspace warning eval coverage changed: {warning_evals}"
     require(kanban, ("No selected card blocks execution", "never copy harness into target repo", "artifact_baseline", "Never silently advance", "Unrelated paths and cards remain unblocked", "Objective:", "Acceptance:", "Links:", "--kanban-task-id"), "kanban-guide.md")
     require(drift, ("Never copy harness script into target repo", "Project verification: pass|fail|blocked", "artifact_baseline", "Advancing repository `HEAD` with unrelated changes does not cause drift", "Unrelated work may continue", "Editorial only", "hermes kanban show", "--baseline-commit", *target_drift_contract), "drift-detect.md")
+    require(skill, ("baseline commit without human review", "worker must commit every", "stage only exact linked artifacts"), "SKILL.md")
+    require(kanban, ("Human review is not required for this baseline commit", "never include unrelated work"), "kanban-guide.md")
+    require(drift, ("Ginflow permits this baseline commit without human review", "card-scoped implementation files"), "drift-detect.md")
 
     duplicate_snapshots = []
     for candidate in (ROOT / "skills" / "ginflow-workspace").rglob("SKILL.md"):
