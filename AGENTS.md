@@ -5,9 +5,10 @@
 - Do not use this setup repo as target-project workspace.
 - Before mutable target-project work, require a selected Kanban card with objective, scope, acceptance, workspace, status, assignee, and links. Stop when missing or incomplete.
 
-## Scope
+## Boundaries
 - This repo owns shared integrations, Ginflow, harnesses, plugins, setup scripts, and target-project starter docs.
 - Target repos own product code, tests, local `AGENTS.md` / `.hermes.md`, and task artifacts.
+- Shared workflow and Kanban lifecycle come from `ginflow`.
 - Do not edit profile distribution identity, secrets, runtime state, or generated `__pycache__/` files.
 
 ## Verification

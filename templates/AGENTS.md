@@ -13,7 +13,9 @@ Shared workflow, Kanban lifecycle, verification evidence, and optional handoff r
 - Match existing code style and project structure.
 - Do not add dependencies without need.
 
-## Task shaping
+## Ginflow workflow
+- Load and follow `ginflow` for target-project startup, task shaping, execution, completion, and handoff.
+- Before mutable work, require one selected Kanban card with objective, scope, acceptance, workspace, status, assignee, and links. Stop when missing or incomplete.
 - If requirement is clear: build.
 - If cause is unclear: investigate first.
 - If requirement is unclear: shape options first.

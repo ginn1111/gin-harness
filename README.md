@@ -77,6 +77,10 @@ Restart profile sessions after apply.
 | `templates/AGENTS.md` | Target-project starter |
 | `INSTALL.md` | Full native-profile and integration guide |
 
+## Agent workflow
+
+Agents using this setup repo must load and follow `ginflow` for target-project startup, task shaping, execution, completion, and handoff. Do not use this setup repo as target-project workspace. Target-project mutable work requires a selected, complete Kanban card and linked local artifacts.
+
 ## Verification boundary
 
 `make verify PROFILES="..."` checks selected profiles exist and retain profile-owned identity files while setup integrations work. It does not compare profile identity or distribution metadata against this repo.

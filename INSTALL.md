@@ -133,7 +133,9 @@ Normal verification treats setup source edits as advisory. Strict mode fails on 
 
 ## Target project
 
-Do not implement product work in setup repo. Start target repo with local rules when needed:
+Do not implement product work in setup repo. Agents must load and follow `ginflow` for target-project startup, task shaping, execution, completion, and handoff. Select a complete Kanban card before mutable target-project work; use its real target-repo workspace and linked local artifacts.
+
+Start target repo with local rules when needed:
 
 ```bash
 cp /path/to/agents-hype/templates/AGENTS.md /path/to/project/AGENTS.md
