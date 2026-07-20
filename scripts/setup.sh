@@ -46,11 +46,6 @@ for profile in "$@"; do
   done
   ln -sfn "$ROOT/skills/ginflow" "$profile_dir/skills/ginflow"
   ln -sfn "$ROOT/plugins/ginflow-gate" "$profile_dir/plugins/ginflow-gate"
-  old_plugin="$profile_dir/plugins/herdr-agent-state"
-  if [[ -L "$old_plugin" ]]; then
-    rm "$old_plugin"
-    info "$profile: removed obsolete herdr-agent-state link"
-  fi
 
   python3 - "$config" "$ROOT" <<'PY'
 import sys
@@ -73,7 +68,6 @@ config.setdefault("mcp_servers", {})["codegraph"] = {
 plugins = config.get("plugins", {})
 enabled = plugins.get("enabled", [])
 if isinstance(enabled, list):
-    plugins["enabled"] = [name for name in enabled if name != "herdr-agent-state"]
     if "ginflow-gate" not in plugins["enabled"]:
         plugins["enabled"].append("ginflow-gate")
 backup = path.with_name(path.name + ".bak.integration")

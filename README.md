@@ -52,7 +52,7 @@ Applied integrations:
 - `skills/ginflow` linked into each selected profile
 - setup repo `skills/` exposed through `skills.external_dirs`
 - optional community skills exposed when checkout exists
-- `plugins/ginflow-gate` linked and enabled
+- `plugins/ginflow-gate` linked and enabled; existing plugin entries remain untouched
 - CodeGraph MCP registered as `codegraph serve --mcp`
 - required CLI toolsets enabled, including `mcp-codegraph`
 - one-time native `config.yaml.bak.integration` backup

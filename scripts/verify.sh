@@ -40,10 +40,6 @@ for profile in "$@"; do
     warn "$profile: ginflow integration missing"
   fi
 
-  [[ ! -e "$profile_dir/plugins/herdr-agent-state" && ! -L "$profile_dir/plugins/herdr-agent-state" ]] \
-    && ok "$profile: obsolete herdr-agent-state link absent" \
-    || warn "$profile: obsolete herdr-agent-state link remains"
-
   gate_link="$profile_dir/plugins/ginflow-gate"
   [[ -L "$gate_link" && "$(readlink -f "$gate_link")" == "$ROOT/plugins/ginflow-gate" ]] \
     && ok "$profile: ginflow-gate linked" || warn "$profile: ginflow-gate integration missing"
@@ -61,7 +57,6 @@ server = cfg.get("mcp_servers", {}).get("codegraph", {})
 assert server.get("command") == "codegraph"
 assert server.get("args") == ["serve", "--mcp"]
 assert "mcp-codegraph" in cfg.get("platform_toolsets", {}).get("cli", [])
-assert "herdr-agent-state" not in cfg.get("plugins", {}).get("enabled", [])
 assert "ginflow-gate" in cfg.get("plugins", {}).get("enabled", [])
 PY
   then ok "$profile: config integrations present"; else warn "$profile: config integrations incomplete"; fi
