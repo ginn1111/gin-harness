@@ -15,7 +15,7 @@ command -v hermes >/dev/null || die "Missing: hermes"
 command -v python3 >/dev/null || die "Missing: python3"
 
 REAL_HOME="${HERMES_REAL_HOME:-$(python3 -c 'import os, pwd; print(pwd.getpwuid(os.getuid()).pw_dir)')}"
-PROFILES_DIR="$REAL_HOME/.hermes/profiles"
+PROFILES_DIR="${HERMES_PROFILES_DIR:-$REAL_HOME/.hermes/profiles}"
 export HOME="$REAL_HOME"
 unset HERMES_HOME
 
@@ -83,5 +83,5 @@ if [[ "$APPLY" == 1 ]]; then
   ok "Integration complete. Restart profile sessions, then run: ./scripts/verify.sh $*"
 else
   echo
-  info "Dry-run complete. Re-run with --apply."
+  info "Dry-run complete. Run: make apply PROFILES=\"$*\""
 fi

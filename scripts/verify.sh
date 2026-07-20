@@ -16,7 +16,7 @@ recommend() { printf '💡 %s\n' "$*"; }
 command -v hermes >/dev/null || { printf 'Missing: hermes\n' >&2; exit 1; }
 
 REAL_HOME="${HERMES_REAL_HOME:-$(python3 -c 'import os, pwd; print(pwd.getpwuid(os.getuid()).pw_dir)')}"
-PROFILES_DIR="$REAL_HOME/.hermes/profiles"
+PROFILES_DIR="${HERMES_PROFILES_DIR:-$REAL_HOME/.hermes/profiles}"
 export HOME="$REAL_HOME"
 unset HERMES_HOME
 existing="$(hermes profile list 2>/dev/null || true)"

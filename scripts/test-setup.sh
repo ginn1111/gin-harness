@@ -13,11 +13,11 @@ printf 'Profile  Model\n  gintary  model\n ◆ginb  model\n'
 EOF
 chmod +x "$TMP/bin/hermes"
 
-output="$(HERMES_REAL_HOME="$TMP/home" PATH="$TMP/bin:$PATH" make -s -C "$ROOT" setup)"
+output="$(HERMES_PROFILES_DIR="$TMP/home/.hermes/profiles" PATH="$TMP/bin:$PATH" make -s -C "$ROOT" setup)"
 grep -q 'Integrating ginb' <<<"$output"
 if grep -q 'Integrating gintary' <<<"$output"; then
   printf 'default setup must not integrate inactive profile\n' >&2
   exit 1
 fi
-grep -q 'Dry-run complete' <<<"$output"
+grep -q 'Run: make apply PROFILES="ginb"' <<<"$output"
 printf 'setup active-profile default test ok\n'

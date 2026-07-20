@@ -47,6 +47,8 @@ make test
 
 `make apply` requires profiles already installed. It does not create profiles and does not touch `SOUL.md`, `distribution.yaml`, model/provider identity, `.env`, memory, sessions, cron, or release metadata.
 
+Profile location defaults to `$HERMES_REAL_HOME/.hermes/profiles`, or real user home when `HERMES_REAL_HOME` is unset. Set `HERMES_PROFILES_DIR` to override it, useful for test or nonstandard installs.
+
 Applied integrations:
 
 - `skills/ginflow` linked into each selected profile

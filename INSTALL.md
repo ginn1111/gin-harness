@@ -52,6 +52,8 @@ Setup requires existing profiles. It adds only:
 
 Setup preserves profile-owned `SOUL.md`, `distribution.yaml`, provider/model identity, secrets, memories, sessions, auth, cron, and release metadata.
 
+Setup resolves profiles from `$HERMES_PROFILES_DIR` when set. Otherwise it uses `$HERMES_REAL_HOME/.hermes/profiles`, falling back to real user home. This avoids profile-session `$HOME` paths when wiring another profile.
+
 Restart active sessions after apply.
 
 ## Update profiles
