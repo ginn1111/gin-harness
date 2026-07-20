@@ -1,43 +1,57 @@
 # Ginflow linked-artifact worktree repair
 
-Use when Ginflow blocks card because `Links:` path is missing from assigned worktree.
+Use when Ginflow blocks an assigned card because exact `Links:` path is absent from assigned worktree.
 
 ## Guardrails
 
-- Treat task row, card body, target `AGENTS.md`, linked artifacts, and Git history as authority.
-- One active card per mutable workspace. Finish repair card before unblocking original card.
-- Do not edit original card body, invent acceptance criteria, change assignee, alter product repos, or silently advance a completion baseline.
-- `hermes kanban edit` cannot repair a live card body.
+- Treat task row, card body, target `AGENTS.md`, linked artifacts, Git history, and approved source branch as authority.
+- Keep original card blocked. Run one repair card in mutable workspace; never run repair and original cards together there.
+- Different workspaces or isolated worktrees may run in parallel. Claim-time collision enforcement remains Hermes core responsibility.
+- Do not edit original card body, invent acceptance, change assignee, alter product repos, or include unrelated dirty files.
+- `hermes kanban edit` cannot repair live card body. Path or acceptance ambiguity needs dashboard repair by human.
 
-## Repair sequence
+## Repair order
 
-1. Read original card with `hermes kanban show <task-id> --json`.
-2. Confirm exact `Links:` path and assigned absolute worktree path.
-3. Create separate repair card for same workspace. Keep original card blocked. Scope repair to exact missing artifact.
-4. In assigned worktree, restore exact path from authoritative branch/history. Create artifact only when no authoritative copy exists and card provides enough requirements.
-5. Stage and commit only linked artifact plus card-scoped changes. Do not include unrelated dirty files.
-6. Run target canonical verification, then Ginflow harness against original card:
+1. Read original card. Confirm exact `Links:` path, objective, acceptance, status, and assigned absolute worktree.
+2. Inspect target `AGENTS.md`, Git status, path history, and authoritative branch. Leave original card blocked.
+3. Create repair card scoped to exact missing artifact and same worktree. Do not unblock original while repair card is active.
+4. Restore exact path from authoritative history or branch:
 
    ```bash
-   python3 /home/aioz/.hermes/profiles/gintary/skills/ginflow/scripts/validate-harness.py \
-     --setup-repo /home/aioz/personal/gin-harness \
-     --target <assigned-worktree> \
+   git restore --source <authority-commit-or-branch> -- docs/briefs/<CARD-ID>.md
+   ```
+
+   Create artifact only when no authoritative copy exists and original card gives enough requirements. Otherwise block repair card for human decision.
+5. Inspect diff. Stage and commit only missing linked artifact plus repair-card-scoped files. Never commit unrelated worktree changes.
+6. Run target canonical verification. Then run external Ginflow harness against original card from setup repo or deployed skill:
+
+   ```bash
+   python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
+     --setup-repo <setup-repo> --target <assigned-worktree> \
      --kanban-task-id <original-task-id> --json
    ```
 
-7. Record commit, commands, results, and remaining risk on repair card. Complete or release repair card first.
-8. Re-read original card. If worktree is free and harness passes, unblock original card. Otherwise keep it blocked with exact repair step.
+7. Record repair commit, canonical command/result, harness command/result, and workspace warnings on repair card. Complete repair card first.
+8. Re-read original card. Unblock only when repair card is complete, workspace has no active competing card, exact linked path exists, and harness passes. Otherwise keep original blocked with exact next step.
 
-## Completion baseline
+## Completion baseline boundary
 
-This repair commit restores dispatch readiness. It does not change original card completion metadata. Only original worker may create its completion baseline after acceptance criteria and canonical verification pass. Record exact linked paths; never substitute file hashes or silently replace commit.
+Repair commit restores dispatch readiness only. It does not create, replace, or advance original card `artifact_baseline`.
 
-## Failure handling
+Only original worker may create its completion baseline after original acceptance criteria and canonical verification pass. Record completion commit and exact linked paths in original completion metadata. Never use file hashes or silently replace baseline commit.
 
-| Failure | Action |
+Completed-card drift needs human choice:
+
+1. New intent: restore completed artifact, create versioned docs and follow-up card.
+2. Changed completed scope: reopen, reconcile, verify, commit, and complete again.
+3. Editorial-only: human explicitly approves baseline advance and approval note records it.
+
+## Stop cases
+
+| Condition | Action |
 | --- | --- |
-| Linked path unclear | Keep original blocked. Ask human to repair card body in dashboard. |
-| Artifact exists elsewhere but differs | Keep blocked. Ask human to classify source authority. |
-| Unrelated worktree changes | Do not commit them. Isolate exact artifact or ask human. |
-| Harness fails after artifact restore | Keep blocked. Record command output and next repair step. |
-| Repair card still running | Do not unblock original; same workspace would collide. |
+| Linked path or acceptance unclear | Keep original blocked. Human repairs card body in dashboard. |
+| Artifact copies differ | Keep original blocked. Human identifies authority. |
+| Unrelated worktree changes cannot be isolated | Do not commit. Block repair card. |
+| Canonical verification or harness fails | Keep original blocked. Record output and next repair step. |
+| Repair card active or workspace busy | Do not unblock original. Wait for repair completion or isolate worktree. |
