@@ -88,16 +88,42 @@ Before target-project work:
 
 1. Confirm workspace points at real target repo.
 2. Read local `AGENTS.md` / `.hermes.md`.
-3. Require and read selected or assigned Kanban card. Stop if absent.
-4. Confirm all required card fields and workspace. Stop if incomplete.
-5. Read linked brief/spec/plan when present.
-6. If the selected card is completed, run the linked-artifact drift gate before any project action.
-7. Inspect git state and run project baseline verification.
-8. Run external ginflow harness against target repo and selected card; do not copy harness into target repo.
-9. Report project verification and ginflow harness separately.
-10. Route execution as investigation or implementation. Brainstorming may occur before card selection.
+3. **Check Kanban board state:**
+   - If no Kanban cards exist → route to work shaping/sizing (investigation/brainstorming/implementation choice, artifact level, draft card).
+   - If Kanban cards exist → read progress first (use `kanban_list`/`kanban_show` TOOLS in agent code), then resume from selected/active card.
+4. Require and read selected or assigned Kanban card. Stop if absent.
+5. Confirm all required card fields and workspace. Stop if incomplete.
+6. Read linked brief/spec/plan when present.
+7. If the selected card is completed, run the linked-artifact drift gate before any project action.
+8. Inspect git state and run project baseline verification.
+9. Run external ginflow harness against target repo and selected card; do not copy harness into target repo.
+10. Report project verification and ginflow harness separately.
+11. Route execution as investigation or implementation. Brainstorming may occur before card selection.
 
 Stop when any required input is missing and risk is material.
+
+## Tool-vs-CLI boundary
+
+**Complete cards with the `kanban_complete` TOOL — never the `hermes kanban complete` CLI.**
+
+The `ginflow-gate` plugin hooks only fire on the native `kanban_complete` tool call. The CLI bypasses both:
+
+- `pre_tool_call` — blocks malformed completions (missing fields, mismatched verification/artifact commits, linked-artifact drift). Without it, bad completions sail through.
+- `post_tool_call` — appends `**Status: completed** — linked card <CARD-ID> is done.` to each linked brief/spec/plan file. Without it, artifacts stay stale/active.
+
+Board reads (`kanban_list`, `kanban_show`) should also use the TOOLS, not the `hermes kanban` CLI, so progress flows through the same governed path.
+
+**Syntax:**
+```
+kanban_complete(task_id='<card-id>', result='<short result>',
+  metadata={'verification_result': {'commit': '<commit>', 'command': 'make test', 'result': 'passed'},
+            'artifact_baseline': {'commit': '<commit>', 'paths': ['docs/briefs/<card-id>.md']}})
+```
+
+- ✅ `kanban_complete(task_id='t_abc123', result='Build finished', metadata={...})`
+- ❌ `hermes kanban complete t_abc123 --result 'Build finished' --metadata {...}`
+
+If you are about to run `hermes kanban complete ...` in a terminal, stop and call the `kanban_complete` tool instead.
 
 ## Execution contract
 
@@ -118,6 +144,7 @@ Work is done only when:
 - [ ] Changed files were reviewed against scope.
 - [ ] Verification evidence is recorded on Kanban card.
 - [ ] Kanban status is accurate.
+- [ ] Linked artifacts (brief/spec/plan) reflect completion — mark as done, superseded, or final; do not leave them in active/progress state.
 - [ ] Repo is restartable from documented verification path.
 - [ ] Remaining limits or blockers are explicit.
 
@@ -179,6 +206,8 @@ Kanban card is default durable handoff. Before ending unfinished or blocked work
 Next session resumes from selected card, linked artifacts, local rules, and repository state. Session transcript and memory are supporting context, not source of truth.
 
 ## Completion report
+
+**Complete the card with the `kanban_complete` TOOL — never the `hermes kanban complete` CLI.** The `ginflow-gate` plugin's `post_tool_call` hook only fires on the native `kanban_complete` tool call; completing via the CLI bypasses the hook that auto-marks linked artifacts done and the blocking validation gate. Always route completion through the tool, not a shell command.
 
 Immediately before reporting completion:
 
@@ -312,6 +341,7 @@ Stop and clarify when:
 - unclear cause but user expects direct fix
 - acceptance criteria missing
 - no verification path
+- **about to complete a card with the `hermes kanban complete` CLI instead of the `kanban_complete` tool**
 
 ## References
 

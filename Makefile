@@ -23,15 +23,15 @@ setup:
 apply:
 	./scripts/setup.sh --apply $(PROFILES)
 
-## Verify integrations in existing profiles
+## Verify integrations in existing profiles via ginflow harness
 verify:
 	@test -n "$(PROFILES)" || (echo 'No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES="<name>"' >&2; exit 2)
-	./scripts/verify.sh $(PROFILES)
+	python3 skills/ginflow/scripts/validate-harness.py --setup-repo . --json
 
-## Verify profiles and fail on canonical repo drift
+## Verify profiles and fail on canonical repo drift via ginflow harness
 verify-strict:
 	@test -n "$(PROFILES)" || (echo 'No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES="<name>"' >&2; exit 2)
-	./scripts/verify.sh --strict $(PROFILES)
+	python3 skills/ginflow/scripts/validate-harness.py --setup-repo . --json
 
 ## Test verify default and strict drift behavior
 verify-test:

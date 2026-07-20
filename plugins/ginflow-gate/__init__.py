@@ -6,6 +6,7 @@ import json
 import importlib.util
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 CORE = Path(__file__).resolve().parents[2] / "skills/ginflow/lib/harness_core.py"
@@ -78,5 +79,53 @@ def pre_tool_call(tool_name: str, args: dict, task_id: str = "", **kwargs):
         return _block(f"validation failed closed: {error}")
 
 
+def post_tool_call(tool_name: str, result: dict, args: dict, task_id: str = "", **kwargs):
+    if tool_name != "kanban_complete":
+        return None
+    if not result.get("success"):
+        return None
+    try:
+        selected = str(args.get("task_id") or task_id or os.environ.get("HERMES_KANBAN_TASK") or "").strip()
+        if not selected:
+            return None
+        card = load_card(selected, args.get("board") or os.environ.get("HERMES_KANBAN_BOARD"))
+        workspace = str(card.get("workspace", ""))
+        if not workspace.startswith("dir:"):
+            return None
+        target = Path(workspace.removeprefix("dir:")).resolve()
+        if not target.is_dir():
+            return None
+
+        links = card.get("links", [])
+        if not isinstance(links, list) or not links:
+            return None
+
+        updated = []
+        for link in links:
+            path_str = link if isinstance(link, str) else link.get("path") if isinstance(link, dict) else None
+            if not isinstance(path_str, str) or "://" in path_str:
+                continue
+            artifact = (target / path_str).resolve()
+            try:
+                artifact.relative_to(target)
+            except ValueError:
+                continue
+            if not artifact.is_file():
+                continue
+
+            content = artifact.read_text()
+            footer = f"\n\n---\n**Status: completed** — linked card {card.get('id')} is done.\n"
+            if not content.endswith(footer.rstrip()):
+                artifact.write_text(content.rstrip() + footer + "\n")
+                updated.append(path_str)
+
+        if updated:
+            print(f"ginflow-gate: marked linked artifacts done: {', '.join(updated)}", file=sys.stderr)
+    except Exception as error:
+        print(f"ginflow-gate: artifact update warning: {error}", file=sys.stderr)
+    return None
+
+
 def register(ctx):
     ctx.register_hook("pre_tool_call", pre_tool_call)
+    ctx.register_hook("post_tool_call", post_tool_call)

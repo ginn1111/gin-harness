@@ -37,7 +37,7 @@ for profile in "$@"; do
   fi
 
   mkdir -p "$profile_dir/skills" "$profile_dir/plugins"
-  for link in "$profile_dir/skills/ginflow" "$profile_dir/plugins/ginflow-gate"; do
+  for link in "$profile_dir/skills/ginflow" "$profile_dir/plugins/ginflow-gate" "$profile_dir/plugins/ginflow-routing"; do
     if [[ -e "$link" && ! -L "$link" ]]; then
       backup="$link.bak.integration.$(date +%s)"
       mv "$link" "$backup"
@@ -46,6 +46,7 @@ for profile in "$@"; do
   done
   ln -sfn "$ROOT/skills/ginflow" "$profile_dir/skills/ginflow"
   ln -sfn "$ROOT/plugins/ginflow-gate" "$profile_dir/plugins/ginflow-gate"
+  ln -sfn "$ROOT/plugins/ginflow-routing" "$profile_dir/plugins/ginflow-routing"
 
   python3 - "$config" "$ROOT" <<'PY'
 import sys
@@ -53,23 +54,38 @@ from pathlib import Path
 import yaml
 path, root = Path(sys.argv[1]), Path(sys.argv[2])
 config = yaml.safe_load(path.read_text()) or {}
-external = config.setdefault("skills", {}).setdefault("external_dirs", [])
+
+def mapping(key):
+    value = config.get(key)
+    if not isinstance(value, dict):
+        value = {}
+        config[key] = value
+    return value
+
+def list_value(parent, key):
+    value = parent.get(key)
+    if not isinstance(value, list):
+        value = []
+        parent[key] = value
+    return value
+
+external = list_value(mapping("skills"), "external_dirs")
 for candidate in (str(root / "skills"), str(root / "community/mattpocock-skills/skills")):
     if Path(candidate).is_dir() and candidate not in external:
         external.append(candidate)
-cli = config.setdefault("platform_toolsets", {}).setdefault("cli", [])
+cli = list_value(mapping("platform_toolsets"), "cli")
 for toolset in ("code_execution", "delegation", "file", "kanban", "memory", "session_search", "skills", "terminal", "todo", "vision", "web", "mcp-codegraph"):
     if toolset not in cli:
         cli.append(toolset)
-config.setdefault("mcp_servers", {})["codegraph"] = {
+mapping("mcp_servers")["codegraph"] = {
     "command": "codegraph", "args": ["serve", "--mcp"],
     "timeout": 120, "connect_timeout": 60, "enabled": True,
 }
-plugins = config.get("plugins", {})
-enabled = plugins.get("enabled", [])
-if isinstance(enabled, list):
-    if "ginflow-gate" not in plugins["enabled"]:
-        plugins["enabled"].append("ginflow-gate")
+enabled = list_value(mapping("plugins"), "enabled")
+if "ginflow-gate" not in enabled:
+    enabled.append("ginflow-gate")
+if "ginflow-routing" not in enabled:
+    enabled.append("ginflow-routing")
 backup = path.with_name(path.name + ".bak.integration")
 if not backup.exists():
     backup.write_text(path.read_text())
