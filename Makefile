@@ -61,13 +61,16 @@ lint:
 	@echo "lint ok"
 
 ## Run deterministic repository tests
-test: lint setup-test harness-core-test artifact-guidance-test kanban-harness-test ginflow-gate-test
+test: lint setup-test harness-core-test artifact-guidance-test kanban-harness-test ginflow-gate-test ginflow-routing-test
 
 harness-core-test:
 	python3 skills/ginflow/scripts/test-harness-core.py
 
 ginflow-gate-test:
 	python3 skills/ginflow/scripts/test-ginflow-gate.py
+
+ginflow-routing-test:
+	python3 skills/ginflow/scripts/test-ginflow-routing.py
 
 ## Check ginflow docs layout and artifact content guidance
 artifact-guidance-test:

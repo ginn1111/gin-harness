@@ -4,6 +4,9 @@ When ginflow skill is loaded, this plugin runs on every pre_llm_call hook
 and injects the current Kanban board snapshot — card count, titles, statuses —
 so the agent can route itself to work shaping (no cards) or resume (cards exist).
 
+When ginflow skill is NOT loaded, the plugin is a no-op — no subprocess call,
+no context injection.
+
 The injected context is ephemeral (per-turn) and never persisted to the session DB.
 """
 
@@ -13,9 +16,24 @@ import json
 import logging
 import os
 import subprocess
+from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+
+def _ginflow_loaded() -> bool:
+    """Check if ginflow skill is available in this profile."""
+    hermes_home = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes"))
+    profile = os.environ.get("HERMES_PROFILE", "gintary")
+
+    # Profile-specific skills dir
+    candidates = [
+        hermes_home / "profiles" / profile / "skills" / "ginflow" / "SKILL.md",
+        hermes_home / "skills" / "ginflow" / "SKILL.md",
+        Path.home() / ".agents" / "skills" / "ginflow" / "SKILL.md",
+    ]
+    return any(p.exists() for p in candidates)
 
 
 def _kanban_board_state() -> str | None:
@@ -36,7 +54,6 @@ def _kanban_board_state() -> str | None:
         return None
 
     if result.returncode != 0:
-        # Board not initialised yet — that's fine, treat as empty.
         return None
 
     if not result.stdout.strip():
@@ -66,17 +83,13 @@ def _kanban_board_state() -> str | None:
 
 
 def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
-    """Inject board state into the user message when ginflow context is active.
+    """Inject board state into the user message when ginflow context is active."""
+    # No-op if ginflow skill isn't available in this profile
+    if not _ginflow_loaded():
+        return None
 
-    The context text tells the agent how many cards exist and their statuses.
-    If no cards exist, the agent routes to shaping. If cards exist, it resumes.
-    """
-    # Always check board state — cheap single subprocess call.
-    # Kanban-dispatched sessions have HERMES_KANBAN_TASK set;
-    # non-dispatched sessions also get routing context when cards exist.
     board = _kanban_board_state()
     if board is None:
-        # Board not initialised — agent should shape first card.
         context = (
             "[ginflow-routing: Kanban board is empty or uninitialised. "
             "No existing cards found. Route to work shaping: "
