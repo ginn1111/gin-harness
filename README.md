@@ -1,6 +1,6 @@
-# agents-hype
+# gin-harness
 
-Integration kit for Hermes-native profiles.
+Hermes native harness system.
 
 This repo contains no profile identity, profile manifest, profile registry, provider config, or distribution package. Profiles are installed, exported, imported, and updated by Hermes itself. This repo only plugs shared skills, Ginflow harness, MCPs, plugins, and toolsets into profiles selected at runtime.
 
@@ -63,19 +63,19 @@ Restart profile sessions after apply.
 
 ## Repository map
 
-| Path | Purpose |
-|---|---|
-| `skills/ginflow/` | Shared workflow, templates, validator, tests |
-| `skills/ginflow-workspace/` | Eval evidence, including gate rejection and independent-profile coverage |
-| `plugins/ginflow-gate/` | Blocking Kanban completion policy |
-| `Makefile` | Active-profile default selection plus setup, verification, and test entry points |
-| `scripts/setup.sh` | Integration preview/apply for active or explicitly named profiles |
-| `scripts/verify.sh` | Generic integration and harness verification |
-| `scripts/test-setup.sh` | Regression test for active-profile-only default selection |
-| `scripts/community-setup.sh` | Optional community skill checkout |
-| `scripts/detect-skill-drift.py` | Shared-skill shadow detector utility |
-| `templates/AGENTS.md` | Target-project starter |
-| `INSTALL.md` | Full native-profile and integration guide |
+| Path | Purpose | Docs |
+|---|---|---|
+| `skills/ginflow/` | Shared workflow, templates, validator, tests | `skills/ginflow/SKILL.md` |
+| `skills/ginflow-workspace/` | Eval evidence, including gate rejection and independent-profile coverage | inline |
+| `plugins/ginflow-gate/` | Blocking Kanban completion policy | source code |
+| `Makefile` | Active-profile default selection plus setup, verification, and test entry points | inline comments |
+| `scripts/setup.sh` | Integration preview/apply for active or explicitly named profiles | `INSTALL.md` §3 |
+| `scripts/verify.sh` | Generic integration and harness verification | `INSTALL.md` §3 |
+| `scripts/test-setup.sh` | Regression test for active-profile-only default selection | source code |
+| `scripts/community-setup.sh` | Optional community skill checkout | source code |
+| `scripts/detect-skill-drift.py` | Shared-skill shadow detector utility | source code |
+| `templates/AGENTS.md` | Target-project starter | `templates/AGENTS.md` |
+| `INSTALL.md` | Full native-profile and integration guide | `INSTALL.md` |
 
 ## Agent workflow
 
