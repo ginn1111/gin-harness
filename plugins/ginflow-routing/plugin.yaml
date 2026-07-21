@@ -1,0 +1,5 @@
+name: ginflow-routing
+version: "0.1.0"
+description: Inject Kanban board state before LLM calls to route ginflow agents to shaping or resume
+hooks:
+  - pre_llm_call
