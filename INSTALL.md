@@ -1,6 +1,6 @@
-# Install Hermes-native profiles and plug shared integrations
+# gin-harness — install & integrate
 
-Run commands from setup repo root.
+Run commands from repo root.
 
 ## 1. Install Hermes Agent
 
@@ -138,5 +138,5 @@ Do not implement product work in setup repo. Agents must load and follow `ginflo
 Start target repo with local rules when needed:
 
 ```bash
-cp /path/to/agents-hype/templates/AGENTS.md /path/to/project/AGENTS.md
+cp /path/to/gin-harness/templates/AGENTS.md /path/to/project/AGENTS.md
 ```

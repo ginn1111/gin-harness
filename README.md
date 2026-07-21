@@ -9,7 +9,7 @@ This repo contains no profile identity, profile manifest, profile registry, prov
 | Owner | Content |
 |---|---|
 | Hermes profile distribution | `SOUL.md`, `distribution.yaml`, native `config.yaml` defaults, profile skills/cron, version, release source |
-| This setup repo | `skills/ginflow`, harness/tests, optional community skills, CodeGraph MCP/tool wiring, target-project starter |
+| This harness repo | `skills/ginflow`, harness/tests, optional community skills, CodeGraph MCP/tool wiring, target-project starter |
 | Target project | code, tests, `AGENTS.md` / `.hermes.md`, briefs/specs/plans/handoffs |
 
 No profile names or profile package files belong here.
