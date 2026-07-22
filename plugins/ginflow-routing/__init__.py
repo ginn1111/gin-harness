@@ -95,7 +95,8 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
             "No existing cards found. Route to work shaping: "
             "investigate the current repo, choose work mode "
             "(investigation/implementation/brainstorming), choose artifact level, "
-            "and draft a Kanban card.]"
+            "and draft a Kanban card. For planning-required work, load and follow "
+            "the `plan` skill before creating a plan.]"
         )
     else:
         context = (
@@ -104,7 +105,8 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
             "Route to resume: read the selected/active card, "
             "confirm required fields (objective, scope, acceptance, workspace, assignee, links), "
             "read linked artifacts, check git state, run project baseline, "
-            "then execute.]"
+            "then execute. For planning-required work, load and follow the `plan` "
+            "skill before creating a plan.]"
         )
 
     return {"context": context}

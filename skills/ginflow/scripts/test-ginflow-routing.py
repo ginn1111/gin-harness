@@ -76,6 +76,8 @@ def test_ginflow_skill_active():
                 "context should contain plugin marker '[ginflow-routing:'"
             assert "shaping" in result["context"] or "resume" in result["context"], \
                 "context should route to shaping or resume"
+            assert "load and follow the `plan` skill before creating a plan" in result["context"], \
+                "context should require plan skill before plan creation"
         finally:
             if old_home:
                 os.environ["HERMES_HOME"] = old_home

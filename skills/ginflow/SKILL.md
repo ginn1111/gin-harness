@@ -78,6 +78,7 @@ Rule:
 - brief always
 - spec when behavior/contract can drift
 - plan when ordering/risk matters
+- Before creating a plan for planning-required work, load and follow the `plan` skill.
 - use Kanban card ID across artifacts for deterministic linking
 - brief defines objective/scope/acceptance; spec defines behavior/contracts; plan defines execution order
 - follow `references/artifact-content-guide.md` for content quality, artifact boundaries, authority, ADRs, cards, and handoffs
