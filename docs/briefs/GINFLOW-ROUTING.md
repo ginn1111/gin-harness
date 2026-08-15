@@ -5,11 +5,11 @@ scope: setup-repo
 owner: ginb
 ---
 
-# Brief — Strict ginflow-routing workspace-aware routing
+# Brief — Strict ginflow-gate routing module workspace-aware routing
 
 ## Objective
 
-Make `ginflow-routing` route worker sessions safely when one Kanban board contains cards for multiple workspaces. The worker must report candidate cards to human/orchestrator authority and must not infer or auto-select implementation work.
+Make `ginflow-gate` routing module route worker sessions safely when one Kanban board contains cards for multiple workspaces. The worker must report candidate cards to human/orchestrator authority and must not infer or auto-select implementation work.
 
 ## Scope
 

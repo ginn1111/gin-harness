@@ -37,7 +37,7 @@ for profile in "$@"; do
   fi
 
   mkdir -p "$profile_dir/skills" "$profile_dir/plugins"
-  for link in "$profile_dir/skills/ginflow" "$profile_dir/plugins/ginflow-gate" "$profile_dir/plugins/ginflow-routing"; do
+  for link in "$profile_dir/skills/ginflow" "$profile_dir/plugins/ginflow-gate"; do
     if [[ -e "$link" && ! -L "$link" ]]; then
       backup="$link.bak.integration.$(date +%s)"
       mv "$link" "$backup"
@@ -46,7 +46,7 @@ for profile in "$@"; do
   done
   ln -sfn "$ROOT/skills/ginflow" "$profile_dir/skills/ginflow"
   ln -sfn "$ROOT/plugins/ginflow-gate" "$profile_dir/plugins/ginflow-gate"
-  ln -sfn "$ROOT/plugins/ginflow-routing" "$profile_dir/plugins/ginflow-routing"
+
 
   python3 - "$config" "$ROOT" <<'PY'
 import sys
@@ -84,8 +84,7 @@ mapping("mcp_servers")["codegraph"] = {
 enabled = list_value(mapping("plugins"), "enabled")
 if "ginflow-gate" not in enabled:
     enabled.append("ginflow-gate")
-if "ginflow-routing" not in enabled:
-    enabled.append("ginflow-routing")
+
 backup = path.with_name(path.name + ".bak.integration")
 if not backup.exists():
     backup.write_text(path.read_text())

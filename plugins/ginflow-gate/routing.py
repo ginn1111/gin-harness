@@ -65,7 +65,7 @@ def _kanban_board_state() -> str | None:
     except FileNotFoundError:
         return None
     except OSError as exc:
-        logger.warning("ginflow-routing: kanban list unavailable: %s", exc)
+        logger.warning("ginflow-gate routing: kanban list unavailable: %s", exc)
         return None
     except subprocess.TimeoutExpired:
         return None
@@ -160,7 +160,7 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
         route_name = "validation_failed"
     action = route.get("action", "block")
     context = (
-        f"[ginflow-routing: route={route_name}; workspace={current}; "
+        f"[ginflow-gate routing: route={route_name}; workspace={current}; "
         f"mutation_allowed={action == 'execute'}; "
         f"task={route.get('id', explicit_id or 'none')}; "
         f"candidates={','.join(candidates) if candidates else 'none'}. "

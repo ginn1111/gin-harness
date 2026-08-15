@@ -12,8 +12,8 @@
   - If there are no kanban cards -> routing to work routing sizing
   - If there are kanban cards -> use hermes kanban tools to understand the progress first, after that continue process
 - Let's try to plugin hook approach:
-  - Inject in the pre_llm_call hook, if the active skills contain ginflow, we should inject the ginflow-routing sub skills to guide the agent
+  - Inject in the pre_llm_call hook, if the active skills contain ginflow, we should inject the ginflow-gate routing module sub skills to guide the agent
 
 - [ ] [Workspace specs]: When I invoke ginflow, when the agents routing task sizing -> start brainstorming with and write specs, need to the human review before run!
-  - Let's try approach, because the user invoke skills immediately, you should refer the ginflow-routing already in SKILLS.md
+  - Let's try approach, because the user invoke skills immediately, you should refer the ginflow-gate routing module already in SKILLS.md
 

@@ -26,7 +26,7 @@
 **Objective:** Preserve instruction in routing output for empty and active boards.
 
 **Files:**
-- Modify: `plugins/ginflow-routing/__init__.py:93-108`
+- Modify: `plugins/ginflow-gate/routing.py:93-108`
 
 **Step 1:** Add exact plan-skill instruction to both context strings.
 
@@ -37,11 +37,11 @@
 **Objective:** Prove active Ginflow context contains instruction.
 
 **Files:**
-- Modify: `skills/ginflow/scripts/test-ginflow-routing.py:50-89`
+- Modify: `plugins/ginflow-gate/test_ginflow_gate.py:50-89`
 
 **Step 1:** Assert active routing context contains `load and follow the `plan` skill before creating a plan`.
 
-**Step 2:** Run `python3 skills/ginflow/scripts/test-ginflow-routing.py`.
+**Step 2:** Run `python3 plugins/ginflow-gate/test_ginflow_gate.py`.
 
 Expected: `ginflow routing test passed`.
 
@@ -51,8 +51,8 @@ Expected: `ginflow routing test passed`.
 
 **Files:**
 - Review: `skills/ginflow/SKILL.md`
-- Review: `plugins/ginflow-routing/__init__.py`
-- Review: `skills/ginflow/scripts/test-ginflow-routing.py`
+- Review: `plugins/ginflow-gate/routing.py`
+- Review: `plugins/ginflow-gate/test_ginflow_gate.py`
 
 **Step 1:** Run `make lint`.
 

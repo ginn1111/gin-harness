@@ -14,8 +14,8 @@ Require Ginflow agents to load and follow `plan` before creating a plan for plan
 ## Scope
 
 - `skills/ginflow/SKILL.md` task-shaping guidance.
-- `plugins/ginflow-routing/__init__.py` injected routing context.
-- `skills/ginflow/scripts/test-ginflow-routing.py` regression coverage.
+- `plugins/ginflow-gate/routing.py` injected routing context.
+- `plugins/ginflow-gate/test_ginflow_gate.py` regression coverage.
 
 ## Acceptance criteria
 

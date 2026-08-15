@@ -1,8 +1,8 @@
-# Spec — Strict ginflow-routing workspace-aware routing
+# Spec — Strict ginflow-gate routing module workspace-aware routing
 
 ## Problem
 
-`ginflow-routing` currently summarizes board state but does not safely distinguish cards belonging to different workspaces. It can also provide only advisory text when an explicit task is supplied. A worker may therefore resume the wrong card or begin implementation without clear orchestration selection.
+`ginflow-gate` routing module currently summarizes board state but does not safely distinguish cards belonging to different workspaces. It can also provide only advisory text when an explicit task is supplied. A worker may therefore resume the wrong card or begin implementation without clear orchestration selection.
 
 ## Desired behavior
 
@@ -67,7 +67,7 @@ Output when active:
 
 ```json
 {
-  "context": "[ginflow-routing: ...]"
+  "context": "[ginflow-gate routing module: ...]"
 }
 ```
 
@@ -114,7 +114,7 @@ The context must identify route, current workspace, candidate/selected card IDs 
 
 Test the highest existing seam: the plugin hook/helper behavior with subprocess and environment inputs controlled by test fixtures. Assert external behavior: route, candidate IDs, mutation guidance, and injected context. Avoid testing private implementation shape beyond observable routing behavior.
 
-Use existing deterministic script style in `skills/ginflow/scripts/test-ginflow-routing.py`. Retain no-skill and active-skill coverage; add workspace, explicit-selection, status, malformed-input, and context assertions.
+Use existing deterministic script style in `plugins/ginflow-gate/test_ginflow_gate.py`. Retain no-skill and active-skill coverage; add workspace, explicit-selection, status, malformed-input, and context assertions.
 
 Verification commands:
 
@@ -136,4 +136,4 @@ make test
 This spec supersedes earlier advisory-only routing assumptions for workspace/card selection. Routing reports state and intent; orchestration owns selection; Hermes core owns enforcement.
 
 ---
-**Status: active** — linked card `t_76959652` is in review.
+**Status: superseded by `GINFLOW-GATE-MERGE`** — linked card `t_76959652` is in review.

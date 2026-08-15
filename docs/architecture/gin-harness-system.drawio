@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <mxfile host="drawio" version="26.0.0">
   <diagram name="Gin Harness System">
     <mxGraphModel grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1600" pageHeight="1000">
@@ -6,48 +6,48 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
-        <mxCell id="profile" value="Hermes Profile&#xa;(identity, config, secrets, sessions)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="profile" value="Hermes Profile&#10;(identity, config, secrets, sessions)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="40" y="60" width="250" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="target" value="Target Project Repo&#xa;(code, tests, local docs, task artifacts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="target" value="Target Project Repo&#10;(code, tests, local docs, task artifacts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="40" y="300" width="250" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="kanban" value="Hermes Kanban&#xa;(cards, status, workspace, links)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="kanban" value="Hermes Kanban&#10;(cards, status, workspace, links)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="40" y="540" width="250" height="90" as="geometry" />
         </mxCell>
 
-        <mxCell id="ginflow" value="ginflow Skill&#xa;startup · shaping · execution · handoff" style="swimlane;startSize=30;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="ginflow" value="ginflow Skill&#10;startup · shaping · execution · handoff" style="swimlane;startSize=30;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="380" y="40" width="360" height="230" as="geometry" />
         </mxCell>
-        <mxCell id="workflow" value="Workflow rules&#xa;workspace split&#xa;required card fields&#xa;brief/spec/plan layout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="ginflow">
+        <mxCell id="workflow" value="Workflow rules&#10;workspace split&#10;required card fields&#10;brief/spec/plan layout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="ginflow">
           <mxGeometry x="25" y="55" width="310" height="140" as="geometry" />
         </mxCell>
 
-        <mxCell id="harness" value="Ginflow Harness&#xa;validator + reusable core + tests" style="swimlane;startSize=30;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="harness" value="Ginflow Harness&#10;validator + reusable core + tests" style="swimlane;startSize=30;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="380" y="330" width="360" height="230" as="geometry" />
         </mxCell>
-        <mxCell id="validator" value="validate-harness.py&#xa;baseline + artifact drift&#xa;integration checks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="harness">
+        <mxCell id="validator" value="validate-harness.py&#10;baseline + artifact drift&#10;integration checks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="harness">
           <mxGeometry x="25" y="55" width="310" height="140" as="geometry" />
         </mxCell>
 
         <mxCell id="plugins" value="Plugins" style="swimlane;startSize=30;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="820" y="40" width="360" height="230" as="geometry" />
         </mxCell>
-        <mxCell id="gate" value="ginflow-gate&#xa;blocks invalid completion&#xa;marks linked artifacts complete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="plugins">
+        <mxCell id="gate" value="ginflow-gate&#10;blocks invalid completion&#10;marks linked artifacts complete" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="plugins">
           <mxGeometry x="25" y="50" width="310" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="routing" value="ginflow-routing&#xa;injects Kanban state before LLM call&#xa;no-op when ginflow absent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="plugins">
+        <mxCell id="routing" value="ginflow-gate routing&#10;injects Kanban state before LLM call&#10;no-op when ginflow absent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" vertex="1" parent="plugins">
           <mxGeometry x="25" y="130" width="310" height="70" as="geometry" />
         </mxCell>
 
-        <mxCell id="scripts" value="Setup / Verification Scripts&#xa;setup.sh · verify.sh · test harnesses" style="swimlane;startSize=30;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="scripts" value="Setup / Verification Scripts&#10;setup.sh · verify.sh · test harnesses" style="swimlane;startSize=30;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="820" y="330" width="360" height="150" as="geometry" />
         </mxCell>
-        <mxCell id="make" value="Makefile&#xa;make setup / apply / verify / lint / test" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="scripts">
+        <mxCell id="make" value="Makefile&#10;make setup / apply / verify / lint / test" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="scripts">
           <mxGeometry x="25" y="50" width="310" height="70" as="geometry" />
         </mxCell>
 
-        <mxCell id="mcp" value="Optional integrations&#xa;CodeGraph MCP · community skills · toolsets" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+        <mxCell id="mcp" value="Optional integrations&#10;CodeGraph MCP · community skills · toolsets" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
           <mxGeometry x="820" y="540" width="360" height="90" as="geometry" />
         </mxCell>
 
@@ -61,23 +61,23 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram name="ginflow-routing Detail">
+  <diagram name="ginflow-gate Routing Detail">
     <mxGraphModel grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1600" pageHeight="1200">
       <root>
         <mxCell id="r0" />
         <mxCell id="r1" parent="r0" />
         <mxCell id="u" value="User request" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="80" y="80" width="220" height="70" as="geometry" /></mxCell>
         <mxCell id="hook" value="Hermes pre_llm_call hook" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="380" y="80" width="250" height="70" as="geometry" /></mxCell>
-        <mxCell id="check" value="ginflow loaded?&#xa;HERMES_TUI_SKILLS" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="710" y="70" width="220" height="90" as="geometry" /></mxCell>
-        <mxCell id="noop" value="No-op&#xa;return None" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="r1"><mxGeometry x="1010" y="20" width="190" height="70" as="geometry" /></mxCell>
+        <mxCell id="check" value="ginflow loaded?&#10;HERMES_TUI_SKILLS" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="710" y="70" width="220" height="90" as="geometry" /></mxCell>
+        <mxCell id="noop" value="No-op&#10;return None" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="r1"><mxGeometry x="1010" y="20" width="190" height="70" as="geometry" /></mxCell>
         <mxCell id="list" value="hermes kanban list --json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="1010" y="150" width="240" height="70" as="geometry" /></mxCell>
-        <mxCell id="cards" value="Workspace-filtered cards?&#xa;Path.cwd().resolve() + dir: normalization" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="1020" y="290" width="270" height="100" as="geometry" /></mxCell>
-        <mxCell id="empty" value="Inject shaping hint&#xa;inspect → choose mode → draft card" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="r1"><mxGeometry x="700" y="470" width="300" height="90" as="geometry" /></mxCell>
-        <mxCell id="active" value="Explicit task required&#xa;no auto-select; mismatch blocks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="r1"><mxGeometry x="1080" y="470" width="330" height="90" as="geometry" /></mxCell>
-        <mxCell id="state" value="Map Hermes status&#xa;todo/ready → next&#xa;running → in_progress" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="360" y="470" width="280" height="100" as="geometry" /></mxCell>
-        <mxCell id="docs" value="Validate linked docs&#xa;before ready → running claim" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="380" y="680" width="280" height="90" as="geometry" /></mxCell>
+        <mxCell id="cards" value="Workspace-filtered cards?&#10;Path.cwd().resolve() + dir: normalization" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="1020" y="290" width="270" height="100" as="geometry" /></mxCell>
+        <mxCell id="empty" value="Inject shaping hint&#10;inspect → choose mode → draft card" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="r1"><mxGeometry x="700" y="470" width="300" height="90" as="geometry" /></mxCell>
+        <mxCell id="active" value="Explicit task required&#10;no auto-select; mismatch blocks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="r1"><mxGeometry x="1080" y="470" width="330" height="90" as="geometry" /></mxCell>
+        <mxCell id="state" value="Map Hermes status&#10;todo/ready → next&#10;running → in_progress" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="360" y="470" width="280" height="100" as="geometry" /></mxCell>
+        <mxCell id="docs" value="Validate linked docs&#10;before ready → running claim" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="380" y="680" width="280" height="90" as="geometry" /></mxCell>
         <mxCell id="llm" value="LLM receives request + temporary routing context" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="780" y="680" width="360" height="80" as="geometry" /></mxCell>
-        <mxCell id="gate" value="Later: ginflow-gate&#xa;hard-checks completion" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="780" y="850" width="360" height="80" as="geometry" /></mxCell>
+        <mxCell id="gate" value="Later: ginflow-gate&#10;hard-checks completion" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="r1"><mxGeometry x="780" y="850" width="360" height="80" as="geometry" /></mxCell>
         <mxCell id="a1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="r1" source="u" target="hook"><mxGeometry relative="1" as="geometry" /></mxCell>
         <mxCell id="a2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="r1" source="hook" target="check"><mxGeometry relative="1" as="geometry" /></mxCell>
         <mxCell id="a3" value="no" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="r1" source="check" target="noop"><mxGeometry relative="1" as="geometry" /></mxCell>
@@ -91,6 +91,48 @@
         <mxCell id="a13" value="route context" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="r1" source="docs" target="llm"><mxGeometry relative="1" as="geometry" /></mxCell>
         <mxCell id="a9" value="inject context" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="r1" source="active" target="llm"><mxGeometry relative="1" as="geometry" /></mxCell>
         <mxCell id="a10" value="completion attempt" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="r1" source="llm" target="gate"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+<diagram name="ginflow-gate flow">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageScale="1" pageWidth="1600" pageHeight="1200">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="start" value="Session / tool call" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="650" y="30" width="180" height="60" as="geometry" /></mxCell>
+        <mxCell id="loaded" value="ginflow skill loaded?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="650" y="130" width="180" height="90" as="geometry" /></mxCell>
+        <mxCell id="noop" value="No-op&#10;plugin returns" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="980" y="145" width="180" height="60" as="geometry" /></mxCell>
+        <mxCell id="list" value="pre_llm_call&#10;load Kanban cards" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="650" y="270" width="180" height="70" as="geometry" /></mxCell>
+        <mxCell id="workspace" value="Normalize cwd&#10;filter workspace matches" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="650" y="390" width="180" height="70" as="geometry" /></mxCell>
+        <mxCell id="card" value="Explicit task ID?&#10;otherwise exactly one card?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="650" y="510" width="180" height="100" as="geometry" /></mxCell>
+        <mxCell id="blockselect" value="BLOCK&#10;report candidates / mismatch" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="980" y="530" width="200" height="60" as="geometry" /></mxCell>
+        <mxCell id="status" value="Map status&#10;todo/ready→next&#10;running→in_progress" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="650" y="670" width="180" height="90" as="geometry" /></mxCell>
+        <mxCell id="route" value="Route by status" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="650" y="820" width="180" height="90" as="geometry" /></mxCell>
+        <mxCell id="shape" value="No card / blocked / terminal&#10;work shaping or orchestrator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="835" width="220" height="70" as="geometry" /></mxCell>
+        <mxCell id="validate" value="next card&#10;startup_gate validates docs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="650" y="970" width="180" height="70" as="geometry" /></mxCell>
+        <mxCell id="execute" value="running card&#10;execute within scope" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="980" y="835" width="200" height="70" as="geometry" /></mxCell>
+        <mxCell id="complete" value="kanban_complete&#10;ginflow-gate pre_tool_call" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="980" y="970" width="200" height="70" as="geometry" /></mxCell>
+        <mxCell id="metadata" value="Require metadata&#10;verification_result + artifact_baseline&#10;same commit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="980" y="1080" width="200" height="90" as="geometry" /></mxCell>
+        <mxCell id="artifact" value="artifact_gate&#10;baseline complete + no drift?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="650" y="1080" width="180" height="90" as="geometry" /></mxCell>
+        <mxCell id="reject" value="BLOCK&#10;fail closed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="1095" width="180" height="60" as="geometry" /></mxCell>
+        <mxCell id="post" value="post_tool_call&#10;mark linked artifacts completed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="650" y="1220" width="180" height="70" as="geometry" /></mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="start" target="loaded"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="loaded" target="noop"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" value="Yes" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="loaded" target="list"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="list" target="workspace"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="workspace" target="card"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" value="No / ambiguous" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="card" target="blockselect"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" value="Selected" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="card" target="status"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="status" target="route"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" value="blocked / done / invalid" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="route" target="shape"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" value="next" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="route" target="validate"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e11" value="in_progress" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="route" target="execute"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" value="completion" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="execute" target="complete"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="complete" target="metadata"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e14" value="valid" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="metadata" target="artifact"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e15" value="invalid / drift" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="artifact" target="reject"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e16" value="pass" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="artifact" target="post"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e17" value="docs valid → claim / resume" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="validate" target="execute"><mxGeometry relative="1" as="geometry" /></mxCell>
       </root>
     </mxGraphModel>
   </diagram>

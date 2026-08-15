@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test ginflow-routing plugin activation based on current session skill state."""
+"""Test ginflow-gate routing and registration behavior."""
 
 import importlib.util
 import json
@@ -8,10 +8,10 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
-PLUGIN = ROOT / "plugins/ginflow-routing/__init__.py"
+ROOT = Path(__file__).resolve().parents[2]
+PLUGIN = ROOT / "plugins/ginflow-gate/routing.py"
 
-spec = importlib.util.spec_from_file_location("ginflow_routing", PLUGIN)
+spec = importlib.util.spec_from_file_location("ginflow_gate_routing", PLUGIN)
 assert spec and spec.loader
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
@@ -72,8 +72,8 @@ def test_ginflow_skill_active():
             "_routing_context() should return dict when ginflow loaded"
         assert "context" in result, \
             "result should have 'context' key"
-        assert "ginflow-routing" in result["context"], \
-            "context should contain plugin marker '[ginflow-routing:'"
+        assert "ginflow-gate routing" in result["context"], \
+            "context should contain plugin marker '[ginflow-gate routing:'"
         assert "route=" in result["context"] and "mutation_allowed=" in result["context"], \
             "context should expose structured deterministic route"
         assert any(marker in result["context"] for marker in (
@@ -98,7 +98,7 @@ def test_live_tmp_project_card():
         "Acceptance:\n- route blocked card\n"
         "Links:\n- docs/briefs/TMP-1.md"
     )
-    with tempfile.TemporaryDirectory(prefix="ginflow-routing-project-") as project, tempfile.TemporaryDirectory(prefix="ginflow-routing-home-") as home:
+    with tempfile.TemporaryDirectory(prefix="ginflow-gate-project-") as project, tempfile.TemporaryDirectory(prefix="ginflow-gate-home-") as home:
         target = Path(project)
         (target / "docs/briefs").mkdir(parents=True)
         (target / "docs/briefs/TMP-1.md").write_text("# Temporary brief\n")
@@ -131,7 +131,7 @@ def test_live_tmp_next_card_docs():
         "Acceptance:\n- validate docs\n"
         "Links:\n- docs/briefs/TMP-2.md"
     )
-    with tempfile.TemporaryDirectory(prefix="ginflow-routing-project-") as project, tempfile.TemporaryDirectory(prefix="ginflow-routing-home-") as home:
+    with tempfile.TemporaryDirectory(prefix="ginflow-gate-project-") as project, tempfile.TemporaryDirectory(prefix="ginflow-gate-home-") as home:
         target = Path(project)
         (target / "docs/briefs").mkdir(parents=True)
         (target / "docs/briefs/TMP-2.md").write_text("# Temporary brief\n")
@@ -171,3 +171,119 @@ if __name__ == "__main__":
     test_live_tmp_project_card()
     test_live_tmp_next_card_docs()
     print("ginflow routing test passed")
+
+
+# Completion gate integration coverage
+#!/usr/bin/env python3
+import importlib.util
+import json
+import subprocess
+import tempfile
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
+PLUGIN = ROOT / "plugins/ginflow-gate/gate.py"
+
+spec = importlib.util.spec_from_file_location("ginflow_gate_gate", PLUGIN)
+assert spec and spec.loader
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+validate_completion = module.validate_completion
+
+card = {
+    "id": "GATE-1",
+    "title": "Gate",
+    "objective": "Enforce completion",
+    "scope": ["plugin"],
+    "acceptance": ["bad completion rejected"],
+    "workspace": "dir:/tmp/target",
+    "status": "running",
+    "assignee": "worker",
+    "links": ["docs/briefs/GATE-1.md"],
+}
+setattr(module, "load_card", lambda task_id, board=None: card)
+
+blocked = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": {}}, "", profile="worker")
+assert blocked["action"] == "block"
+assert "verification_result" in blocked["message"]
+
+setattr(module, "validate_completion", lambda card, metadata: None)
+allowed = module.pre_tool_call(
+    "kanban_complete",
+    {
+        "task_id": "GATE-1",
+        "metadata": {
+            "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
+            "artifact_baseline": {"commit": "abc", "paths": ["docs/briefs/GATE-1.md"]},
+        },
+    },
+    "",
+    profile="worker",
+)
+assert allowed is None
+
+setattr(module, "validate_completion", lambda card, metadata: "linked artifact drift: docs/briefs/GATE-1.md")
+blocked = module.pre_tool_call(
+    "kanban_complete",
+    {
+        "task_id": "GATE-1",
+        "metadata": {
+            "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
+            "artifact_baseline": {"commit": "abc", "paths": ["docs/briefs/GATE-1.md"]},
+        },
+    },
+    "",
+)
+assert blocked["action"] == "block"
+assert "drift" in blocked["message"]
+
+setattr(module, "load_card", lambda task_id, board=None: (_ for _ in ()).throw(RuntimeError("DB unavailable")))
+failed_closed = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": {}}, "")
+assert failed_closed["action"] == "block"
+assert "validation failed closed" in failed_closed["message"]
+
+with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
+    target = Path(directory)
+    brief = target / "docs/briefs/GATE-1.md"
+    brief.parent.mkdir(parents=True)
+    brief.write_text("# Gate\n")
+    subprocess.run(["git", "init", "-q"], cwd=target, check=True)
+    subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
+    subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
+    subprocess.run(["git", "add", "docs/briefs/GATE-1.md"], cwd=target, check=True)
+    subprocess.run(["git", "commit", "-qm", "baseline"], cwd=target, check=True)
+    commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=target, text=True, capture_output=True, check=True
+    ).stdout.strip()
+    committed_card = card | {"workspace": f"dir:{target}"}
+    metadata = {
+        "verification_result": {"commit": commit, "command": "make test", "result": "passed"},
+        "artifact_baseline": {"commit": commit, "paths": ["docs/briefs/GATE-1.md"]},
+    }
+    assert validate_completion(committed_card, metadata) is None
+    metadata["verification_result"]["commit"] = "mismatch"
+    assert "must match" in validate_completion(committed_card, metadata)
+
+class Hooks:
+    def __init__(self):
+        self.names = []
+
+    def register_hook(self, name, callback):
+        self.names.append(name)
+
+
+package_path = ROOT / "plugins/ginflow-gate/__init__.py"
+package_spec = importlib.util.spec_from_file_location(
+    "ginflow_gate_package", package_path, submodule_search_locations=[str(package_path.parent)]
+)
+assert package_spec and package_spec.loader
+package = importlib.util.module_from_spec(package_spec)
+import sys
+sys.modules["ginflow_gate_package"] = package
+package_spec.loader.exec_module(package)
+hooks = Hooks()
+package.register(hooks)
+assert hooks.names == ["pre_llm_call", "pre_tool_call", "post_tool_call"]
+
+print("ginflow gate rejection test passed")
