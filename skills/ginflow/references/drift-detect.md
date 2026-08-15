@@ -59,9 +59,9 @@ python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
 
 The adapter reads Objective, Scope, Acceptance, and Links sections from the task body; workspace/status/assignee/ID from the task row; and `artifact_baseline` from latest completion-run metadata. Use harness `--board <slug>` for a non-current board; direct CLI placement is `hermes kanban --board <slug> show ...`. Saved `hermes kanban show --json` output may instead be passed with `--card` for deterministic fixtures.
 
-### Completed-card linked-artifact gate
+### Completed-card linked-artifact validation
 
-Before a card becomes `done`, `completed`, or `closed`, worker commits every linked target-local artifact and records completion commit plus exact linked paths. Ginflow permits this baseline commit without human review. Worker stages only exact linked artifacts plus card-scoped implementation files. If Git identity is absent, commit fails, or unrelated changes cannot be excluded, keep card open and request human help.
+Ginflow permits this baseline commit without human review. The worker must commit every linked artifact and stage only exact linked artifacts plus card-scoped implementation files. Worker prepares truthful completion metadata: verification evidence plus `artifact_baseline` containing completion commit and exact linked target-local paths. Any assigned worker may call `kanban_complete`; no review handoff is required. `ginflow-gate` is enforcement authority and validates card fields, metadata, baseline commit, exact paths, and drift during the tool call. Invalid or unavailable evidence rejects completion.
 
 ```json
 {
@@ -75,17 +75,7 @@ Before a card becomes `done`, `completed`, or `closed`, worker commits every lin
 }
 ```
 
-Because Hermes writes run metadata atomically during `kanban_complete`, validate the candidate before closing and persist the exact same object:
-
-```bash
-python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
-  --setup-repo <setup-repo> --target <target-repo> \
-  --kanban-task-id "$TASK_ID" --baseline-commit "$COMMIT" \
-  --baseline-path docs/briefs/GIN-123.md \
-  --baseline-path docs/specs/GIN-123.md --json
-```
-
-After `kanban_complete(metadata={"artifact_baseline": ...})`, rerun without `--baseline-commit`/`--baseline-path` so the check proves the board persisted the baseline.
+`ginflow-gate` performs this validation during the native `kanban_complete` tool call. External harness checks remain optional manual/CI evidence.
 
 The external harness compares only those paths against the completion commit when the completed card is selected for startup, resume, handoff, or derived work. Advancing repository `HEAD` with unrelated changes does not cause drift. Uncommitted linked-artifact edits, later committed edits, missing paths, unavailable commits, and a path list that differs from the card's local links are blockers. The comparison is actor-agnostic: it detects a human or agent edit but cannot decide whether that edit is material.
 

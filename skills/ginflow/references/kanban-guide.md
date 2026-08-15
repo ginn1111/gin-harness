@@ -34,7 +34,7 @@ Use a stable human-facing card key chosen before creation for linked artifacts; 
 
 Put the key in the task title and explicit `Links:` paths. The harness follows those links rather than deriving filenames from the generated task ID.
 
-Draft card and artifact content before writing. Create the card assigned to the current profile, with its future links and `--initial-status blocked`. Write and commit linked artifacts, validate the candidate baseline, then unblock once. Current profile loads its canonical local Ginflow skill; do not force `--skill ginflow`.
+Draft card and artifact content before writing. Create the card assigned to the current profile, with its future links and `--initial-status blocked`. Write linked artifacts, then unblock once readiness passes. Current profile loads its canonical local Ginflow skill; do not force `--skill ginflow`.
 
 For a malformed existing body, keep the task blocked and have the human edit title/body in the Kanban dashboard before rerunning the harness. `hermes kanban edit` is only for completed-task recovery fields, not body edits. Do not invent a CLI `--body` repair command or acceptance criteria. If dashboard repair is unavailable, replacing the card requires human approval and an explicit backlink/comment.
 
@@ -42,7 +42,7 @@ Before closing unfinished or blocked work, record outcome, changed files, verifi
 
 Before completion, re-run canonical verification in target repo and derive changed-file evidence from target-repo `git status --short`. Temporary checks outside card workspace do not prove completion.
 
-Before first `kanban_complete`, worker commits every target-local artifact linked from its card. Human review is not required for this baseline commit. Stage only exact linked artifacts plus card-scoped implementation files; never include unrelated work. Record commit and exact linked paths under `artifact_baseline`. If Git identity is absent, commit fails, or unrelated changes cannot be separated, keep card open and request human help. Before startup, resume, handoff, or derived work involving that card, compare only those paths against commit. A missing/unavailable commit, path mismatch, missing file, later commit, or uncommitted edit blocks use of that card as authority. Unrelated paths and cards remain unblocked. Propose:
+Before `kanban_complete`, worker prepares truthful verification evidence and exact linked target-local paths in `artifact_baseline`. Human review is not required for this baseline commit; never include unrelated work. The worker must commit every linked artifact and stage only exact linked artifacts plus intended card work. `ginflow-gate` validates card fields, verification metadata, baseline commit, exact paths, and drift during the tool call. Invalid or unavailable evidence rejects completion. Before startup, resume, handoff, or derived work involving that card, compare only those paths against commit. Unrelated paths and cards remain unblocked. Propose:
 
 - restore the completed docs, create new versioned docs and a follow-up card, and link back to the completed card;
 - reopen the card, reconcile docs with implementation and evidence, commit, record a new completion commit, rerun verification and the harness, and complete again; or
@@ -50,7 +50,7 @@ Before first `kanban_complete`, worker commits every target-local artifact linke
 
 Never silently advance the completion commit or substitute per-file hashes.
 
-Before completion, current profile validates the candidate baseline against the live card:
+Optional manual/CI candidate check:
 
 ```bash
 python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
@@ -59,7 +59,7 @@ python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --baseline-path docs/briefs/<CARD-ID>.md --json
 ```
 
-Current profile makes first and only `kanban_complete` call with verification evidence plus same commit and paths in `metadata={"artifact_baseline": ...}`. `ginflow-gate` revalidates synchronously before mutation. Then rerun with only `--kanban-task-id` to verify persisted metadata.
+Any worker assigned to card makes `kanban_complete` call with verification evidence plus same commit and paths in `metadata={"artifact_baseline": ...}`. Do not route completion through `gintary` or a review handoff. `ginflow-gate` revalidates synchronously before mutation and rejects invalid output. External harness rerun is optional manual/CI evidence.
 
 Workspace rule:
 - use real target repo

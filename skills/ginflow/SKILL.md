@@ -95,7 +95,7 @@ Rule:
 - Before creating a plan for planning-required work, load and follow the `plan` skill.
 - use Kanban card ID across artifacts for deterministic linking
 - brief defines objective/scope/acceptance; spec defines behavior/contracts; plan defines execution order
-- follow `references/artifact-content-guide.md` for content quality, artifact boundaries, authority, ADRs, cards, and handoffs
+- follow linked artifact templates and project-local rules for content quality and boundaries
 
 ## Project session startup
 
@@ -228,16 +228,15 @@ Immediately before reporting completion:
 
 1. Run canonical project verification declared by target repo.
 2. Read target-repo `git status --short`; use `git diff --stat` when useful.
-3. Run ginflow harness externally against target repo and selected card. Never copy harness script into target repo.
-4. Report project verification and ginflow harness as separate results.
-5. Report only files under selected card workspace.
-6. Quote canonical project command and exact fresh result.
-7. Record same evidence on selected Kanban card before completing it.
-8. `ginflow-gate` synchronously validates required card fields, verification evidence, completion commit, exact linked paths, and drift before `kanban_complete`; validation errors fail closed with an actionable rejection. Record `metadata.verification_result` (`commit`, `command`, `result`) and matching `metadata.artifact_baseline` (`commit`, `paths`) in the completion call.
-9. The external CLI harness remains available for manual and CI validation independent of the live plugin gate.
-10. Review target workspace using `references/workspace-health-warnings.md`. Record concise findings under `Workspace warnings` on card and in completion report. Warnings do not block by default; promote only when acceptance, canonical verification, security, privacy, data integrity, or restartability is affected. Do not copy warning policy or scanner files into target repo.
+3. Report only files under selected card workspace.
+4. Quote canonical project command and exact fresh result.
+5. Record same evidence on selected Kanban card before completing it.
+6. Call `kanban_complete` directly. Any worker may complete its assigned card; do not route completion to `gintary` or a review handoff.
+7. Provide `metadata.verification_result` (`commit`, `command`, `result`) and matching `metadata.artifact_baseline` (`commit`, `paths`). `ginflow-gate` validates these synchronously, including exact linked paths and drift, and rejects invalid completion.
+8. The external CLI harness remains available for manual and CI validation independent of the live plugin gate.
+9. Review target workspace using `references/workspace-health-warnings.md`. Record concise findings under `Workspace warnings` on card and in completion report. Warnings do not block by default; promote only when acceptance, canonical verification, security, privacy, data integrity, or restartability is affected. Do not copy warning policy or scanner files into target repo.
 
-Project verification proves product behavior and blocks completion when it fails. Ginflow harness proves workflow readiness and drift: report failures as warnings, but treat missing card, wrong workspace, missing acceptance, missing required artifact, missing completion verification path, missing completed-card artifact baseline, or changed completed-card linked artifact as blockers for the affected lifecycle stage. Harness unavailable is a warning and never substitutes for project verification.
+Project verification proves product behavior and should be reported truthfully. `ginflow-gate` is completion authority: it validates card fields, verification metadata, linked artifact baseline, and drift synchronously, then rejects invalid `kanban_complete` calls. External harness remains optional manual/CI evidence and never substitutes for project verification.
 
 Temporary or ad-hoc checks are not completion evidence unless selected card explicitly targets that temporary artifact. Do not create or report unrelated temporary checks when canonical project verification exists. If canonical verification is unavailable or fails, report blocked/not done.
 
@@ -249,14 +248,15 @@ python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --setup-repo <setup-repo> --target <target-repo> \
   --kanban-task-id "$TASK_ID" --json
 
-# Pre-completion: validates the exact baseline that will be sent to kanban_complete.
+# Optional CI/manual candidate check before kanban_complete.
+# ginflow-gate performs authoritative validation during the tool call.
 python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --setup-repo <setup-repo> --target <target-repo> \
   --kanban-task-id "$TASK_ID" --baseline-commit "$COMMIT" \
   --baseline-path docs/briefs/<CARD-ID>.md --json
 ```
 
-The live harness reads from the current board. `--card <json-file>` remains available for fixtures and accepts either normalized Ginflow JSON or saved `hermes kanban show --json` output.
+The live harness reads from the current board. `--card <json-file>` remains available for fixtures and accepts either normalized Ginflow JSON or saved `hermes kanban show --json` output. It is optional evidence; workers do not need a separate harness handoff before calling `kanban_complete`.
 
 ## Harness subsystem mapping
 
@@ -306,13 +306,12 @@ Rule:
 
 ### Completed-card artifact gate
 
-- Before completion, worker must commit every target-local linked artifact. Worker may create this baseline commit without human review; stage only exact linked artifacts plus card-scoped implementation files, use the target repository's configured Git identity, then store `artifact_baseline.commit` and `artifact_baseline.paths`. Paths must exactly match the card's linked local docs. If Git identity is absent, commit fails, or unrelated changes cannot be excluded, block completion and request human help.
-- On startup, resume, handoff, or derived work involving that completed card, compare only those paths against the completion commit. Do not compare the whole repository.
-- A missing/unavailable commit, path-list mismatch, missing artifact, committed change, or uncommitted change is suspected drift and blocks use of that card as authority. Unrelated paths and unrelated cards remain unblocked.
-- The harness cannot reliably identify the editor or determine materiality, so a human chooses one resolution.
-- Resolution A — new intent: restore the completed artifact, create new versioned docs and a follow-up card, and link both back to the completed card.
-- Resolution B — changed completed scope: reopen the card, reconcile artifacts with implementation, acceptance, and verification evidence, commit the result, record the new completion commit, rerun verification and the harness, then complete again.
-- Resolution C — editorial only: after explicit human classification, commit the editorial change, advance the baseline commit, and record an approval note without reopening implementation work.
+- The worker must commit every linked artifact and prepare truthful `artifact_baseline.commit` and exact target-local linked `artifact_baseline.paths` when calling `kanban_complete`. Worker may create this baseline commit without human review; stage only exact linked artifacts and intended card-scoped implementation files.
+- Never copy harness script into target repo. Report project verification and ginflow harness as separate results.
+- `ginflow-gate` is enforcement authority. During `kanban_complete`, it synchronously validates required card fields, verification metadata, baseline commit, exact linked paths, and artifact drift. Invalid or unavailable evidence rejects completion.
+- On startup, resume, handoff, or derived work involving a completed card, compare only linked paths against completion commit. Do not compare the whole repository.
+- A missing/unavailable commit, path-list mismatch, missing artifact, committed change, or uncommitted change is drift detected by gate/harness and blocks affected lifecycle use. Unrelated paths remain unblocked.
+- External harness checks are optional manual/CI evidence, not a required worker handoff.
 - Never silently advance a completion commit. Do not use per-file SHA fallback.
 
 ## Blank project flow
@@ -360,7 +359,6 @@ Stop and clarify when:
 
 ## References
 
-- `references/artifact-content-guide.md`
 - `references/doc-layout.md`
 - `references/kanban-guide.md`
 - `references/drift-detect.md`

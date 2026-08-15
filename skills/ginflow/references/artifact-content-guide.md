@@ -88,7 +88,7 @@ During work or close, record:
 - changed files
 - canonical verification command and fresh result
 - blockers, risks, decisions, artifact drift, and related cards when present
-- immediately before completion, a Git completion commit and exact linked target-local paths in `artifact_baseline`; linked artifacts must be committed
+- before completion, truthful `artifact_baseline` metadata with completion commit and exact linked target-local paths; `ginflow-gate` validates that linked artifacts are committed and free of drift during `kanban_complete`
 
 Link all artifacts individually. Never use card body to replace missing required artifact.
 
