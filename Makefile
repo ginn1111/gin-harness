@@ -1,4 +1,7 @@
-.PHONY: setup apply verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test harness-core-test ginflow-gate-test
+.PHONY: setup apply verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test harness-core-test ginflow-gate-test status-transition-test
+
+status-transition-test:
+	bash skills/ginflow/scripts/test-status-transition.sh
 
 ACTIVE_PROFILE := $(shell hermes profile list 2>/dev/null | python3 -c 'import re,sys; m=re.search(r"^\s*[◆*]\s*([A-Za-z0-9._-]+)", sys.stdin.read(), re.M); print(m.group(1) if m else "")')
 PROFILES ?= $(ACTIVE_PROFILE)

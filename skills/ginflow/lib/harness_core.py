@@ -15,7 +15,8 @@ def check(name, tests, exercised=True):
             row["details"], row["resolution"] = context
         rows.append(row)
     failed = [row for row in rows if not row["pass"]]
-    status = "blocker" if any(row["severity"] == "blocker" for row in failed) else "warning" if failed else "pass"
+    status = "blocker" if any(
+        row["severity"] == "blocker" for row in failed) else "warning" if failed else "pass"
     return {"status": status, "checks": rows}
 
 
@@ -28,7 +29,8 @@ def parse_card_body(body):
     current = None
     for raw_line in str(body or "").splitlines():
         line = raw_line.strip()
-        heading = re.match(r"^(?:#{1,6}\s*)?(Objective|Scope|Acceptance|Links):\s*(.*)$", line, re.I)
+        heading = re.match(
+            r"^(?:#{1,6}\s*)?(Objective|Scope|Acceptance|Links):\s*(.*)$", line, re.I)
         if heading:
             current = heading.group(1).lower()
             value = heading.group(2).strip().strip("`")
@@ -66,7 +68,8 @@ def normalize_card(document):
             return 1, str(run.get("finished_at") or run.get("started_at") or run_id or "")
 
         metadata = max(metadata_runs, key=run_order)["metadata"]
-    ginflow_metadata = metadata.get("ginflow", {}) if isinstance(metadata.get("ginflow"), dict) else {}
+    ginflow_metadata = metadata.get("ginflow", {}) if isinstance(
+        metadata.get("ginflow"), dict) else {}
     for name in ("objective", "scope", "acceptance", "links"):
         if name in ginflow_metadata:
             fields[name] = ginflow_metadata[name]
@@ -131,8 +134,40 @@ def linked_artifacts(card, target):
     return artifacts
 
 
+def startup_gate(card, target, current=None):
+    """Validate card/workspace/linked docs before worker startup."""
+    current = Path(current or Path.cwd()).resolve()
+    workspace = str(card.get("workspace", ""))
+    if workspace.startswith("dir:"):
+        workspace = workspace[4:]
+    try:
+        card_workspace = Path(workspace).expanduser().resolve()
+    except (OSError, TypeError, ValueError):
+        card_workspace = None
+    if card_workspace != current:
+        return {"route": "workspace_mismatch", "valid": False, "errors": ["card workspace does not match current workspace"]}
+    required = ("id", "title", "objective", "scope", "acceptance", "assignee", "links")
+    missing = [name for name in required if not card.get(name)]
+    if missing:
+        return {"route": "docs_invalid", "valid": False, "errors": ["card missing: " + ", ".join(missing)]}
+    artifacts = linked_artifacts(card, target)
+    missing_paths = [path for path, candidate in artifacts if not candidate.is_file()]
+    if missing_paths:
+        return {"route": "docs_invalid", "valid": False, "errors": ["missing linked docs: " + ", ".join(missing_paths)]}
+    if str(card.get("status", "")).lower() == "next":
+        unstructured = []
+        for path, candidate in artifacts:
+            text = candidate.read_text(encoding="utf-8")
+            if not re.search(r"^#{1,6}\s+.+$", text, re.M):
+                unstructured.append(path)
+        if unstructured:
+            return {"route": "docs_invalid", "valid": False, "errors": ["linked docs lack headings: " + ", ".join(unstructured)]}
+    return {"route": "ready_to_start", "valid": True, "errors": [], "transition_required": str(card.get("status", "")).lower() == "next"}
+
+
 def artifact_gate(card, target):
-    completed = str(card.get("status", "")).lower() in {"done", "completed", "closed"}
+    completed = str(card.get("status", "")).lower() in {
+        "done", "completed", "closed"}
     baseline = card.get("artifact_baseline")
     guarded = completed or baseline is not None
     artifacts = linked_artifacts(card, target) if guarded else []
@@ -178,18 +213,21 @@ def artifact_gate(card, target):
             text=True,
             capture_output=True,
         )
-        drifted = [line for line in diff.stdout.splitlines() if line] if diff.returncode == 0 else linked_paths
+        drifted = [line for line in diff.stdout.splitlines(
+        ) if line] if diff.returncode == 0 else linked_paths
     card_id = card.get("id", "<CARD-ID>")
     baseline_resolution = (
-        f"Keep card {card_id} open or reopen card {card_id}. Commit linked artifacts, record artifact_baseline.commit "
-        "and the exact linked paths, rerun project verification and the external harness, then complete the card."
+        f"Keep card {card_id} open or reopen card {card_id}. Commit linked artifacts, "
+        "record artifact_baseline.commit and the exact linked paths, rerun project verification "
+        "and the external harness, then complete the card."
     )
     drift_resolution = (
-        f"Block use of card {card_id} as authority. Choose one: restore the completed artifacts, create new versioned docs "
-        f"and a follow-up card that link back to card {card_id}; reopen card {card_id}, reconcile artifacts with "
-        "implementation, acceptance, and verification evidence, commit linked artifacts, record the new completion "
-        "commit, and rerun verification; or, only after explicit human classification as editorial, advance the "
-        "baseline commit with an approval note. Never silently replace the completion commit."
+        f"Block use of card {card_id} as authority. Choose one: restore the completed artifacts, "
+        f"create new versioned docs and a follow-up card that link back to card {card_id}; "
+        f"reopen card {card_id}, reconcile artifacts with implementation, acceptance, and verification "
+        "evidence, commit linked artifacts, record the new completion commit, and rerun verification; "
+        "or, only after explicit human classification as editorial, advance the baseline commit with an "
+        "approval note. Never silently replace the completion commit."
     )
     if not artifacts:
         baseline_details = "no linked target-local docs require a completion baseline"
@@ -198,7 +236,8 @@ def artifact_gate(card, target):
     elif not commit_valid:
         baseline_details = f"completion commit is unavailable: {commit}"
     elif missing_from_commit:
-        baseline_details = "linked artifacts absent from completion commit: " + ", ".join(missing_from_commit)
+        baseline_details = "linked artifacts absent from completion commit: " + \
+            ", ".join(missing_from_commit)
     else:
         baseline_details = "completion commit and linked paths are recorded"
     return {
@@ -209,4 +248,3 @@ def artifact_gate(card, target):
         "drift_details": "changed, missing, or uncommitted relative to completion commit: " + ", ".join(drifted),
         "drift_resolution": drift_resolution,
     }
-

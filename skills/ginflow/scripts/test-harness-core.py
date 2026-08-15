@@ -21,3 +21,13 @@ assert fields == {
     "links": ["docs/briefs/GATE-1.md"],
 }
 print("ginflow harness core test passed")
+
+target = ROOT
+startup = module.startup_gate({
+    "id": "START-1", "title": "Start", "objective": "x", "scope": ["x"],
+    "acceptance": ["x"], "assignee": "ginb", "links": ["docs/briefs/GINFLOW-ROUTING.md"],
+    "workspace": "dir:" + str(target), "status": "next",
+}, target, target)
+assert startup["route"] == "ready_to_start"
+assert startup["transition_required"] is True
+print("ginflow startup gate test passed")

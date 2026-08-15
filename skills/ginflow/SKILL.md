@@ -50,6 +50,20 @@ Starter local context:
 
 ## Task shaping
 
+### Kanban status mapping
+
+Ginflow uses logical states; Hermes Kanban stores the physical states. Routing must map before decision:
+
+| Ginflow logical state | Hermes Kanban state |
+|---|---|
+| `next` | `todo` or `ready` |
+| `in_progress` | `running` |
+| `blocked` | `blocked` |
+| `done` | `done` |
+| `cancelled` | `archived` |
+
+Never write `in_progress` to Hermes Kanban. `running` is active work. `todo`/`ready` requires startup validation before claim.
+
 ### Kanban boundary
 
 Before a card exists, ginflow may brainstorm, inspect read-only context, choose work mode, size work, choose artifacts, and draft proposed card content. These actions shape work but do not start project execution.

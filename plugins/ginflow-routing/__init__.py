@@ -19,21 +19,38 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+CORE = Path(__file__).resolve().parents[2] / "skills/ginflow/lib/harness_core.py"
+import importlib.util
+
+_spec = importlib.util.spec_from_file_location("ginflow_harness_core", CORE)
+if not _spec or not _spec.loader:
+    raise ImportError(f"unable to load Ginflow harness core: {CORE}")
+_core = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_core)
+startup_gate = _core.startup_gate
+
 logger = logging.getLogger(__name__)
 
 
-def _ginflow_loaded() -> bool:
-    """Check if ginflow skill is available in this profile."""
-    hermes_home = Path(os.environ.get("HERMES_HOME", Path.home() / ".hermes"))
-    profile = os.environ.get("HERMES_PROFILE", "gintary")
+def _parse_skill_list(raw: str) -> set[str]:
+    """Parse comma/newline-delimited skill env values into canonical names."""
+    names: set[str] = set()
+    for part in raw.replace("\n", ",").split(","):
+        item = part.strip()
+        if item:
+            names.add(item)
+    return names
 
-    # Profile-specific skills dir
-    candidates = [
-        hermes_home / "profiles" / profile / "skills" / "ginflow" / "SKILL.md",
-        hermes_home / "skills" / "ginflow" / "SKILL.md",
-        Path.home() / ".agents" / "skills" / "ginflow" / "SKILL.md",
-    ]
-    return any(p.exists() for p in candidates)
+
+def _ginflow_loaded() -> bool:
+    """Check if ginflow skill is active in current session."""
+    try:
+        import os
+
+        active = _parse_skill_list(os.environ.get("HERMES_TUI_SKILLS", ""))
+        return "ginflow" in active
+    except Exception:
+        return False
 
 
 def _kanban_board_state() -> str | None:
@@ -65,6 +82,8 @@ def _kanban_board_state() -> str | None:
         return None
 
     tasks = data if isinstance(data, list) else data.get("tasks", data.get("items", [data]))
+    current = Path.cwd().resolve()
+    tasks = [task for task in tasks if _workspace(task) == current]
     if not tasks:
         return None
 
@@ -82,34 +101,128 @@ def _kanban_board_state() -> str | None:
     return "\n".join(lines) if lines else None
 
 
+def _workspace(task: dict[str, Any]) -> Path | None:
+    value = task.get("workspace_path") or task.get("workspace")
+    if not value:
+        return None
+    if isinstance(value, str) and value.startswith("dir:"):
+        value = value[4:]
+    try:
+        return Path(value).expanduser().resolve()
+    except (OSError, TypeError, ValueError):
+        return None
+
+
+def _route(tasks: list[dict[str, Any]], explicit_id: str | None = None) -> dict[str, Any]:
+    current = Path.cwd().resolve()
+    matching = [task for task in tasks if _workspace(task) == current]
+    if explicit_id:
+        selected = next((task for task in tasks if task.get("id") == explicit_id), None)
+        if selected is None:
+            return {"route": "no_card", "action": "work_shaping"}
+        if _workspace(selected) != current:
+            return {"route": "workspace_mismatch", "action": "block"}
+        matching = [selected]
+    if not matching:
+        return {"route": "no_card", "action": "work_shaping"}
+    if len(matching) > 1 and not explicit_id:
+        return {"route": "needs_card_selection", "action": "block", "candidates": [t.get("id") for t in matching]}
+    selected = matching[0]
+    status = selected.get("status")
+    # Ginflow logical states map to Hermes Kanban persistence states.
+    # Hermes has no `next`/`in_progress`: todo/ready is next; running is active.
+    status = {"todo": "next", "ready": "next", "running": "in_progress"}.get(str(status), status)
+    if status == "blocked":
+        return {"route": "blocked_card", "action": "orchestrator", "id": selected.get("id")}
+    if status == "next":
+        return {"route": "validate_card_docs", "action": "validate_docs", "id": selected.get("id")}
+    if status == "in_progress":
+        return {"route": "ready_to_start", "action": "execute", "id": selected.get("id")}
+    if status in {"done", "cancelled", "archived"}:
+        return {"route": "terminal_card", "action": "block", "id": selected.get("id")}
+    return {"route": "invalid_status", "action": "block", "id": selected.get("id")}
+
+
 def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
-    """Inject board state into the user message when ginflow context is active."""
-    # No-op if ginflow skill isn't available in this profile
+    """Inject deterministic workspace/card routing context when ginflow is active."""
     if not _ginflow_loaded():
         return None
 
-    board = _kanban_board_state()
-    if board is None:
-        context = (
-            "[ginflow-routing: Kanban board is empty or uninitialised. "
-            "No existing cards found. Route to work shaping: "
-            "investigate the current repo, choose work mode "
-            "(investigation/implementation/brainstorming), choose artifact level, "
-            "and draft a Kanban card. For planning-required work, load and follow "
-            "the `plan` skill before creating a plan.]"
-        )
+    tasks = _load_tasks()
+    explicit_id = os.environ.get("HERMES_KANBAN_TASK") or None
+    route = _route(tasks, explicit_id)
+    route_name = route["route"]
+    candidates = route.get("candidates", [])
+    current = Path.cwd().resolve()
+    if route_name == "no_card":
+        route_name = "no_cards_for_workspace"
+    if route_name == "invalid_status":
+        route_name = "validation_failed"
+    action = route.get("action", "block")
+    context = (
+        f"[ginflow-routing: route={route_name}; workspace={current}; "
+        f"mutation_allowed={action == 'execute'}; "
+        f"task={route.get('id', explicit_id or 'none')}; "
+        f"candidates={','.join(candidates) if candidates else 'none'}. "
+    )
+    if route_name == "no_cards_for_workspace":
+        context += "Report workspace to orchestrator; route to work shaping, shape work, or create a card. Load and follow the `plan` skill before creating a plan."
+    elif route_name == "needs_card_selection":
+        context += "Report candidates to human/orchestrator; do not select or implement."
+    elif route_name == "blocked_card":
+        context += "Report blocker to orchestrator; do not implement."
+    elif route_name == "validate_card_docs":
+        selected = next((task for task in tasks if task.get("id") == route.get("id")), None)
+        if selected:
+            card = _normalize_task(selected)
+            validation = startup_gate(card, current, current)
+            route_name = validation["route"]
+            context = context.replace("route=validate_card_docs", f"route={route_name}")
+            context += " Validate linked docs before next-to-in_progress transition."
+        else:
+            context += " Validate linked docs before next-to-in_progress transition."
+    elif route_name == "ready_to_start":
+        context += "Resume implementation only within validated workspace and scope."
     else:
-        context = (
-            "[ginflow-routing: Kanban board has active cards.\n"
-            f"{board}\n"
-            "Route to resume: read the selected/active card, "
-            "confirm required fields (objective, scope, acceptance, workspace, assignee, links), "
-            "read linked artifacts, check git state, run project baseline, "
-            "then execute. For planning-required work, load and follow the `plan` "
-            "skill before creating a plan.]"
-        )
+        context += "Do not implement; report route to orchestrator."
+    return {"context": context + "]"}
 
-    return {"context": context}
+
+def _normalize_task(task: dict[str, Any]) -> dict[str, Any]:
+    """Adapt live task fields for the shared Ginflow startup validator."""
+    body = task.get("body", "")
+    fields = _core.parse_card_body(body)
+    workspace = task.get("workspace") or task.get("workspace_path") or ""
+    if task.get("workspace_kind") and task.get("workspace_path"):
+        workspace = f"{task['workspace_kind']}:{task['workspace_path']}"
+    return {
+        "id": task.get("id"), "title": task.get("title"),
+        "objective": fields["objective"], "scope": fields["scope"],
+        "acceptance": fields["acceptance"], "links": fields["links"],
+        "workspace": workspace, "status": task.get("status"),
+        "assignee": task.get("assignee"),
+    }
+
+
+def _load_tasks() -> list[dict[str, Any]]:
+    """Load board tasks as dictionaries; return empty on unavailable board."""
+    try:
+        result = subprocess.run(
+            ["hermes", "kanban", "list", "--json"],
+            text=True,
+            capture_output=True,
+            timeout=15,
+        )
+    except (FileNotFoundError, OSError, subprocess.TimeoutExpired):
+        return []
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+    try:
+        data = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return []
+    tasks = data if isinstance(data, list) else data.get("tasks", data.get("items", [data]))
+    return [task for task in tasks if isinstance(task, dict)]
 
 
 def register(ctx) -> None:
