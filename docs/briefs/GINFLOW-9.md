@@ -1,5 +1,5 @@
 ---
-status: ready
+status: completed
 size: S
 scope: ginflow next-card startup validation
 owner: ginb
