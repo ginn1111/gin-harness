@@ -200,12 +200,52 @@ def test_live_tmp_next_card_docs():
     print("PASS: live temporary next-card doc validation")
 
 
+def test_blocked_route_context_reports_metadata_without_execution():
+    workspace = str(Path.cwd().resolve())
+    task = {
+        "id": "blocked-with-evidence",
+        "title": "Blocked with evidence",
+        "workspace_path": workspace,
+        "status": "blocked",
+        "blocker_metadata": {
+            "event_id": "evt-1",
+            "event_type": "blocked",
+            "blocker_kind": "transient",
+            "decision": "pending",
+        },
+    }
+    old_loader = module._load_tasks
+    old_skills = os.environ.get("HERMES_TUI_SKILLS")
+    old_task = os.environ.get("HERMES_KANBAN_TASK")
+    try:
+        setattr(module, "_load_tasks", lambda: [task])
+        os.environ["HERMES_TUI_SKILLS"] = "ginflow"
+        os.environ["HERMES_KANBAN_TASK"] = task["id"]
+        result = _routing_context()
+        assert result and "route=blocked_card" in result["context"], result
+        assert "Report blocker to orchestrator; do not implement." in result["context"]
+        assert '"event_id": "evt-1"' in result["context"]
+        assert "Resume implementation" not in result["context"]
+    finally:
+        setattr(module, "_load_tasks", old_loader)
+        if old_skills is None:
+            os.environ.pop("HERMES_TUI_SKILLS", None)
+        else:
+            os.environ["HERMES_TUI_SKILLS"] = old_skills
+        if old_task is None:
+            os.environ.pop("HERMES_KANBAN_TASK", None)
+        else:
+            os.environ["HERMES_KANBAN_TASK"] = old_task
+    print("PASS: blocked route reports metadata without execution")
+
+
 if __name__ == "__main__":
     test_workspace_and_status_routes()
     test_no_ginflow_skill()
     test_ginflow_skill_active()
     test_live_tmp_project_card()
     test_live_tmp_next_card_docs()
+    test_blocked_route_context_reports_metadata_without_execution()
     print("ginflow routing test passed")
 
 
