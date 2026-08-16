@@ -1,28 +1,39 @@
----
-status: completed
-size: XS
-owner: ginb
----
+# GINFLOW-14 — Complete ownership mapping on Gin-harness-flow page
 
-# Brief — GINFLOW-14 Ownership mapping on Gin-harness-flow
+**Status: completed**
 
 ## Objective
-Put implementation ownership mapping directly on the Gin-harness-flow page.
+
+Put implementation ownership mapping directly on the `Gin-harness-flow` page.
 
 ## Scope
-- `docs/architecture/gin-harness-system.drawio`
-- Gin-harness-flow page only; Harness system overview preserved unchanged.
+
+- Add ownership labels to flow nodes.
+- Keep red/green/yellow coverage colors.
+- Add a readable ownership legend to `Gin-harness-flow`.
+- Preserve `Harness system overview` unchanged.
 
 ## Acceptance criteria
-- [x] Flow nodes show plugin/core/skill/shared ownership labels.
-- [x] Coverage colors remain green verified, red expected but missing, yellow proposed.
-- [x] Readable ownership and coverage legend appears on flow page.
-- [x] Harness system overview page remains unchanged.
-- [x] XML parse passes.
-- [x] `make lint && make test` passes.
+
+- Flow page shows `plugin`, `core`, `skill`, `shared`, `missing`, and `proposed` ownership for relevant sections.
+- Coverage colors remain accurate.
+- Ownership legend is readable.
+- Harness system overview page remains unchanged.
+- XML parse passes.
+- `make lint && make test` passes.
 
 ## Verification
-- XML parse: passed.
-- `make lint && make test`: passed.
+
+- Parse diagram XML and confirm both pages remain present.
+- Confirm ownership labels and legend on the flow page.
+- Confirm the overview page is unchanged.
+- Run `make lint && make test`.
+- Review diff for diagram and linked brief scope.
+
+## Out of scope
+
+- Moving code between plugin, core, and skill directories.
+- Changing runtime behavior or profile configuration.
+- Redesigning unrelated diagram pages.
 
 **Status: completed**
