@@ -276,13 +276,13 @@
         <mxCell id="3OxK573chlKwpl4-sLJv-27" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-26">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-1" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Instructions" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-1" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Instructions&lt;br/&gt;&lt;b&gt;Ownership: shared&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="40" y="20" as="geometry" />
         </mxCell>
         <mxCell id="3OxK573chlKwpl4-sLJv-17" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-16">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-2" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Tools" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-2" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Tools&lt;br/&gt;&lt;b&gt;Ownership: shared&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="280" y="20" as="geometry" />
         </mxCell>
         <mxCell id="3OxK573chlKwpl4-sLJv-19" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-18">
@@ -291,10 +291,10 @@
         <mxCell id="3OxK573chlKwpl4-sLJv-25" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-24">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-3" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Feedback" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-3" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Feedback&lt;br/&gt;&lt;b&gt;Ownership: missing&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="518" y="20" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-4" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Environment" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-4" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Environment&lt;br/&gt;&lt;b&gt;Ownership: shared&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="730" y="20" as="geometry" />
         </mxCell>
         <mxCell id="3OxK573chlKwpl4-sLJv-22" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-21">
@@ -303,7 +303,7 @@
         <mxCell id="3OxK573chlKwpl4-sLJv-23" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-20">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-5" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="State" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-5" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="State&lt;br/&gt;&lt;b&gt;Ownership: core&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="970" y="20" as="geometry" />
         </mxCell>
         <mxCell id="3OxK573chlKwpl4-sLJv-7" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-1">
@@ -351,7 +351,7 @@
         <mxCell id="3OxK573chlKwpl4-sLJv-28" parent="1" style="whiteSpace=wrap;html=1;fontFamily=Architects Daughter;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="RULES.md,&lt;div&gt;ARCHITECTURE.md&lt;/div&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="-140" y="360" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-35" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ginflow skill" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-35" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ginflow skill&lt;br/&gt;&lt;b&gt;Ownership: skill&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="1950" y="-70" as="geometry" />
         </mxCell>
         <mxCell id="3OxK573chlKwpl4-sLJv-40" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="3OxK573chlKwpl4-sLJv-38">
@@ -360,10 +360,10 @@
         <mxCell id="3OxK573chlKwpl4-sLJv-41" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-39">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-36" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ginflow gate" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-36" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ginflow gate&lt;br/&gt;&lt;b&gt;Ownership: plugin&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="1590" y="-70" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-37" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Prompt injected" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-37" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Prompt injected&lt;br/&gt;&lt;b&gt;Ownership: plugin&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="1360" y="220" as="geometry" />
         </mxCell>
         <mxCell id="3OxK573chlKwpl4-sLJv-43" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-37">
@@ -372,7 +372,7 @@
         <mxCell id="3OxK573chlKwpl4-sLJv-44" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-42">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-38" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Task routing" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-38" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Task routing&lt;br/&gt;&lt;b&gt;Ownership: plugin&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="1450" y="100" as="geometry" />
         </mxCell>
         <mxCell id="3OxK573chlKwpl4-sLJv-46" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-45" value="">
@@ -381,7 +381,7 @@
         <mxCell id="3OxK573chlKwpl4-sLJv-48" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-47" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-39" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Kanban complete gate" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-39" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Kanban complete gate&lt;br/&gt;&lt;b&gt;Ownership: plugin&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="1800" y="100" as="geometry" />
         </mxCell>
         <mxCell id="3OxK573chlKwpl4-sLJv-42" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Tools exec" vertex="1">
@@ -402,7 +402,7 @@
         <mxCell id="3OxK573chlKwpl4-sLJv-55" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-49" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-54">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-49" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Core" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-49" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Core&lt;br/&gt;&lt;b&gt;Ownership: core&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="2270" y="-70" as="geometry" />
         </mxCell>
         <mxCell id="3OxK573chlKwpl4-sLJv-50" parent="1" style="whiteSpace=wrap;html=1;fontFamily=Architects Daughter;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Validate scripts" vertex="1">
@@ -423,7 +423,7 @@
         <mxCell id="3OxK573chlKwpl4-sLJv-59" edge="1" parent="1" source="3OxK573chlKwpl4-sLJv-56" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="3OxK573chlKwpl4-sLJv-49">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="3OxK573chlKwpl4-sLJv-56" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ginflow harness" vertex="1">
+        <mxCell id="3OxK573chlKwpl4-sLJv-56" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Ginflow harness&lt;br/&gt;&lt;b&gt;Ownership: core&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="1950" y="-240" as="geometry" />
         </mxCell>
       <mxCell id="ginflow12-missing-observability" parent="1" vertex="1" value="Expected: observability / telemetry (missing)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;"><mxGeometry x="-140" y="500" width="240" height="60" as="geometry" /></mxCell><mxCell id="ginflow12-proposed-security" parent="1" vertex="1" value="Proposed: security / privacy controls (not implemented)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;"><mxGeometry x="-140" y="590" width="240" height="60" as="geometry" /></mxCell><mxCell id="ginflow12-legend-overview" parent="1" vertex="1" value="LEGEND&amp;#xa;Green = verified in current code/docs&amp;#xa;Red = expected but missing&amp;#xa;Yellow = proposed, not implemented" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=14;"><mxGeometry x="1030" y="420" width="300" height="110" as="geometry" /></mxCell></root>
