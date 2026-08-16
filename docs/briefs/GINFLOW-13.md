@@ -1,35 +1,41 @@
----
-status: ready
-size: S
-scope: Linked-artifact worktree repair guidance
-owner: gintary
----
+# GINFLOW-13 — Map Gin-harness sections to plugin, core, or skill ownership
 
-# Brief — GINFLOW-13 Document linked-artifact worktree repairs
+**Status: completed**
 
 ## Objective
 
-Document safe repair when a Ginflow linked brief or artifact is missing from assigned worktree.
+Map each Gin-harness system section to its implementation ownership layer in the architecture diagram.
 
 ## Scope
 
-- `docs/briefs/GINFLOW-13.md`
-- `docs/guides/ginflow-linked-artifact-repair.md`
-- No profile runtime state, cron jobs, Kanban implementation, or product repositories.
+- Inspect both pages in `docs/architecture/gin-harness-system.drawio`.
+- Trace sections to `plugins/`, `skills/`, `skills/ginflow/lib/`, and shared setup docs.
+- Add ownership labels: plugin, core, skill, shared, missing, proposed.
+- Preserve red/green/yellow coverage colors and both pages.
+- Add ownership legend.
 
 ## Acceptance criteria
 
-- [ ] Guide gives restore/create, scoped commit, harness, and unblock order.
-- [ ] Guide prevents simultaneous active cards in same mutable workspace.
-- [ ] Guide prohibits silent completion-baseline advancement.
-- [ ] `make test` passes.
-- [ ] `make lint` passes.
+- Every relevant section has evidence-based ownership mapping.
+- Diagram distinguishes plugin, core, skill, shared, missing, and proposed ownership.
+- Existing coverage colors remain accurate.
+- Both pages remain readable and structurally intact.
+- XML parse passes.
+- `make lint && make test` passes.
 
-## Non-goals
+## Verification
 
-- Repairing any specific card.
-- Editing task bodies or changing Kanban lifecycle behavior.
+- Parse diagram XML and confirm two pages remain present.
+- Check ownership labels and legend in target page(s).
+- Run `make lint && make test`.
+- Review diff for diagram and linked brief scope.
 
-## Notes
+## Out of scope
 
-Canonical verification: `make test`; documentation lint: `make lint`.
+- Moving code between plugin, core, and skill directories.
+- Changing runtime behavior or profile configuration.
+- Redesigning unrelated diagram pages.
+
+**Status: completed**
+
+**Verification: Project verification pending worker execution.**
