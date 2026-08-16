@@ -137,6 +137,7 @@ def linked_artifacts(card, target):
 def startup_gate(card, target, current=None):
     """Validate card/workspace/linked docs before worker startup."""
     current = Path(current or Path.cwd()).resolve()
+    target = Path(target).resolve()
     workspace = str(card.get("workspace", ""))
     if workspace.startswith("dir:"):
         workspace = workspace[4:]
@@ -150,11 +151,34 @@ def startup_gate(card, target, current=None):
     missing = [name for name in required if not card.get(name)]
     if missing:
         return {"route": "docs_invalid", "valid": False, "errors": ["card missing: " + ", ".join(missing)]}
+
+    invalid_links = []
+    for link in card.get("links", []):
+        path = link.get("path") if isinstance(link, dict) else link
+        if not isinstance(path, str):
+            invalid_links.append(str(path))
+            continue
+        if "://" in path:
+            continue
+        candidate = (target / path).resolve()
+        try:
+            relative = candidate.relative_to(target)
+        except ValueError:
+            invalid_links.append(path)
+            continue
+        if relative.parts[:1] != ("docs",):
+            invalid_links.append(path)
+    if invalid_links:
+        return {"route": "docs_invalid", "valid": False, "errors": ["invalid linked docs: " + ", ".join(sorted(invalid_links))]}
+
     artifacts = linked_artifacts(card, target)
+    if not artifacts:
+        return {"route": "docs_invalid", "valid": False, "errors": ["no linked target-local docs"]}
     missing_paths = [path for path, candidate in artifacts if not candidate.is_file()]
     if missing_paths:
         return {"route": "docs_invalid", "valid": False, "errors": ["missing linked docs: " + ", ".join(missing_paths)]}
-    if str(card.get("status", "")).lower() == "next":
+    next_state = str(card.get("status", "")).lower() in {"next", "todo", "ready"}
+    if next_state:
         unstructured = []
         for path, candidate in artifacts:
             text = candidate.read_text(encoding="utf-8")
@@ -162,7 +186,19 @@ def startup_gate(card, target, current=None):
                 unstructured.append(path)
         if unstructured:
             return {"route": "docs_invalid", "valid": False, "errors": ["linked docs lack headings: " + ", ".join(unstructured)]}
-    return {"route": "ready_to_start", "valid": True, "errors": [], "transition_required": str(card.get("status", "")).lower() == "next"}
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=all", "--", *[path for path, _ in artifacts]],
+            cwd=target,
+            text=True,
+            capture_output=True,
+        )
+        if status.returncode != 0:
+            detail = status.stderr.strip() or status.stdout.strip() or f"exit {status.returncode}"
+            return {"route": "validation_failed", "valid": False, "errors": ["unable to inspect linked docs: " + detail]}
+        changed = sorted(line[3:] for line in status.stdout.splitlines() if len(line) > 3)
+        if changed:
+            return {"route": "docs_changed", "valid": False, "errors": ["linked docs have uncommitted changes: " + ", ".join(changed)]}
+    return {"route": "ready_to_start", "valid": True, "errors": [], "transition_required": next_state}
 
 
 def artifact_gate(card, target):

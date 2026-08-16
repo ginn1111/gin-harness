@@ -21,12 +21,12 @@ Validate linked target-local task documents before a Hermes `todo` or `ready` ca
 
 ## Acceptance criteria
 
-- [ ] Hermes `todo` and `ready` cards route through `validate_card_docs` before execution.
-- [ ] Missing, malformed, outside-workspace, or changed linked documents produce deterministic safe validation routes.
-- [ ] Valid linked documents produce `ready_to_start` guidance.
-- [ ] Validation does not mutate card status or linked documents.
-- [ ] Regression coverage exercises the actual `pre_llm_call` routing seam.
-- [ ] `make lint` and `make test` pass.
+- [x] Hermes `todo` and `ready` cards route through `validate_card_docs` before execution.
+- [x] Missing, malformed, outside-workspace, or changed linked documents produce deterministic safe validation routes.
+- [x] Valid linked documents produce `ready_to_start` guidance.
+- [x] Validation does not mutate card status or linked documents.
+- [x] Regression coverage exercises the actual `pre_llm_call` routing seam.
+- [x] `make lint` and `make test` pass.
 
 ## Design constraints
 
@@ -41,3 +41,6 @@ Corrected independent replacement for malformed card `t_d228a0f2`, created with 
 ## Verification
 
 Canonical commands: `make lint` and `make test`.
+
+---
+**Status: completed** — linked card `t_6a45460c` is done.

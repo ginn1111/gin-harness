@@ -146,6 +146,11 @@ def test_live_tmp_next_card_docs():
         target = Path(project)
         (target / "docs/briefs").mkdir(parents=True)
         (target / "docs/briefs/TMP-2.md").write_text("# Temporary brief\n")
+        subprocess.run(["git", "init", "-q"], cwd=target, check=True)
+        subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
+        subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
+        subprocess.run(["git", "add", "docs/briefs/TMP-2.md"], cwd=target, check=True)
+        subprocess.run(["git", "commit", "-qm", "baseline"], cwd=target, check=True)
         env = os.environ | {"HERMES_HOME": home}
         subprocess.run(["hermes", "kanban", "init"], env=env, check=True, capture_output=True, text=True)
         created = subprocess.run(
@@ -167,6 +172,24 @@ def test_live_tmp_next_card_docs():
             result = _routing_context()
             assert result and "route=ready_to_start" in result["context"], result
             assert "mutation_allowed=False" in result["context"], result
+            assert task["status"] == "next"
+            assert (target / "docs/briefs/TMP-2.md").read_text() == "# Temporary brief\n"
+
+            brief = target / "docs/briefs/TMP-2.md"
+            brief.write_text("no heading\n")
+            result = _routing_context()
+            assert result and "route=docs_invalid" in result["context"], result
+            assert brief.read_text() == "no heading\n"
+
+            brief.write_text("# Temporary brief\nchanged\n")
+            result = _routing_context()
+            assert result and "route=docs_changed" in result["context"], result
+            assert brief.read_text() == "# Temporary brief\nchanged\n"
+
+            outside_body = body.replace("docs/briefs/TMP-2.md", "../outside.md")
+            task["body"] = outside_body
+            result = _routing_context()
+            assert result and "route=docs_invalid" in result["context"], result
         finally:
             module._load_tasks = old_loader
             os.chdir(old_cwd)
