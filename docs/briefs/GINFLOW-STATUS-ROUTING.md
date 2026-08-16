@@ -1,5 +1,5 @@
 ---
-status: active
+status: completed
 size: S
 scope: ginflow-gate routing
 owner: ginb
@@ -19,13 +19,13 @@ Implement deterministic, fail-closed routing for Kanban cards associated with th
 
 ## Acceptance criteria
 
-- [ ] Multiple workspace matches return `needs_card_selection` and require orchestrator selection.
-- [ ] An explicitly selected task from another workspace returns `workspace_mismatch`.
-- [ ] A blocked card returns `blocked_card`.
-- [ ] No matching card returns the canonical no-card route.
-- [ ] Terminal, invalid, and validation-failure states return deterministic safe routes.
-- [ ] Routing regression tests pass.
-- [ ] `make lint` and `make test` pass.
+- [x] Multiple workspace matches return `needs_card_selection` and require orchestrator selection.
+- [x] An explicitly selected task from another workspace returns `workspace_mismatch`.
+- [x] A blocked card returns `blocked_card`.
+- [x] No matching card returns the canonical no-card route.
+- [x] Terminal, invalid, and validation-failure states return deterministic safe routes.
+- [x] Routing regression tests pass.
+- [x] `make lint` and `make test` pass.
 
 ## Non-goals
 
@@ -40,3 +40,6 @@ Replacement for malformed card `t_d243ba13`, created with explicit human approva
 ## Verification
 
 Canonical commands: `make lint` and `make test`.
+
+---
+**Status: completed** — linked card `t_841e072f` is done.
