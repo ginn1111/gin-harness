@@ -66,6 +66,6 @@ Telegram delivery failure must keep card blocked and leave pending notification 
 
 Publication target: project issue tracker with `ready-for-agent` label. Tracker command was not available in current repository context, so this local spec is ready for publication when tracker integration is configured.
 
-Status: contract finalized; tracker publication blocked by missing issue-tracker command/configuration.
+Status: completed; contract finalized; tracker publication blocked by missing issue-tracker command/configuration.
 
 The normative append-only event schema, validation and fail-closed rules, recovery boundary, idempotency contract, comment format, and atomicity boundary are finalized in `docs/wayfinding/GINFLOW-BLOCKED-RECOVERY-01.md`. This specification remains consistent with that decision record.
