@@ -1,41 +1,35 @@
 ---
-status: completed
-size: XS
-scope: blocker metadata decision validation
-owner: ginb
+status: ready
+size: S
+scope: Linked-artifact worktree repair guidance
+owner: gintary
 ---
 
-# Brief — GINFLOW-13 Validate blocker metadata contract
+# Brief — GINFLOW-13 Document linked-artifact worktree repairs
 
 ## Objective
 
-Validate, finalize, and commit the append-only blocker and recovery metadata decision before implementation cards proceed.
+Document safe repair when a Ginflow linked brief or artifact is missing from assigned worktree.
 
 ## Scope
 
-- `docs/wayfinding/GINFLOW-BLOCKED-RECOVERY-01.md`
-- Consistency with `docs/specs/GINFLOW-BLOCKED-RECOVERY.md`
-- Decision evidence and completion baseline only
+- `docs/briefs/GINFLOW-13.md`
+- `docs/guides/ginflow-linked-artifact-repair.md`
+- No profile runtime state, cron jobs, Kanban implementation, or product repositories.
 
 ## Acceptance criteria
 
-- [x] Event schema and required fields are explicit.
-- [x] Recoverable and non-recoverable blocker kinds are fixed.
-- [x] Malformed metadata fails closed without reassignment or notification.
-- [x] Unknown failures use a maximum of three attempts.
-- [x] Recovery decisions and notifications have idempotency keys.
-- [x] Lease, re-read, validation, event append, and ownership/status mutation boundaries are explicit.
-- [x] Human-readable comment format excludes secrets and raw PII.
-- [x] Contract is consistent with the blocked-recovery specification.
-- [x] Linked decision artifact is committed.
-- [x] `make lint` passes.
+- [ ] Guide gives restore/create, scoped commit, harness, and unblock order.
+- [ ] Guide prevents simultaneous active cards in same mutable workspace.
+- [ ] Guide prohibits silent completion-baseline advancement.
+- [ ] `make test` passes.
+- [ ] `make lint` passes.
 
 ## Non-goals
 
-- Runtime recovery implementation
-- Kanban schema migration
-- Telegram delivery implementation
+- Repairing any specific card.
+- Editing task bodies or changing Kanban lifecycle behavior.
 
-## Verification
+## Notes
 
-`make lint` passed. The linked decision is committed at `1e083e796175eafc4e021f55d693a56c1759b442`.
+Canonical verification: `make test`; documentation lint: `make lint`.
