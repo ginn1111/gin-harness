@@ -73,6 +73,7 @@ plugin-test:
 	python3 plugins/ginflow-gate/test_ginflow_gate.py
 	python3 plugins/ginflow-gate/test_blocker_reporting.py
 	python3 plugins/ginflow-gate/test_recovery_policy.py
+	python3 plugins/ginflow-gate/test_recovery.py
 
 guidance-test:
 	bash skills/ginflow/scripts/test-guidance.sh
