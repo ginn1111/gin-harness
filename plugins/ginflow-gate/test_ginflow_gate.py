@@ -41,6 +41,8 @@ def test_workspace_and_status_routes():
     assert _route([{"id": "todo", "workspace_path": workspace, "status": "todo"}])["route"] == "validate_card_docs"
     assert _route([{"id": "ready-state", "workspace_path": workspace, "status": "ready"}])["route"] == "validate_card_docs"
     assert _route([{"id": "other", "workspace_path": "/tmp/other", "status": "in_progress"}], "other")["route"] == "workspace_mismatch"
+    assert _route([{"id": "done", "workspace_path": workspace, "status": "done"}], "done")["route"] == "terminal_card"
+    assert _route([{"id": "archived", "workspace_path": workspace, "status": "archived"}], "archived")["route"] == "terminal_card"
     print("PASS: workspace/status routes")
 
 
