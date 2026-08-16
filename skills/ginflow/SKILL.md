@@ -72,12 +72,6 @@ After shaping, require one selected Kanban card before creating target artifacts
 
 Selected card must contain: ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing required fields block execution until card is repaired.
 
-### Choose work mode
-
-1. **Investigation** — cause unclear
-2. **Implementation** — requirement clear
-3. **Brainstorming** — requirement unclear
-
 ### Choose artifact level
 
 | Case | Brief | Spec | Plan |
@@ -112,8 +106,18 @@ Before target-project work:
 7. If the selected card is completed, run the linked-artifact drift gate before any project action.
 8. Inspect git state and run project baseline verification.
 9. Run external ginflow harness against target repo and selected card; do not copy harness into target repo.
-10. Report project verification and ginflow harness separately.
-11. Route execution as investigation or implementation. Brainstorming may occur before card selection.
+10. Report project verification and Ginflow harness separately.
+11. Follow routing context injected by `ginflow-gate`; it chooses work mode only when no card exists.
+
+### Interactive card watcher
+
+After startup validation claims the selected running card, interactive Hermes agents should launch one read-only `/background` watcher for that exact task:
+
+```
+/background Watch Kanban task <TASK_ID> on board <BOARD>. Record current event boundary, then poll/read only this task. Never claim, edit, dispatch, block, complete, or mutate Kanban, workspace, or repository. Ignore historical events, heartbeat-only events, and unchanged state. Report only evidence-based transitions: completed/terminal, blocked, failed, reclaimed or retried, or materially stalled; include task ID, state, and reason/result. Stop after terminal state. Do not start another watcher.
+```
+
+Watcher reports must be concise and user-visible only for those meaningful changes. `/background` is interactive-only; on non-interactive surfaces, use an equivalent read-only process watcher or omit watching. Never replace watcher fallback with a mutating worker.
 
 Stop when any required input is missing and risk is material.
 

@@ -68,5 +68,9 @@ Workspace rule:
 
 Do not leave project work in scratch workspace if files must be read from repo.
 
+## Read-only background watcher
+
+When an interactive agent starts a selected `running` card, launch one `/background` watcher pinned to that task ID and board. The watcher records its initial event boundary, reads/polls only that card, and never claims, edits, dispatches, blocks, completes, or mutates workspace/repository state. Suppress historical events, routine heartbeats, and unchanged status. Report only completed/terminal, blocked, failed, reclaimed/retried, or materially stalled transitions with evidence, then stop at terminal state. Do not start duplicate watchers. Non-interactive surfaces use an equivalent read-only process watcher or no watcher; they must not pretend to invoke `/background`.
+
 Run target-declared project verification first. Run ginflow harness externally against target and selected card; never copy harness into target repo. Report project verification and harness result separately.
 After setup-repo updates, use setup repo `scripts/verify.sh` only for profile drift.

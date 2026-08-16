@@ -1,4 +1,4 @@
-.PHONY: setup apply verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test harness-core-test plugin-test status-transition-test
+.PHONY: setup apply verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test harness-core-test plugin-test status-transition-test choose-work-routing-test
 
 status-transition-test:
 	bash skills/ginflow/scripts/test-status-transition.sh
@@ -71,6 +71,7 @@ harness-core-test:
 
 plugin-test:
 	python3 plugins/ginflow-gate/test_ginflow_gate.py
+	python3 plugins/ginflow-gate/test_recovery.py
 
 ## Check ginflow docs layout and artifact content guidance
 artifact-guidance-test:
@@ -83,3 +84,6 @@ kanban-harness-test:
 ## Run model-backed ginflow blank-project integration test
 harness-test: artifact-guidance-test kanban-harness-test
 	bash skills/ginflow/scripts/test-blank-project.sh
+
+choose-work-routing-test:
+	bash skills/ginflow/scripts/test-choose-work-routing.sh

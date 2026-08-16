@@ -1,5 +1,5 @@
 ---
-status: ready
+status: completed
 size: S
 scope: Ginflow Kanban observability guidance
 owner: ginb
@@ -20,14 +20,14 @@ Guide an interactive Hermes agent to launch a read-only `/background` watcher wh
 
 ## Acceptance criteria
 
-- [ ] Interactive startup guidance uses `/background <prompt>` for the explicitly selected task ID.
-- [ ] The watcher is read-only and cannot claim, edit, complete, block, dispatch, or otherwise mutate cards or the workspace.
-- [ ] It reports `completed`, `blocked`, `failed`, `reclaimed/retried`, and materially stalled work.
-- [ ] Routine heartbeats, unchanged status, and historical events replayed at watcher startup are suppressed.
-- [ ] Each report is evidence-based and concise, including task ID, current state, and meaningful reason or result.
-- [ ] The watcher exits after a terminal state and does not create duplicate watchers for the same task.
-- [ ] Non-interactive surfaces use a documented read-only process watcher fallback rather than pretending `/background` was invoked.
-- [ ] `make lint` and `make test` pass.
+- [x] Interactive startup guidance uses `/background <prompt>` for the explicitly selected task ID.
+- [x] The watcher is read-only and cannot claim, edit, complete, block, dispatch, or otherwise mutate cards or the workspace.
+- [x] It reports `completed`, `blocked`, `failed`, `reclaimed/retried`, and materially stalled work.
+- [x] Routine heartbeats, unchanged status, and historical events replayed at watcher startup are suppressed.
+- [x] Each report is evidence-based and concise, including task ID, current state, and meaningful reason or result.
+- [x] The watcher exits after a terminal state and does not create duplicate watchers for the same task.
+- [x] Non-interactive surfaces use a documented read-only process watcher fallback rather than pretending `/background` was invoked.
+- [x] `make lint` and `make test` pass.
 
 ## Watcher prompt contract
 
