@@ -28,6 +28,14 @@ if not _spec or not _spec.loader:
 _core = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_core)
 startup_gate = _core.startup_gate
+CORE_ROUTING = Path(__file__).resolve().parents[2] / "skills/ginflow/lib/routing.py"
+_routing_spec = importlib.util.spec_from_file_location("ginflow_routing_core", CORE_ROUTING)
+if not _routing_spec or not _routing_spec.loader:
+    raise ImportError(f"unable to load Ginflow routing core: {CORE_ROUTING}")
+_routing_core = importlib.util.module_from_spec(_routing_spec)
+_routing_spec.loader.exec_module(_routing_core)
+_route_policy = _routing_core.route
+_workspace = _routing_core.workspace
 
 logger = logging.getLogger(__name__)
 
@@ -101,54 +109,9 @@ def _kanban_board_state() -> str | None:
     return "\n".join(lines) if lines else None
 
 
-def _workspace(task: dict[str, Any]) -> Path | None:
-    value = task.get("workspace_path") or task.get("workspace")
-    if not value:
-        return None
-    if isinstance(value, str) and value.startswith("dir:"):
-        value = value[4:]
-    try:
-        return Path(value).expanduser().resolve()
-    except (OSError, TypeError, ValueError):
-        return None
-
-
 def _route(tasks: list[dict[str, Any]], explicit_id: str | None = None) -> dict[str, Any]:
-    current = Path.cwd().resolve()
-    matching = [task for task in tasks if _workspace(task) == current]
-    if explicit_id:
-        selected = next((task for task in tasks if task.get("id") == explicit_id), None)
-        if selected is None:
-            return {"route": "no_card", "action": "work_shaping"}
-        if _workspace(selected) != current:
-            return {"route": "workspace_mismatch", "action": "block"}
-        matching = [selected]
-    if not matching:
-        return {"route": "no_card", "action": "work_shaping"}
-    if len(matching) > 1 and not explicit_id:
-        candidates = sorted(
-            ({"id": task.get("id"), "title": task.get("title", "?")} for task in matching),
-            key=lambda candidate: (str(candidate["id"]), str(candidate["title"])),
-        )
-        return {"route": "needs_card_selection", "action": "orchestrator", "candidates": candidates}
-    selected = matching[0]
-    status = selected.get("status")
-    # Ginflow logical states map to Hermes Kanban persistence states.
-    # Hermes has no `next`/`in_progress`: todo/ready is next; running is active.
-    status = {"todo": "next", "ready": "next", "running": "in_progress"}.get(str(status), status)
-    if status == "blocked":
-        return {
-            "route": "blocked_card", "action": "orchestrator", "id": selected.get("id"),
-            "blocker_metadata": selected.get("blocker_metadata") or selected.get("metadata", {}).get("blocker")
-            if isinstance(selected.get("metadata"), dict) else None,
-        }
-    if status == "next":
-        return {"route": "validate_card_docs", "action": "validate_docs", "id": selected.get("id")}
-    if status == "in_progress":
-        return {"route": "ready_to_start", "action": "execute", "id": selected.get("id")}
-    if status in {"done", "cancelled", "archived"}:
-        return {"route": "terminal_card", "action": "block", "id": selected.get("id")}
-    return {"route": "invalid_status", "action": "block", "id": selected.get("id")}
+    """Compatibility adapter: inject Hermes cwd into core policy."""
+    return _route_policy(tasks, Path.cwd(), explicit_id)
 
 
 def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
