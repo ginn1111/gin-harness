@@ -121,10 +121,10 @@ Stop when any required input is missing and risk is material.
 
 **Complete cards with the `kanban_complete` TOOL — never the `hermes kanban complete` CLI.**
 
-The `ginflow-gate` plugin hooks only fire on the native `kanban_complete` tool call. The CLI bypasses both:
+The `ginflow-gate` completion policy only fires on the native `kanban_complete` tool call. The CLI bypasses it:
 
-- `pre_tool_call` — blocks malformed completions (missing fields, mismatched verification/artifact commits, linked-artifact drift). Without it, bad completions sail through.
-- `post_tool_call` — appends `**Status: completed** — linked card <CARD-ID> is done.` to each linked brief/spec/plan file. Without it, artifacts stay stale/active.
+- `pre_tool_call` blocks malformed completions, linked local brief/spec/plan documents that are not marked completed, mismatched verification/artifact commits, and linked-artifact drift.
+- The blocking message lists incomplete linked documents and tells the agent to finalize and commit them before retrying. Documents are never mutated after the card is done.
 
 Board reads (`kanban_list`, `kanban_show`) should also use the TOOLS, not the `hermes kanban` CLI, so progress flows through the same governed path.
 
@@ -222,7 +222,7 @@ Next session resumes from selected card, linked artifacts, local rules, and repo
 
 ## Completion report
 
-**Complete the card with the `kanban_complete` TOOL — never the `hermes kanban complete` CLI.** The `ginflow-gate` plugin's `post_tool_call` hook only fires on the native `kanban_complete` tool call; completing via the CLI bypasses the hook that auto-marks linked artifacts done and the blocking validation gate. Always route completion through the tool, not a shell command.
+**Complete the card with the `kanban_complete` TOOL — never the `hermes kanban complete` CLI.** Completing via the CLI bypasses the blocking validation gate that requires linked local documents to be finalized before completion. Always route completion through the tool, not a shell command.
 
 Immediately before reporting completion:
 
@@ -231,7 +231,7 @@ Immediately before reporting completion:
 3. Report only files under selected card workspace.
 4. Quote canonical project command and exact fresh result.
 5. Record same evidence on selected Kanban card before completing it.
-6. Call `kanban_complete` directly. Any worker may complete its assigned card; do not route completion to `gintary` or a review handoff.
+6. Finalize every linked local brief/spec/plan with `**Status: completed**`, commit those document changes, update matching verification and artifact-baseline commits, then call `kanban_complete` directly. Any worker may complete its assigned card; do not route completion to `gintary` or a review handoff.
 7. Provide `metadata.verification_result` (`commit`, `command`, `result`) and matching `metadata.artifact_baseline` (`commit`, `paths`). `ginflow-gate` validates these synchronously, including exact linked paths and drift, and rejects invalid completion.
 8. The external CLI harness remains available for manual and CI validation independent of the live plugin gate.
 9. Review target workspace using `references/workspace-health-warnings.md`. Record concise findings under `Workspace warnings` on card and in completion report. Warnings do not block by default; promote only when acceptance, canonical verification, security, privacy, data integrity, or restartability is affected. Do not copy warning policy or scanner files into target repo.

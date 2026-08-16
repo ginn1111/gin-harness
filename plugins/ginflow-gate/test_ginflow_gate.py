@@ -258,7 +258,7 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
     target = Path(directory)
     brief = target / "docs/briefs/GATE-1.md"
     brief.parent.mkdir(parents=True)
-    brief.write_text("# Gate\n")
+    brief.write_text("# Gate\n\n---\n**Status: completed** — linked card GATE-1 is done.\n")
     subprocess.run(["git", "init", "-q"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
@@ -273,6 +273,17 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
         "artifact_baseline": {"commit": commit, "paths": ["docs/briefs/GATE-1.md"]},
     }
     assert validate_completion(committed_card, metadata) is None
+    brief.write_text("# Gate\n")
+    incomplete_error = validate_completion(committed_card, metadata)
+    assert "not marked completed" in incomplete_error
+    setattr(module, "load_card", lambda task_id, board=None: committed_card)
+    setattr(module, "validate_completion", validate_completion)
+    blocked = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": metadata}, "")
+    assert blocked["action"] == "block"
+    assert "docs/briefs/GATE-1.md" in blocked["message"]
+    assert "then retry kanban_complete" in blocked["message"]
+    assert brief.read_text() == "# Gate\n"
+    brief.write_text("# Gate\n\n---\n**Status: completed** — linked card GATE-1 is done.\n")
     metadata["verification_result"]["commit"] = "mismatch"
     assert "must match" in validate_completion(committed_card, metadata)
 

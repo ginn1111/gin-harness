@@ -6,7 +6,6 @@ import json
 import importlib.util
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 CORE = Path(__file__).resolve().parents[2] / "skills/ginflow/lib/harness_core.py"
@@ -34,6 +33,26 @@ def load_card(task_id: str, board: str | None = None) -> dict:
     return normalize_card(json.loads(result.stdout))
 
 
+def linked_documents_missing_completion(card: dict, target: Path) -> list[str]:
+    """Return local linked brief/spec/plan paths without completion footer."""
+    missing = []
+    for link in card.get("links", []):
+        path_str = link if isinstance(link, str) else link.get("path") if isinstance(link, dict) else None
+        if not isinstance(path_str, str) or "://" in path_str:
+            continue
+        artifact = (target / path_str).resolve()
+        try:
+            artifact.relative_to(target)
+        except ValueError:
+            continue
+        relative = artifact.relative_to(target)
+        if artifact.is_file() and artifact.suffix.lower() == ".md" and any(
+            part in {"briefs", "specs", "plans"} for part in relative.parts
+        ) and "**Status: completed**" not in artifact.read_text(encoding="utf-8"):
+            missing.append(path_str)
+    return sorted(missing)
+
+
 def validate_completion(card: dict, metadata: dict) -> str | None:
     required = ("id", "title", "objective", "scope", "acceptance", "workspace", "assignee", "links")
     missing = [name for name in required if not card.get(name)]
@@ -53,6 +72,15 @@ def validate_completion(card: dict, metadata: dict) -> str | None:
     if not workspace.startswith("dir:"):
         return f"unsupported workspace for completion validation: {workspace}"
     target = Path(workspace.removeprefix("dir:")).resolve()
+
+    incomplete = linked_documents_missing_completion(card, target)
+    if incomplete:
+        return (
+            "linked target-local documents are not marked completed: " + ", ".join(incomplete)
+            + ". Finalize each document with '**Status: completed**', commit those changes, "
+              "update verification_result.commit and artifact_baseline.commit, then retry kanban_complete."
+        )
+
     candidate = card | {"artifact_baseline": baseline}
     status = artifact_gate(candidate, target)
     if not status["baseline_complete"]:
@@ -80,49 +108,7 @@ def pre_tool_call(tool_name: str, args: dict, task_id: str = "", **kwargs):
 
 
 def post_tool_call(tool_name: str, result: dict, args: dict, task_id: str = "", **kwargs):
-    if tool_name != "kanban_complete":
-        return None
-    if not result.get("success"):
-        return None
-    try:
-        selected = str(args.get("task_id") or task_id or os.environ.get("HERMES_KANBAN_TASK") or "").strip()
-        if not selected:
-            return None
-        card = load_card(selected, args.get("board") or os.environ.get("HERMES_KANBAN_BOARD"))
-        workspace = str(card.get("workspace", ""))
-        if not workspace.startswith("dir:"):
-            return None
-        target = Path(workspace.removeprefix("dir:")).resolve()
-        if not target.is_dir():
-            return None
-
-        links = card.get("links", [])
-        if not isinstance(links, list) or not links:
-            return None
-
-        updated = []
-        for link in links:
-            path_str = link if isinstance(link, str) else link.get("path") if isinstance(link, dict) else None
-            if not isinstance(path_str, str) or "://" in path_str:
-                continue
-            artifact = (target / path_str).resolve()
-            try:
-                artifact.relative_to(target)
-            except ValueError:
-                continue
-            if not artifact.is_file():
-                continue
-
-            content = artifact.read_text()
-            footer = f"\n\n---\n**Status: completed** — linked card {card.get('id')} is done.\n"
-            if not content.endswith(footer.rstrip()):
-                artifact.write_text(content.rstrip() + footer + "\n")
-                updated.append(path_str)
-
-        if updated:
-            print(f"ginflow-gate: marked linked artifacts done: {', '.join(updated)}", file=sys.stderr)
-    except Exception as error:
-        print(f"ginflow-gate: artifact update warning: {error}", file=sys.stderr)
+    """Retained compatibility hook; linked documents are finalized before completion."""
     return None
 
 

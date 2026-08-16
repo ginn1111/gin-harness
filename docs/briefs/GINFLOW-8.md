@@ -21,13 +21,13 @@ Update `ginflow-gate` so an attempted `kanban_complete` gives the agent determin
 
 ## Acceptance criteria
 
-- [ ] A `kanban_complete` attempt detects linked target-local documents not marked completed.
-- [ ] The agent receives deterministic guidance listing documents that must be finalized before retrying.
-- [ ] Completion fails closed while linked documents remain active.
-- [ ] External links and unrelated files are not mutated or treated as local completion documents.
-- [ ] Completed linked documents plus valid completion metadata allow `kanban_complete`.
-- [ ] Regression coverage exercises the actual completion hook seam.
-- [ ] `make lint` and `make test` pass.
+- [x] A `kanban_complete` attempt detects linked target-local documents not marked completed.
+- [x] The agent receives deterministic guidance listing documents that must be finalized before retrying.
+- [x] Completion fails closed while linked documents remain active.
+- [x] External links and unrelated files are not mutated or treated as local completion documents.
+- [x] Completed linked documents plus valid completion metadata allow `kanban_complete`.
+- [x] Regression coverage exercises the actual completion hook seam.
+- [x] `make lint` and `make test` pass.
 
 ## Design constraint
 
@@ -41,4 +41,7 @@ Do not mark documents completed after the card is already done. Document finaliz
 
 ## Status
 
-Card is blocked until explicitly selected for implementation.
+Completed in linked card `t_584931b4`.
+
+---
+**Status: completed** — linked card `t_584931b4` is done.
