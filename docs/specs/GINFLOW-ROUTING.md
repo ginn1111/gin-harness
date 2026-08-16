@@ -87,7 +87,7 @@ The context must identify route, current workspace, candidate/selected card IDs 
 
 - [ ] Workspace filtering uses canonical resolved paths.
 - [ ] `dir:` workspace values compare correctly.
-- [ ] Multiple current-workspace cards produce `needs_card_selection`.
+- [x] Multiple current-workspace cards produce `needs_card_selection`.
 - [ ] Explicit cross-workspace task produces `workspace_mismatch`.
 - [ ] Blocked and terminal statuses produce correct routes and block guidance.
 - [ ] Hermes `todo`/`ready` produces `validate_card_docs`.
@@ -95,9 +95,9 @@ The context must identify route, current workspace, candidate/selected card IDs 
 - [ ] Real temporary card validates linked docs before `ready → running`.
 - [ ] Missing/invalid Kanban output produces deterministic `validation_failed` or `no_cards_for_workspace` behavior without unsafe execution guidance.
 - [ ] No-ginflow remains a no-op.
-- [ ] Tests cover all route branches and context output.
-- [ ] `make lint` passes.
-- [ ] `make test` passes.
+- [x] Tests cover all route branches and context output.
+- [x] `make lint` passes.
+- [x] `make test` passes.
 
 ## Edge cases
 
@@ -136,4 +136,4 @@ make test
 This spec supersedes earlier advisory-only routing assumptions for workspace/card selection. Routing reports state and intent; orchestration owns selection; Hermes core owns enforcement.
 
 ---
-**Status: superseded by `GINFLOW-GATE-MERGE`** — linked card `t_76959652` is in review.
+**Status: completed** — linked card `t_be3de2b6`.

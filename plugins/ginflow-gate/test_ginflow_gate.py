@@ -25,9 +25,15 @@ def test_workspace_and_status_routes():
     workspace = str(Path.cwd().resolve())
     assert _route([{"id": "other", "workspace_path": "/tmp/other", "status": "in_progress"}])["route"] == "no_card"
     assert _route([
-        {"id": "one", "workspace_path": workspace, "status": "next"},
-        {"id": "two", "workspace_path": workspace, "status": "in_progress"},
+        {"id": "one", "title": "First", "workspace_path": workspace, "status": "next"},
+        {"id": "two", "title": "Second", "workspace_path": workspace, "status": "in_progress"},
     ])["route"] == "needs_card_selection"
+    ambiguous = _route([
+        {"id": "one", "title": "First", "workspace_path": workspace, "status": "next"},
+        {"id": "two", "title": "Second", "workspace_path": workspace, "status": "next"},
+    ])
+    assert ambiguous["action"] == "orchestrator"
+    assert ambiguous["candidates"] == [{"id": "one", "title": "First"}, {"id": "two", "title": "Second"}]
     assert _route([{"id": "blocked", "workspace_path": workspace, "status": "blocked"}])["route"] == "blocked_card"
     assert _route([{"id": "next", "workspace_path": "dir:" + workspace, "status": "next"}])["route"] == "validate_card_docs"
     assert _route([{"id": "ready", "workspace_path": workspace, "status": "in_progress"}])["route"] == "ready_to_start"

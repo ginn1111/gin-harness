@@ -1,5 +1,5 @@
 ---
-status: active
+status: completed
 size: M
 scope: setup-repo
 owner: ginb
@@ -24,14 +24,14 @@ Make `ginflow-gate` routing module route worker sessions safely when one Kanban 
 ## Acceptance criteria
 
 - [ ] Cards from other workspaces do not affect current worker routing.
-- [ ] Multiple cards in current workspace produce `needs_card_selection`; routing reports candidates and blocks implementation.
+- [x] Multiple cards in current workspace produce `needs_card_selection`; routing reports candidates and blocks implementation.
 - [ ] Explicit task from another workspace produces `workspace_mismatch` and blocks implementation.
 - [ ] A blocked card produces `blocked_card` and reports orchestrator action required.
 - [ ] Hermes `todo`/`ready` cards produce `validate_card_docs` before claim.
 - [ ] Hermes `running` cards produce `ready_to_start`.
 - [ ] Terminal cards produce `terminal_card` and block implementation.
 - [ ] Routing output is structured and deterministic.
-- [ ] Existing and new routing tests pass with `make lint` and `make test`.
+- [x] Existing and new routing tests pass with `make lint` and `make test`.
 
 ## Non-goals
 
@@ -44,3 +44,7 @@ Make `ginflow-gate` routing module route worker sessions safely when one Kanban 
 ## Notes
 
 The worker reports candidate cards; human/orchestrator selects the task through explicit task context. Routing provides guidance and state; hard mutation enforcement belongs to Hermes core.
+
+Verification: `make lint && make test`.
+
+Status: completed.

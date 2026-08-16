@@ -126,14 +126,22 @@ def _route(tasks: list[dict[str, Any]], explicit_id: str | None = None) -> dict[
     if not matching:
         return {"route": "no_card", "action": "work_shaping"}
     if len(matching) > 1 and not explicit_id:
-        return {"route": "needs_card_selection", "action": "block", "candidates": [t.get("id") for t in matching]}
+        candidates = sorted(
+            ({"id": task.get("id"), "title": task.get("title", "?")} for task in matching),
+            key=lambda candidate: (str(candidate["id"]), str(candidate["title"])),
+        )
+        return {"route": "needs_card_selection", "action": "orchestrator", "candidates": candidates}
     selected = matching[0]
     status = selected.get("status")
     # Ginflow logical states map to Hermes Kanban persistence states.
     # Hermes has no `next`/`in_progress`: todo/ready is next; running is active.
     status = {"todo": "next", "ready": "next", "running": "in_progress"}.get(str(status), status)
     if status == "blocked":
-        return {"route": "blocked_card", "action": "orchestrator", "id": selected.get("id")}
+        return {
+            "route": "blocked_card", "action": "orchestrator", "id": selected.get("id"),
+            "blocker_metadata": selected.get("blocker_metadata") or selected.get("metadata", {}).get("blocker")
+            if isinstance(selected.get("metadata"), dict) else None,
+        }
     if status == "next":
         return {"route": "validate_card_docs", "action": "validate_docs", "id": selected.get("id")}
     if status == "in_progress":
@@ -153,6 +161,7 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
     route = _route(tasks, explicit_id)
     route_name = route["route"]
     candidates = route.get("candidates", [])
+    candidate_ids = [item["id"] if isinstance(item, dict) else item for item in candidates]
     current = Path.cwd().resolve()
     if route_name == "no_card":
         route_name = "no_cards_for_workspace"
@@ -163,14 +172,18 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
         f"[ginflow-gate routing: route={route_name}; workspace={current}; "
         f"mutation_allowed={action == 'execute'}; "
         f"task={route.get('id', explicit_id or 'none')}; "
-        f"candidates={','.join(candidates) if candidates else 'none'}. "
+        f"candidates={','.join(candidate_ids) if candidate_ids else 'none'}. "
     )
     if route_name == "no_cards_for_workspace":
         context += "Report workspace to orchestrator; route to work shaping, shape work, or create a card. Load and follow the `plan` skill before creating a plan."
     elif route_name == "needs_card_selection":
-        context += "Report candidates to human/orchestrator; do not select or implement."
+        details = "; ".join(f"{item['id']}: {item['title']}" for item in candidates)
+        context += f"Report candidates to orchestrator; ask orchestrator to select one card from candidates ({details}); Do not select or implement."
     elif route_name == "blocked_card":
+        metadata = route.get("blocker_metadata")
         context += "Report blocker to orchestrator; do not implement."
+        if metadata:
+            context += f" Blocker metadata: {json.dumps(metadata, sort_keys=True)}."
     elif route_name == "validate_card_docs":
         selected = next((task for task in tasks if task.get("id") == route.get("id")), None)
         if selected:
