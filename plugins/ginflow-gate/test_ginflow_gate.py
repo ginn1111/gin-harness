@@ -85,6 +85,11 @@ def test_ginflow_skill_active():
         assert any(marker in result["context"] for marker in (
             "Report", "Validate", "Resume", "Do not implement",
         )), "context should provide route action"
+        if "no_cards_for_workspace" in result["context"]:
+            assert "Choose work mode" in result["context"]
+            assert "investigation" in result["context"]
+            assert "implementation" in result["context"]
+            assert "brainstorming" in result["context"]
     finally:
         if old_skills is not None:
             os.environ["HERMES_TUI_SKILLS"] = old_skills

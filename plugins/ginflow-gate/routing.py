@@ -175,7 +175,13 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
         f"candidates={','.join(candidate_ids) if candidate_ids else 'none'}. "
     )
     if route_name == "no_cards_for_workspace":
-        context += "Report workspace to orchestrator; route to work shaping, shape work, or create a card. Load and follow the `plan` skill before creating a plan."
+        context += (
+            "Report workspace to orchestrator; no Kanban card exists for workspace. "
+            "Choose work mode: investigation when cause is unclear, implementation when "
+            "requirements are clear, or brainstorming when requirements are unclear. "
+            "Then choose artifact level, shape work, or create a card. Load and follow "
+            "the `plan` skill before creating a plan."
+        )
     elif route_name == "needs_card_selection":
         details = "; ".join(f"{item['id']}: {item['title']}" for item in candidates)
         context += f"Report candidates to orchestrator; ask orchestrator to select one card from candidates ({details}); Do not select or implement."
