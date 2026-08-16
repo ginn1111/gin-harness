@@ -1,33 +1,44 @@
----
-status: ready
-size: S
-scope: Ginflow worker baseline commits
-owner: gintary
----
+# GINFLOW-11 — Empty-board work-mode and work-size decision matrix
 
-# Brief — GINFLOW-11 Workers auto-commit artifact baselines
+**Status: proposed**
 
 ## Objective
 
-Allow Ginflow Kanban workers to create required baseline commits before atomic card completion, removing human review wait while preserving baseline and verification gates.
+Make empty-board work-mode, scope-size, and artifact decisions explicit in the `Gin-harness-flow` diagram page.
 
 ## Scope
 
-- Ginflow lifecycle and drift-detection guidance.
-- Ginflow gate/harness regression coverage.
-- `plugins/ginflow-gate/`, `skills/ginflow/`, and `docs/briefs/GINFLOW-11.md`.
+- Add root-cause and requirement-clarity decisions.
+- Add XS/S, M, and L/XL/risky scope-size branches.
+- Show brief/spec/plan artifact mapping.
+- Show split-card guidance for large or risky work.
+- Preserve existing diagram pages, style, and content.
 
 ## Acceptance criteria
 
-- [ ] Worker guidance permits committing exact linked target-local artifacts before first `kanban_complete` call.
-- [ ] Completion still rejects missing, mismatched, unavailable, or drifted artifact baselines.
-- [ ] `make test` passes.
+- Unknown root cause routes to Investigation.
+- Known cause with unclear requirements routes to Brainstorming/clarification.
+- Clear requirements route through XS/S, M, and L/XL/risky decisions.
+- Diagram shows artifact mapping and card-splitting guidance.
+- `Gin-harness-flow` remains readable and opens in draw.io.
+- Existing diagram content remains intact.
+- `make lint && make test` passes.
 
-## Non-goals
+## Verification
 
-- Broader Git permission changes outside Ginflow worker lifecycle.
-- Human approval removal for completed-card drift resolution.
+- Validate diagram XML structure and page/cell references.
+- Open the `.drawio` file in draw.io desktop when available.
+- Run `make lint && make test`.
+- Review diff for diagram-only scope plus linked brief.
 
-## Notes
+## Out of scope
 
-Canonical verification: `make test`.
+- Implementing the decision matrix in Ginflow runtime code.
+- Changing Kanban policy or profile configuration.
+- Modifying `Harness system overview` page.
+
+## Test seam
+
+Use diagram XML validation plus existing setup-repo verification. Confirm the target page contains explicit decision labels and connected branches; preserve the second page byte-for-byte where practical.
+
+**Status: completed**
