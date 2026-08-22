@@ -54,8 +54,8 @@ def main():
             "paths": args.baseline_path,
         }
     card_fields = ("id", "title", "objective", "scope", "acceptance", "workspace", "status", "assignee", "links")
-    linked_briefs = [candidate for path, candidate in linked_artifacts(card, target) if path.startswith("docs/briefs/")]
-    brief_exists = bool(linked_briefs and any(path.exists() for path in linked_briefs))
+    linked_docs = [candidate for _, candidate in linked_artifacts(card, target)]
+    linked_artifact_exists = bool(linked_docs and any(path.is_file() for path in linked_docs))
     artifact_status = artifact_gate(card, target)
 
     verify_match = re.search(r"(?:Canonical (?:verification )?command|Verification)[^\n]*:\s*`?([^`\n]+)", local, re.I)
@@ -76,7 +76,7 @@ def main():
                 card_load_error or "required Ginflow fields are missing from the card body or metadata",
                 "Use Objective, Scope, Acceptance, and Links sections in the card body, plus a real target workspace and assignee.",
             ),
-            (brief_exists, "Card-ID brief exists", "blocker"),
+            (linked_artifact_exists, "Linked target-local Governance Artifact exists", "blocker"),
             (
                 artifact_status["baseline_complete"],
                 "Card records a path-scoped completion commit baseline",

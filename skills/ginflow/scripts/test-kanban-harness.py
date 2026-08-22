@@ -101,6 +101,14 @@ def main():
         valid_result = json.loads(valid.stdout)
         assert valid_result["status"] == "pass", valid.stdout
 
+        (target / "docs/specs").mkdir(parents=True)
+        (target / "docs/specs/TEST-1.md").write_text("# Spec\n")
+        spec_only = complete | {"links": ["docs/specs/TEST-1.md"]}
+        card.write_text(json.dumps(spec_only))
+        spec_valid = run(target, card)
+        assert spec_valid.returncode == 0, spec_valid.stdout + spec_valid.stderr
+        assert json.loads(spec_valid.stdout)["status"] == "pass"
+
         kanban_show = {
             "task": {
                 "id": "TEST-1",
@@ -292,7 +300,7 @@ def main():
 
         brief.write_text("# Brief\n\nHuman changed acceptance after completion.\n")
         untracked_spec = target / "docs/specs/TEST-1.md"
-        untracked_spec.parent.mkdir(parents=True)
+        untracked_spec.parent.mkdir(parents=True, exist_ok=True)
         untracked_spec.write_text("# Uncommitted spec\n")
         missing_from_commit = complete | {
             "status": "in_progress",
