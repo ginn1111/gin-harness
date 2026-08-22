@@ -19,6 +19,7 @@ spec.loader.exec_module(module)
 _ginflow_loaded = module._ginflow_loaded
 _routing_context = module._routing_context
 _route = module._route
+format_work_guidance = module.format_work_guidance
 
 
 def test_workspace_and_status_routes():
@@ -101,6 +102,65 @@ def test_ginflow_skill_active():
             os.environ["HERMES_KANBAN_TASK"] = old_task
 
     print("PASS: ginflow active → routing called")
+
+
+def test_work_guidance_maps_modes_to_bounded_skills():
+    guidance = format_work_guidance(
+        work_mode="implementation",
+        work_size="XS",
+        size_rationale="one localized reversible change",
+        eligibility="eligible",
+        risk_impact="none",
+        canonical_verification="python3 -m pytest",
+    )
+    assert "work-mode=implementation" in guidance
+    assert "candidate skill: implement" in guidance
+    assert "skill_view(name='implement')" in guidance
+    assert "Route: direct-no-card" in guidance
+    assert "Delivery Change + conversation result" in guidance
+    assert "no Kanban Card" in guidance
+    assert "stop mutation and reclassify" in guidance
+
+
+def test_work_guidance_routes_known_failure_and_unknown_separately():
+    governed = format_work_guidance(
+        work_mode="implementation",
+        work_size="M",
+        size_rationale="ordered verification across components",
+        eligibility="known_failure",
+        risk_impact="none",
+    )
+    assert "Route: Governed Work" in governed
+    assert "conditional Spec/Plan" in governed
+    assert "candidate skill: implement" in governed
+    assert "plugin provides guidance only" in governed
+
+    clarification = format_work_guidance(
+        work_mode="investigation",
+        work_size=None,
+        size_rationale=None,
+        eligibility="unknown",
+        risk_impact="unknown",
+    )
+    assert "Route: Clarification" in clarification
+    assert "read-only investigation" in clarification
+    assert "no repository mutation" in clarification
+    assert "candidate skill: diagnosing-bugs" in clarification
+
+
+def test_work_guidance_rejects_risk_and_preserves_canonical_outputs():
+    guidance = format_work_guidance(
+        work_mode="verification",
+        work_size="S",
+        size_rationale="bounded verification",
+        eligibility="known_failure",
+        risk_impact="actual impact on compatibility",
+        output_overrides={"spec": "project/specs/CARD.md"},
+    )
+    assert "Route: Governed Work" in guidance
+    assert "Risk Impact" in guidance
+    assert "project/specs/CARD.md" in guidance
+    assert "verification-before-completion" in guidance
 
 
 def test_live_tmp_project_card():
@@ -243,6 +303,9 @@ if __name__ == "__main__":
     test_workspace_and_status_routes()
     test_no_ginflow_skill()
     test_ginflow_skill_active()
+    test_work_guidance_maps_modes_to_bounded_skills()
+    test_work_guidance_routes_known_failure_and_unknown_separately()
+    test_work_guidance_rejects_risk_and_preserves_canonical_outputs()
     test_live_tmp_project_card()
     test_live_tmp_next_card_docs()
     test_blocked_route_context_reports_metadata_without_execution()

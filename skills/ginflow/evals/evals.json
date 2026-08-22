@@ -5,12 +5,12 @@
       "id": 1,
       "name": "medium-feature-artifacts",
       "prompt": "In a target repo, shape card INV-21 for adding CSV export to an existing invoice list. Requirement is clear, size M, canonical verification is `make test`, workspace is `dir:/work/invoice-app`, and unrelated invoice creation must not change. Return proposed artifact paths and concise contents for every artifact needed for execution by current profile. Do not write code.",
-      "expected_output": "A docs/briefs brief, docs/plans plan, and thin Kanban card with clear boundaries, observable acceptance, real workspace, and no unnecessary spec or ADR.",
+      "expected_output": "A docs/plans plan and thin Kanban card with clear boundaries, observable acceptance, real workspace, and no unnecessary spec or ADR.",
       "files": [],
       "expectations": [
-        "Uses docs/briefs/INV-21.md and docs/plans/INV-21.md paths",
+        "Uses docs/plans/INV-21.md and a thin Kanban card",
         "Does not create a spec or ADR without decision value",
-        "Brief owns objective, bounded scope, non-goals, and observable acceptance",
+        "Kanban card owns objective, bounded scope, exclusions, and observable acceptance",
         "Plan contains ordered targets, changes, verification evidence, and requirement traceability",
         "Kanban card stays thin and records dir:/work/invoice-app plus artifact links"
       ]
@@ -19,10 +19,10 @@
       "id": 2,
       "name": "risky-contract-artifacts",
       "prompt": "Shape SEC-9 for replacing session cookies with rotating refresh tokens across web and mobile clients. This is L/risky work. Requirements include backward-compatible migration, token theft detection, rollback, audit logging, and no forced logout during rollout. Workspace is `worktree`; canonical checks are `make verify`. No architecture owner has approved a storage strategy. Return artifact paths and concise content needed before build dispatch. Do not implement.",
-      "expected_output": "Brief, spec, plan, proposed ADR, and thin card under docs/, covering contracts, failure/security/migration/rollback semantics without inventing architecture approval.",
+      "expected_output": "Spec, plan, proposed ADR, and thin card under docs/, covering contracts, failure/security/migration/rollback semantics without inventing architecture approval.",
       "files": [],
       "expectations": [
-        "Places brief, spec, plan, and ADR under docs/ and links them from card",
+        "Places spec, plan, and ADR under docs/ and links them from card",
         "Spec covers compatibility, security, failures, migration, rollback, observability, and behavioral acceptance",
         "Plan orders discovery or decision before implementation and includes make verify evidence",
         "ADR status remains proposed and compares viable storage alternatives",
@@ -33,11 +33,11 @@
       "id": 3,
       "name": "unknown-facts-investigation",
       "prompt": "Prepare PAY-42: make payment webhook processing idempotent. Provider, repository path, event identifier contract, retry response semantics, persistence technology, and canonical verification command are unknown. Gin asks whether this is ready for direct build and wants the smallest safe artifact set and next action. Return readiness decision, artifact paths, and artifact content. Do not invent missing facts.",
-      "expected_output": "Not-ready investigation-first response, docs/briefs and docs/plans artifacts with owned TBD blockers, no invented provider/repo/commands/contracts, and thin card only if safe workspace can be supplied.",
+      "expected_output": "Not-ready investigation-first response with no card or Governance Artifact while material facts are unknown; no invented provider/repo/commands/contracts.",
       "files": [],
       "expectations": [
         "Rejects direct build and routes investigation first",
-        "Uses docs/briefs/PAY-42.md and docs/plans/PAY-42.md paths",
+        "Creates no card or Governance Artifact during Clarification",
         "Marks unknown material facts as TBD with owner or blocking decision",
         "Does not invent repository paths, verification commands, provider behavior, or implementation technology",
         "Defines observable investigation outcomes and exact next action"
@@ -50,9 +50,9 @@
       "expected_output": "Block project work while still allowing pre-card routing, sizing, and card drafting.",
       "files": [],
       "expectations": [
-        "Blocks implementation because no Kanban card is selected",
-        "Allows pre-card brainstorming, routing, sizing, read-only shaping, artifact choice, and proposed card drafting",
-        "Requires creating or selecting a card before target artifacts, code, investigation execution, or dispatch"
+        "Evaluates Direct Work Eligibility before any mutation",
+        "Allows only read-only shaping while eligibility facts are unresolved",
+        "Routes known disqualifiers to Governed Work with a complete card"
       ]
     },
     {

@@ -39,7 +39,7 @@ The decisions are intentionally separate:
 
 ### Direct Work
 
-Direct Work is the no-card route for affirmatively eligible XS/S implementation. Eligibility requires clear target behavior, a known defect root cause when repairing, localized and reversible scope, no Risk Impact, no Governance Artifact need, known canonical verification, project-local permission, and an unowned mutable workspace.
+Direct Work is the route for affirmatively eligible XS/S implementation without a Kanban Card or Governance Artifact. Eligibility requires clear target behavior, a known defect root cause when repairing, localized and reversible scope, no Risk Impact, no Governance Artifact need, known canonical verification, project-local permission, and an unowned single-worker workspace.
 
 The route declares `direct-no-card` with its rationale, loads the selected skill through Hermes `skill_view`, executes without a Kanban card or Governance Artifact, runs canonical verification, and reports the scoped diff, changed files, evidence, and limits. A failed verification, unstable scope, or newly discovered disqualifier stops Direct Work and reclassifies the request as Governed Work.
 
@@ -99,9 +99,9 @@ flowchart TD
     requirements -- "Yes" --> target{"Target / root cause known?"}
     target -- "No" --> investigation["Conversation-only investigation<br/>clarify target / root cause"]
     investigation -- "Wait for clarity" --> end3(("End"))
-    target -- "Yes" --> eligibility["Fast-path eligibility<br/>clear · low risk · reversible · no artifact"]
+    target -- "Yes" --> eligibility["Direct Work Eligibility<br/>clear · reversible · no Risk Impact · no artifact"]
     eligibility --> size["Work size?<br/>XS/S · M · L/XL/risky"]
-    size --> fast{"Eligible XS/S fast path?"}
+    size --> fast{"Direct Work eligible?"}
     fast -- "Yes" --> direct["Declare direct-no-card<br/>XS/S + rationale"]
     direct --> skill["Load selected skill<br/>via skill_view"]
     skill --> execute["Execute directly<br/>no card · no artifact"]

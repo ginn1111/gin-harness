@@ -2,6 +2,7 @@
 import importlib.util
 import json
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -9,9 +10,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 PLUGIN = ROOT / "plugins/ginflow-gate/__init__.py"
 
-spec = importlib.util.spec_from_file_location("ginflow_gate", PLUGIN)
+spec = importlib.util.spec_from_file_location(
+    "ginflow_gate", PLUGIN, submodule_search_locations=[str(PLUGIN.parent)]
+)
 assert spec and spec.loader
 module = importlib.util.module_from_spec(spec)
+sys.modules["ginflow_gate"] = module
 spec.loader.exec_module(module)
 validate_completion = module.validate_completion
 
@@ -26,13 +30,13 @@ card = {
     "assignee": "worker",
     "links": ["docs/briefs/GATE-1.md"],
 }
-setattr(module, "load_card", lambda task_id, board=None: card)
+setattr(module.gate, "load_card", lambda task_id, board=None: card)
 
 blocked = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": {}}, "", profile="worker")
 assert blocked["action"] == "block"
 assert "verification_result" in blocked["message"]
 
-setattr(module, "validate_completion", lambda card, metadata: None)
+setattr(module.gate, "validate_completion", lambda card, metadata: None)
 allowed = module.pre_tool_call(
     "kanban_complete",
     {
@@ -47,7 +51,7 @@ allowed = module.pre_tool_call(
 )
 assert allowed is None
 
-setattr(module, "validate_completion", lambda card, metadata: "linked artifact drift: docs/briefs/GATE-1.md")
+setattr(module.gate, "validate_completion", lambda card, metadata: "linked artifact drift: docs/briefs/GATE-1.md")
 blocked = module.pre_tool_call(
     "kanban_complete",
     {
@@ -62,7 +66,7 @@ blocked = module.pre_tool_call(
 assert blocked["action"] == "block"
 assert "drift" in blocked["message"]
 
-setattr(module, "load_card", lambda task_id, board=None: (_ for _ in ()).throw(RuntimeError("DB unavailable")))
+setattr(module.gate, "load_card", lambda task_id, board=None: (_ for _ in ()).throw(RuntimeError("DB unavailable")))
 failed_closed = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": {}}, "")
 assert failed_closed["action"] == "block"
 assert "validation failed closed" in failed_closed["message"]
@@ -71,7 +75,7 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
     target = Path(directory)
     brief = target / "docs/briefs/GATE-1.md"
     brief.parent.mkdir(parents=True)
-    brief.write_text("# Gate\n")
+    brief.write_text("# Gate\n\n**Status: completed**\n")
     subprocess.run(["git", "init", "-q"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)

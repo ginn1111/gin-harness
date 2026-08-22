@@ -66,47 +66,59 @@ Never write `in_progress` to Hermes Kanban. `running` is active work. `todo`/`re
 
 ### Kanban boundary
 
-Before a card exists, ginflow may brainstorm, inspect read-only context, choose work mode, size work, choose artifacts, and draft proposed card content. These actions shape work but do not start project execution.
+Before a card exists, ginflow may brainstorm, inspect read-only context, choose work mode, size work, choose artifacts, and draft proposed card content. Clarification remains conversation-only and read-only. Direct Work is the explicit exception: after every eligibility factor is affirmatively established, eligible XS/S implementation may proceed without a card or Governance Artifact.
 
-After shaping, require one selected Kanban card before creating target artifacts, running implementation investigation, changing code, dispatching, recording progress, verifying completion, or handing off. No selected card blocks project execution.
+Governed Work requires one selected Kanban card before creating governed artifacts, running implementation investigation, changing code, dispatching, recording progress, verifying completion, or handing off. No selected card blocks project execution for Governed Work. Direct Work must remain inside its affirmatively established scope and must stop and re-route if scope, risk, ownership, clarity, or verification changes.
 
-Selected card must contain: ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing required fields block execution until card is repaired.
+Selected card must contain: ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing required fields block Governed Work until the card is repaired.
 
 ### Choose artifact level
 
-| Case | Brief | Spec | Plan |
+| Case | Kanban card | Spec | Plan |
 |---|---:|---:|---:|
-| XS/S clear work | yes | optional | optional |
-| M work | yes | optional | yes |
-| L/XL or risky work | yes | yes | yes |
-| Investigation | yes | optional | yes |
-| Brainstorming | note first | later | later |
+| Direct Work — eligible XS/S | no | no | no |
+| Governed Work — M | required | conditional | conditional |
+| Governed Work — L/XL or risky | required | conditional | conditional |
+| Clarification or read-only investigation | no | no | no |
 
 Rule:
-- brief always
-- spec when behavior/contract can drift
-- plan when ordering/risk matters
+- Direct Work creates no Kanban card or Governance Artifact.
+- Governed Work requires a card; choose Spec when behavior or contract can drift and Plan when ordering, investigation, rollback, coordination, or layered verification matters.
+- Brief is not a canonical Ginflow route output.
 - Before creating a plan for planning-required work, load and follow the `plan` skill.
-- use Kanban card ID across artifacts for deterministic linking
-- brief defines objective/scope/acceptance; spec defines behavior/contracts; plan defines execution order
-- follow linked artifact templates and project-local rules for content quality and boundaries
+- Use the Kanban card ID across governed artifacts for deterministic linking.
+- Follow linked artifact templates and project-local rules for content quality and boundaries.
+
+### Routing guidance and feedback boundary
+
+When no selected/running card owns the workspace, use the injected routing guidance to evaluate Work Mode, Work Size, Risk Impact, and Direct Work Eligibility. The three outcomes are:
+
+- affirmative XS/S eligibility → Direct Work (`direct-no-card`), with Delivery Change plus conversation result only;
+- known M/L/XL size, actual Risk Impact, or Governance Artifact need → Governed Work with a build-ready card and conditional Spec/Plan outputs;
+- any unresolved requirement or routing fact → Clarification with read-only investigation only and no mutation.
+
+Direct Work Eligibility is affirmative evidence for clarity, known cause, genuine XS/S size, localized reversible scope, no actual Risk Impact, no Governance Artifact need, known canonical verification, project-local permission, and an unowned single-worker workspace. Raw file count, title wording, and risky keywords are not sufficient evidence. Stop mutation and reclassify if scope, clarity, ownership, verification, or impact changes.
+
+The plugin's candidate skill mapping is deterministic guidance, not semantic similarity search or authorization. Hermes must call `skill_view(name='...')`; the plugin never calls it, inspects skill contents, creates cards/artifacts, or mutates Kanban. Canonical output precedence is target-project rules, explicit route/card contract, Ginflow matrix, selected skill, then skill defaults. Adapt skill output into the selected canonical artifact rather than duplicating it. Brief is never a canonical route output.
+
+Feedback v1 is a pure Governed Work lifecycle event contract. It validates stable event/task identifiers, supported signals, single-line safe fields, and RFC3339 UTC timestamps, then returns a fresh dictionary. It does not persist, notify, mutate Kanban, or infer work. Direct Work has no feedback event in v1. Supported signal mappings are documented in `CONTEXT.md`.
 
 ## Project session startup
 
-Before target-project work:
+Before target-project work, determine whether the request is Direct Work, Governed Work, or Clarification. The card and Kanban checks below apply to Governed Work; Direct Work still requires affirmative eligibility, project-local permission, and known canonical verification.
 
 1. Confirm workspace points at real target repo.
 2. Read local `AGENTS.md` / `.hermes.md`.
 3. **Check Kanban board state:**
    - If no Kanban cards exist → route to work shaping/sizing (investigation/brainstorming/implementation choice, artifact level, draft card).
    - If Kanban cards exist → read progress first (use `kanban_list`/`kanban_show` TOOLS in agent code), then resume from selected/active card.
-4. Require and read selected or assigned Kanban card. Stop if absent.
-5. Confirm all required card fields and workspace. Stop if incomplete.
+4. For Governed Work, require and read the selected or assigned Kanban card. Stop if absent.
+5. For Governed Work, confirm all required card fields and workspace. Stop if incomplete.
 6. Read linked brief/spec/plan when present.
 7. If the selected card is completed, run the linked-artifact drift gate before any project action.
 8. Inspect git state and run project baseline verification.
-9. Run external ginflow harness against target repo and selected card; do not copy harness into target repo.
-10. Report project verification and Ginflow harness separately.
+9. For Governed Work, run external ginflow harness against target repo and selected card; do not copy harness into target repo.
+10. Report project verification and Ginflow harness separately when Governed Work applies.
 11. Follow routing context injected by `ginflow-gate`; it chooses work mode only when no card exists.
 
 ### Interactive card watcher
@@ -147,9 +159,9 @@ If you are about to run `hermes kanban complete ...` in a terminal, stop and cal
 ## Execution contract
 
 - One active card per mutable workspace. Parallel cards are allowed only when each uses an isolated worktree or a different workspace. Hermes dispatcher claim remains the mechanical authority; no public `kanban_claim` tool exists for plugin interception, so atomic workspace-collision enforcement requires Hermes core.
-- No target-project execution without selected, complete card.
+- No Governed Work execution without a selected, complete card. Direct Work is allowed only after affirmative eligibility and creates no card or Governance Artifact.
 - Do not resume, hand off, or derive work from a completed card while its linked-artifact drift is unresolved. Unrelated cards and unlinked project work may continue.
-- Stay inside card scope and target workspace.
+- Stay inside card scope and target workspace for Governed Work; keep Direct Work inside its explicitly established scope and workspace.
 - Use project-native commands and local conventions.
 - Block on material ambiguity; do not invent requirements.
 - Preserve real verification evidence.
@@ -161,9 +173,9 @@ Work is done only when:
 - [ ] Acceptance criteria are satisfied.
 - [ ] Relevant project checks ran and passed.
 - [ ] Changed files were reviewed against scope.
-- [ ] Verification evidence is recorded on Kanban card.
-- [ ] Kanban status is accurate.
-- [ ] Linked artifacts (brief/spec/plan) reflect completion — mark as done, superseded, or final; do not leave them in active/progress state.
+- [ ] Governed Work records verification evidence on its Kanban card, or Direct Work reports exact evidence in its scoped result.
+- [ ] Governed Work Kanban status is accurate.
+- [ ] Governed Work linked artifacts reflect completion — mark them done, superseded, or final; do not leave them in active/progress state.
 - [ ] Repo is restartable from documented verification path.
 - [ ] Remaining limits or blockers are explicit.
 

@@ -40,6 +40,103 @@ _workspace = _routing_core.workspace
 logger = logging.getLogger(__name__)
 
 
+WORK_MODE_SKILLS = {
+    "investigation": "diagnosing-bugs",
+    "implementation": "implement",
+    "brainstorming": "brainstorming",
+    "clarification": "brainstorming",
+    "verification": "verification-before-completion",
+    "recovery": "executing-plans",
+}
+
+WORK_MODES = frozenset(WORK_MODE_SKILLS)
+WORK_SIZES = frozenset({"XS", "S", "M", "L", "XL"})
+
+_DEFAULT_OUTPUTS = {
+    "spec": "docs/specs/<CARD-ID>.md",
+    "plan": "docs/plans/<CARD-ID>.md",
+    "wayfinder": "docs/wayfinding/<MAP-ID>.md",
+    "handoff": "docs/handoffs/<CARD-ID>.md",
+}
+
+
+def format_work_guidance(
+    *,
+    work_mode: str,
+    work_size: str | None,
+    size_rationale: str | None,
+    eligibility: str,
+    risk_impact: str,
+    canonical_verification: str | None = None,
+    output_overrides: dict[str, str] | None = None,
+) -> str:
+    """Render bounded, advisory routing guidance for Hermes.
+
+    This formatter deliberately does not decide eligibility, create records, call
+    ``skill_view``, or inspect the selected skill.  Hermes supplies the facts and
+    makes the affirmative Direct Work decision.
+    """
+    mode = work_mode if work_mode in WORK_MODES else "clarification"
+    skill = WORK_MODE_SKILLS[mode]
+    outputs = dict(_DEFAULT_OUTPUTS)
+    if output_overrides:
+        outputs.update({key: value for key, value in output_overrides.items() if key in outputs})
+
+    if eligibility == "eligible" and work_size in {"XS", "S"} and risk_impact == "none":
+        route = "Direct Work"
+        route_id = "direct-no-card"
+        output = (
+            "Route: direct-no-card (Direct Work). Output: Delivery Change + conversation result; "
+            "no Kanban Card, Links field, Governance Artifact, or replacement execution record."
+        )
+    elif eligibility == "unknown" or work_size not in WORK_SIZES or risk_impact == "unknown":
+        route = "Clarification"
+        route_id = "clarification"
+        output = (
+            "Route: Clarification. Permit conversation-led brainstorming or read-only investigation "
+            "only; no repository mutation, implementation, Kanban Card, working note, or Governance Artifact."
+        )
+    else:
+        route = "Governed Work"
+        route_id = "governed"
+        output = (
+            "Route: Governed Work. Start and validate a build-ready Kanban Card; use conditional "
+            f"Spec/Plan outputs ({outputs['spec']}; {outputs['plan']}) when behavior, contract, ordering, "
+            "investigation, risk, rollback, or layered verification requires them. No Brief."
+        )
+
+    size_text = work_size or "unknown"
+    rationale = size_rationale or "unknown shaping evidence"
+    verification = canonical_verification or "unknown canonical verification"
+    return (
+        f"[ginflow work guidance: work-mode={mode}; route={route_id}; work-size={size_text}; "
+        f"size-rationale={rationale}; Risk Impact={risk_impact}; candidate skill: {skill}. "
+        f"Before acting, Hermes must call skill_view(name='{skill}'). "
+        f"{output} Canonical verification: {verification}. "
+        "Direct Work Eligibility must be affirmative: clear requirements and target behavior; "
+        "known bug root cause; genuine XS/S; localized reversible scope; no actual Risk Impact; "
+        "no Governance Artifact need; known verification; project-local permission; unowned single-worker workspace. "
+        "Risky keywords alone are not Risk Impact. The plugin provides guidance only: it never calls skill_view, "
+        "creates cards or Governance Artifacts, mutates Kanban, or mechanically authorizes Direct Work. "
+        "If scope, clarity, ownership, verification, or impact changes, stop mutation and reclassify before continuing. "
+        f"Canonical optional outputs remain {outputs['wayfinder']} and {outputs['handoff']}.]"
+    )
+
+
+def _configured_output_overrides() -> dict[str, str]:
+    """Read explicit project-local canonical output overrides, if configured."""
+    return {
+        key: value
+        for key, value in (
+            ("spec", os.environ.get("GINFLOW_OUTPUT_SPEC", "")),
+            ("plan", os.environ.get("GINFLOW_OUTPUT_PLAN", "")),
+            ("wayfinder", os.environ.get("GINFLOW_OUTPUT_WAYFINDER", "")),
+            ("handoff", os.environ.get("GINFLOW_OUTPUT_HANDOFF", "")),
+        )
+        if value
+    }
+
+
 def _parse_skill_list(raw: str) -> set[str]:
     """Parse comma/newline-delimited skill env values into canonical names."""
     names: set[str] = set()
@@ -144,6 +241,14 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
             "requirements are clear, or brainstorming when requirements are unclear. "
             "Then choose artifact level, shape work, or create a card. Load and follow "
             "the `plan` skill before creating a plan."
+        )
+        context += " " + format_work_guidance(
+            work_mode="clarification",
+            work_size=None,
+            size_rationale=None,
+            eligibility="unknown",
+            risk_impact="unknown",
+            output_overrides=_configured_output_overrides(),
         )
     elif route_name == "needs_card_selection":
         details = "; ".join(f"{item['id']}: {item['title']}" for item in candidates)

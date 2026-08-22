@@ -47,3 +47,37 @@ _Avoid_: Durable Artifact, output document
 **Delivery Change**:
 A modification to the product, project documentation, tests, configuration, or supporting implementation that delivers the requested result. It is not a Governance Artifact merely because it persists in the repository.
 _Avoid_: Artifact
+
+## Routing and output contract
+
+Ginflow has exactly three routing outcomes:
+
+- **Direct Work**: affirmatively eligible XS/S work. Declare `Route: direct-no-card`, Work Mode, Work Size, size rationale, output contract, and canonical verification in conversation. Produce the Delivery Change and conversation result only; create no Kanban Card, `Links` field, Brief, Governance Artifact, or replacement execution record.
+- **Governed Work**: known M/L/XL size, actual Risk Impact, Governance Artifact need, or another known disqualifier. Use a build-ready Kanban Card. Add `docs/specs/<CARD-ID>.md` when behavior or contract can drift and `docs/plans/<CARD-ID>.md` when ordering, investigation, risk, rollback, coordination, or layered verification matters.
+- **Clarification**: unresolved requirements, cause, Work Size, Risk Impact, workspace ownership, Governance Artifact need, or canonical verification. Permit conversation-led brainstorming and read-only investigation only; do not mutate the repository or create a card, working note, or Governance Artifact until facts are established.
+
+Direct Work Eligibility is fail-closed and requires affirmative evidence for clear requirements and target behavior, known bug root cause, genuine XS/S size, localized reversible scope, no actual Risk Impact, no Governance Artifact need, known canonical verification, project-local permission, and an unowned single-worker workspace. Risky keywords and raw file count are not evidence by themselves. If scope, clarity, ownership, verification, or impact changes after Direct Work begins, stop mutation and reclassify before continuing.
+
+Work Size is evaluated from clarity, cause/target knowledge, affected components and owners, contract impact, ordering, operational concerns, verification layers, and split needs—not title wording, word count, file count, or semantic similarity. Governed Work cards record `Work-mode`, `Work-size`, and `Size-rationale`.
+
+Canonical output precedence is: target-project local rules, explicit route/card contract, Ginflow matrix, selected skill instructions, then skill defaults. Adapt selected-skill output instructions into the chosen Spec, Plan, Wayfinder, or Handoff rather than creating duplicates. `.hermes/plans/` is temporary session-plan storage unless target-project rules explicitly promote it.
+
+The plugin injects deterministic candidate skill guidance; Hermes must call `skill_view(name='...')` before acting. The plugin does not inspect skills, perform semantic classification, create cards or Governance Artifacts, mutate Kanban, or mechanically authorize Direct Work.
+
+## Feedback boundary
+
+Feedback v1 is a pure, normalized lifecycle event contract for Governed Work only. It is not telemetry, analytics, persistence, notification, orchestration, or a classifier. Events require a stable `event_id` and Kanban `task_id`; Direct Work emits no normalized feedback event in v1. Existing lifecycle owners remain responsible for persistence and mutation.
+
+Supported signals and next actions:
+
+| Signal | Next action |
+|---|---|
+| `verification_passed` | `none` |
+| `verification_failed` | `investigate` |
+| `gate_rejected` | `repair_artifacts` |
+| `artifact_drift` | `stop_and_inspect` |
+| `blocked` | `investigate` |
+| `recovered` | `resume` |
+| `retry_exhausted` | `notify_human` |
+| `human_corrected` | `resume` |
+| `completed` | `none` |

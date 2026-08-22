@@ -2,7 +2,7 @@
 
 ## Gate
 
-Pre-card work may brainstorm, route, size, inspect read-only context, choose artifacts, and draft card content. Any target artifact creation, implementation investigation, code change, dispatch, progress, verification, completion, or handoff requires one selected card.
+Pre-card work may brainstorm, route, size, inspect read-only context, choose artifacts, and draft card content. Clarification remains read-only. Eligible XS/S Direct Work is the explicit exception: after every eligibility factor is affirmative, its Delivery Change may proceed without a card or Governance Artifact. Governed Work still requires one selected card before implementation investigation, code change, dispatch, progress, verification, completion, or handoff.
 
 No selected card blocks execution. Selected card requires ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing field blocks execution until repaired.
 
@@ -67,6 +67,10 @@ Workspace rule:
 - `worktree` for isolated code changes
 
 Do not leave project work in scratch workspace if files must be read from repo.
+
+## Feedback boundary
+
+Feedback v1 is a pure normalized contract for Governed Work lifecycle signals. It requires a stable `event_id` and Kanban `task_id`; Direct Work is excluded in v1 because it has no card identity. The builder does not persist events, notify, mutate Kanban, or infer work. Supported signals and next actions are defined in `CONTEXT.md`.
 
 ## Read-only background watcher
 
