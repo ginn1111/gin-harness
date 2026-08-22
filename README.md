@@ -14,6 +14,16 @@ This repo contains no profile identity, profile manifest, profile registry, prov
 
 No profile names or profile package files belong here.
 
+## Ginflow architecture
+
+Gin-harness is Hermes-heavy: Hermes owns runtime/profile routing, Kanban state and tools, skill loading, and lifecycle execution. Ginflow adds the routing and validation model around those primitives; `ginflow-gate` injects bounded guidance and enforces completion checks.
+
+The mental model is:
+
+`Prompt → routing and validation → work mode → clarity → size and risk → Direct Work, Governed Work, or Clarification`
+
+The [canonical Draw.io architecture](docs/architecture/gin-harness-system.drawio) is the source of truth. The [Ginflow mental model](docs/architecture/ginflow-flow.md) is a derived GitHub-readable explanation; update Draw.io first when workflow behavior changes.
+
 ## Hermes-native profile lifecycle
 
 ```bash
@@ -68,6 +78,7 @@ Restart profile sessions after apply.
 | `skills/ginflow/` | Shared workflow, templates, validator, tests | `skills/ginflow/SKILL.md` |
 | `skills/ginflow-workspace/` | Eval evidence, including gate rejection and independent-profile coverage | inline |
 | `plugins/ginflow-gate/` | Blocking Kanban completion policy | source code |
+| `docs/architecture/` | Canonical Draw.io source and derived Ginflow mental model | `docs/architecture/README.md` |
 | `Makefile` | Active-profile default selection plus setup, verification, and test entry points | inline comments |
 | `scripts/setup.sh` | Integration preview/apply for active or explicitly named profiles | `INSTALL.md` §3 |
 | `scripts/verify.sh` | Generic integration and harness verification | `INSTALL.md` §3 |
