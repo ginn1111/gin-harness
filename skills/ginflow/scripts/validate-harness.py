@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import os
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -10,6 +13,122 @@ if str(LIB) not in sys.path:
     sys.path.insert(0, str(LIB))
 
 from harness_core import artifact_gate, check, has, linked_artifacts, load_kanban_card, normalize_card
+
+
+COMMAND_TIMEOUT = 5
+PROFILE_RE = re.compile(r"^\s*[◆*]\s*([A-Za-z0-9][A-Za-z0-9._-]*)\b")
+SERVER_RE = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s+")
+
+
+def run_bounded(command, *, env=None, cwd=None):
+    try:
+        return subprocess.run(
+            command,
+            cwd=cwd,
+            env=env,
+            text=True,
+            capture_output=True,
+            timeout=COMMAND_TIMEOUT,
+        )
+    except FileNotFoundError:
+        return None
+    except subprocess.TimeoutExpired:
+        return "timeout"
+
+
+def infer_profile():
+    explicit = os.environ.get("HERMES_PROFILE", "").strip()
+    if explicit:
+        return explicit
+    result = run_bounded(["hermes", "profile", "list"])
+    if not isinstance(result, subprocess.CompletedProcess):
+        return None
+    for line in result.stdout.splitlines():
+        match = PROFILE_RE.match(line)
+        if match:
+            return match.group(1)
+    return None
+
+
+def optional_row(tool, state, severity, evidence, recommendation=""):
+    return {
+        "pass": severity == "pass",
+        "message": f"{tool}: {state}",
+        "severity": severity,
+        "tool": tool,
+        "state": state,
+        "evidence": evidence,
+        "recommendation": recommendation,
+    }
+
+
+def inspect_codegraph(target):
+    tool = "codegraph"
+    if target is None:
+        return optional_row(tool, "not_exercised", "warning", "target workspace not supplied", "Run with --target <workspace>")
+    if shutil.which(tool) is None:
+        return optional_row(tool, "missing", "warning", "CodeGraph executable not found", "Install CodeGraph")
+    if not (target / ".codegraph").is_dir():
+        return optional_row(
+            tool,
+            "not_initialized",
+            "warning",
+            "target has no .codegraph directory",
+            f"Run `codegraph init {target}`",
+        )
+    result = run_bounded([tool, "status", str(target)])
+    if result == "timeout":
+        return optional_row(tool, "timeout", "warning", "codegraph status timed out", f"Run `codegraph status {target}`")
+    if result is None:
+        return optional_row(tool, "missing", "warning", "CodeGraph executable disappeared", "Install CodeGraph")
+    output = f"{result.stdout}\n{result.stderr}".lower()
+    if any(word in output for word in ("not initialized", "not initialised", "no index")):
+        return optional_row(
+            tool,
+            "not_initialized",
+            "warning",
+            "CodeGraph reports that the target is not indexed",
+            f"Run `codegraph init {target}`",
+        )
+    if any(word in output for word in ("stale", "outdated", "needs sync", "changes pending")):
+        return optional_row(tool, "stale", "warning", "CodeGraph index reports pending changes", f"Run `codegraph sync {target}`")
+    if result.returncode != 0:
+        return optional_row(tool, "unavailable", "warning", "CodeGraph status failed", f"Run `codegraph status {target}`")
+    return optional_row(tool, "healthy", "pass", "CodeGraph index status completed successfully")
+
+
+def inspect_mcp(profile):
+    if not profile:
+        return [optional_row("mcp", "not_exercised", "warning", "current Hermes profile could not be inferred", "Set HERMES_PROFILE or select an active Hermes profile")]
+    listed = run_bounded(["hermes", "-p", profile, "mcp", "list"])
+    if listed == "timeout":
+        return [optional_row("mcp", "timeout", "warning", f"MCP list timed out for profile {profile}", f"Run `hermes -p {profile} mcp list`")]
+    if listed is None or listed.returncode != 0:
+        return [optional_row("mcp", "unavailable", "warning", f"MCP list failed for profile {profile}", f"Run `hermes -p {profile} mcp list`")]
+    servers = []
+    for line in listed.stdout.splitlines():
+        match = SERVER_RE.match(line)
+        if match and match.group(1).lower() not in {"name", "mcp"}:
+            servers.append(match.group(1))
+    if not servers:
+        return [optional_row("mcp", "none_configured", "pass", f"no configured MCP servers found for profile {profile}")]
+    rows = []
+    for server in servers:
+        result = run_bounded(["hermes", "-p", profile, "mcp", "test", server])
+        if result == "timeout":
+            rows.append(optional_row(server, "timeout", "warning", f"MCP test timed out for profile {profile}", f"Run `hermes -p {profile} mcp test {server}`"))
+        elif result is None or result.returncode != 0:
+            rows.append(optional_row(server, "failed", "warning", f"MCP test failed for profile {profile}", f"Run `hermes -p {profile} mcp test {server}`"))
+        else:
+            rows.append(optional_row(server, "connected", "pass", f"MCP test passed for profile {profile}"))
+    return rows
+
+
+def inspect_optional_tools(target):
+    rows = [inspect_codegraph(target)]
+    rows.extend(inspect_mcp(infer_profile()))
+    status = "warning" if any(row["severity"] == "warning" for row in rows) else "pass"
+    return {"status": status, "checks": rows}
 
 
 def main():
@@ -57,6 +176,7 @@ def main():
     linked_docs = [candidate for _, candidate in linked_artifacts(card, target)]
     linked_artifact_exists = bool(linked_docs and any(path.is_file() for path in linked_docs))
     artifact_status = artifact_gate(card, target)
+    optional_tools = inspect_optional_tools(target)
 
     verify_match = re.search(r"(?:Canonical (?:verification )?command|Verification)[^\n]*:\s*`?([^`\n]+)", local, re.I)
     verification_documented = bool(verify_match)
@@ -109,6 +229,7 @@ def main():
             (has(ginflow, "## Optional session handoff export"), "Optional export exists", "warning"),
             (not target or verification_documented, "Clean restart verification path is documented when target supplied", "blocker"),
         ]),
+        "optional_tools": optional_tools,
     }
     result = {
         "setup_repo": str(root),
@@ -118,7 +239,11 @@ def main():
         "card_load_error": card_load_error,
         "subsystems": subsystems,
     }
-    statuses = {item["status"] for item in subsystems.values()}
+    statuses = {
+        item["status"]
+        for name, item in subsystems.items()
+        if name != "optional_tools"
+    }
     result["status"] = "blocker" if "blocker" in statuses else "warning" if "warning" in statuses else "pass"
     if args.json:
         print(json.dumps(result, indent=2))

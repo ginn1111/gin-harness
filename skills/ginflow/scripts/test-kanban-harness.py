@@ -109,6 +109,54 @@ def main():
         assert spec_valid.returncode == 0, spec_valid.stdout + spec_valid.stderr
         assert json.loads(spec_valid.stdout)["status"] == "pass"
 
+        fake_bin = target / "fake-bin"
+        fake_bin.mkdir()
+        (fake_bin / "codegraph").write_text(
+            "#!/usr/bin/env python3\n"
+            "import os, sys\n"
+            "if sys.argv[1:2] == ['status'] and os.environ.get('FAKE_CODEGRAPH_STATE') == 'missing':\n"
+            "    print('CodeGraph is not initialized', file=sys.stderr)\n"
+            "    raise SystemExit(1)\n"
+            "print('CodeGraph index healthy')\n"
+        )
+        (fake_bin / "hermes").write_text(
+            "#!/usr/bin/env python3\n"
+            "import sys\n"
+            "args = sys.argv\n"
+            "if args[-2:] == ['mcp', 'list']:\n"
+            "    print('MCP Servers:\\n  codegraph  codegraph serve --mcp  all  ✓ enabled')\n"
+            "elif len(args) >= 2 and args[-2] == 'test':\n"
+            "    print('connected')\n"
+            "else:\n"
+            "    raise SystemExit(1)\n"
+        )
+        for executable in ("codegraph", "hermes"):
+            (fake_bin / executable).chmod(0o755)
+        (target / ".codegraph").mkdir()
+        optional_env = os.environ | {
+            "HERMES_PROFILE": "test-profile",
+            "PATH": f"{fake_bin}:{os.environ['PATH']}",
+        }
+        optional = run(target, card, env=optional_env)
+        assert optional.returncode == 0, optional.stdout + optional.stderr
+        optional_result = json.loads(optional.stdout)
+        assert optional_result["subsystems"]["optional_tools"]["status"] == "pass"
+        assert any(
+            row["tool"] == "codegraph" and row["state"] == "healthy"
+            for row in optional_result["subsystems"]["optional_tools"]["checks"]
+        )
+
+        missing_env = optional_env | {"FAKE_CODEGRAPH_STATE": "missing"}
+        missing_index = run(target, card, env=missing_env)
+        assert missing_index.returncode == 0, missing_index.stdout + missing_index.stderr
+        missing_index_result = json.loads(missing_index.stdout)
+        codegraph_warning = next(
+            row for row in missing_index_result["subsystems"]["optional_tools"]["checks"]
+            if row["tool"] == "codegraph"
+        )
+        assert codegraph_warning["state"] == "not_initialized"
+        assert "codegraph init" in codegraph_warning["recommendation"]
+
         kanban_show = {
             "task": {
                 "id": "TEST-1",
