@@ -4,3 +4,6 @@ lib
 pyvenv.cfg
 __pycache__
 .ginflow-install.json
+.hermes/
+.obsidian
+docs/architecture/.$*.drawio.bkp
