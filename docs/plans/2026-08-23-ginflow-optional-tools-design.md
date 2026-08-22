@@ -1,6 +1,6 @@
 # Ginflow Optional CodeGraph and MCP Workspace Checks
 
-**Status: validated design**
+**Status: completed**
 
 ## Goal
 

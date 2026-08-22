@@ -94,7 +94,9 @@ def inspect_codegraph(target):
         return optional_row(tool, "stale", "warning", "CodeGraph index reports pending changes", f"Run `codegraph sync {target}`")
     if result.returncode != 0:
         return optional_row(tool, "unavailable", "warning", "CodeGraph status failed", f"Run `codegraph status {target}`")
-    return optional_row(tool, "healthy", "pass", "CodeGraph index status completed successfully")
+    if any(word in output for word in ("healthy", "up to date", "up-to-date", "current", "indexed")):
+        return optional_row(tool, "healthy", "pass", "CodeGraph index status completed successfully")
+    return optional_row(tool, "malformed", "warning", "CodeGraph status returned unrecognized output", f"Run `codegraph status {target}`")
 
 
 def inspect_mcp(profile):
@@ -252,10 +254,15 @@ def main():
             print(f"{name}: {item['status']}")
             for row in item["checks"]:
                 print(f"  {'PASS' if row['pass'] else 'FAIL'} {row['message']}")
-                if not row["pass"] and row.get("details"):
-                    print(f"    Details: {row['details']}")
-                if not row["pass"] and row.get("resolution"):
-                    print(f"    Resolution: {row['resolution']}")
+                if name == "optional_tools":
+                    print(f"    Evidence: {row['evidence']}")
+                    if row.get("recommendation"):
+                        print(f"    Recommendation: {row['recommendation']}")
+                else:
+                    if not row["pass"] and row.get("details"):
+                        print(f"    Details: {row['details']}")
+                    if not row["pass"] and row.get("resolution"):
+                        print(f"    Resolution: {row['resolution']}")
     return 2 if result["status"] == "blocker" else 0
 
 

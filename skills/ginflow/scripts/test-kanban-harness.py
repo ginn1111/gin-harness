@@ -114,18 +114,38 @@ def main():
         (fake_bin / "codegraph").write_text(
             "#!/usr/bin/env python3\n"
             "import os, sys\n"
-            "if sys.argv[1:2] == ['status'] and os.environ.get('FAKE_CODEGRAPH_STATE') == 'missing':\n"
-            "    print('CodeGraph is not initialized', file=sys.stderr)\n"
-            "    raise SystemExit(1)\n"
-            "print('CodeGraph index healthy')\n"
+            "state = os.environ.get('FAKE_CODEGRAPH_STATE', 'healthy')\n"
+            "if sys.argv[1:2] == ['status']:\n"
+            "    if state == 'missing':\n"
+            "        print('CodeGraph is not initialized', file=sys.stderr); raise SystemExit(1)\n"
+            "    if state == 'stale':\n"
+            "        print('CodeGraph index is stale'); raise SystemExit(0)\n"
+            "    if state == 'unavailable':\n"
+            "        print('status failed', file=sys.stderr); raise SystemExit(1)\n"
+            "    if state == 'malformed':\n"
+            "        print('???'); raise SystemExit(0)\n"
+            "    if state == 'timeout':\n"
+            "        import time; time.sleep(6)\n"
+            "    print('CodeGraph index healthy')\n"
         )
         (fake_bin / "hermes").write_text(
             "#!/usr/bin/env python3\n"
+            "import os, time\n"
             "import sys\n"
             "args = sys.argv\n"
+            "if args[1:3] == ['profile', 'list']:\n"
+            "    if os.environ.get('FAKE_PROFILE_STATE') != 'none': print('◆ marker-profile')\n"
+            "    raise SystemExit(0)\n"
             "if args[-2:] == ['mcp', 'list']:\n"
-            "    print('MCP Servers:\\n  codegraph  codegraph serve --mcp  all  ✓ enabled')\n"
+            "    mode = os.environ.get('FAKE_MCP_STATE', 'healthy')\n"
+            "    if mode == 'timeout': time.sleep(6)\n"
+            "    if mode == 'unavailable': raise SystemExit(1)\n"
+            "    if mode == 'none': print('MCP Servers:')\n"
+            "    else: print('MCP Servers:\\n  codegraph  codegraph serve --mcp  all  ✓ enabled')\n"
             "elif len(args) >= 2 and args[-2] == 'test':\n"
+            "    mode = os.environ.get('FAKE_MCP_STATE', 'healthy')\n"
+            "    if mode == 'test-timeout': time.sleep(6)\n"
+            "    if mode == 'test-failed': raise SystemExit(1)\n"
             "    print('connected')\n"
             "else:\n"
             "    raise SystemExit(1)\n"
@@ -156,6 +176,38 @@ def main():
         )
         assert codegraph_warning["state"] == "not_initialized"
         assert "codegraph init" in codegraph_warning["recommendation"]
+
+        for state, expected in (("stale", "stale"), ("unavailable", "unavailable"), ("malformed", "malformed"), ("timeout", "timeout")):
+            result = json.loads(run(target, card, env=optional_env | {"FAKE_CODEGRAPH_STATE": state}).stdout)
+            row = next(row for row in result["subsystems"]["optional_tools"]["checks"] if row["tool"] == "codegraph")
+            assert row["state"] == expected, row
+            assert row["severity"] == "warning", row
+
+        human = subprocess.run(
+            ["python3", str(SCRIPT), "--setup-repo", str(ROOT), "--target", str(target), "--card", str(card)],
+            text=True, capture_output=True, env=missing_env,
+        )
+        assert "Recommendation:" in human.stdout
+        assert "codegraph init" in human.stdout
+
+        marker_env = optional_env | {"HERMES_PROFILE": ""}
+        marker_result = json.loads(run(target, card, env=marker_env).stdout)
+        assert any("marker-profile" in row["evidence"] for row in marker_result["subsystems"]["optional_tools"]["checks"])
+        explicit_result = json.loads(run(target, card, env=optional_env).stdout)
+        assert any("test-profile" in row["evidence"] for row in explicit_result["subsystems"]["optional_tools"]["checks"])
+        no_profile = json.loads(run(target, card, env=optional_env | {"PATH": f"{fake_bin}:{Path(sys.executable).parent}", "HERMES_PROFILE": "", "FAKE_PROFILE_STATE": "none"}).stdout)
+        assert any(row["tool"] == "mcp" and row["state"] == "not_exercised" for row in no_profile["subsystems"]["optional_tools"]["checks"])
+
+        for state, expected in (("none", "none_configured"), ("unavailable", "unavailable"), ("timeout", "timeout"), ("test-failed", "failed"), ("test-timeout", "timeout")):
+            env = optional_env | {"FAKE_MCP_STATE": state}
+            result = json.loads(run(target, card, env=env).stdout)
+            mcp_rows = [row for row in result["subsystems"]["optional_tools"]["checks"] if row["tool"] == "mcp" or row["tool"] == "codegraph"]
+            if state in {"test-failed", "test-timeout"}:
+                server_row = next(row for row in result["subsystems"]["optional_tools"]["checks"] if row["tool"] == "codegraph" and "MCP test" in row["evidence"])
+                assert server_row["state"] == expected
+            else:
+                mcp_row = next(row for row in result["subsystems"]["optional_tools"]["checks"] if row["tool"] == "mcp")
+                assert mcp_row["state"] == expected, mcp_row
 
         kanban_show = {
             "task": {
