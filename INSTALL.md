@@ -42,6 +42,24 @@ make apply PROFILES="profile-a"
 make verify PROFILES="profile-a"
 ```
 
+### Install all-profile Ginflow integration
+
+Use the dedicated installer when the universal agent skill and every Hermes profile must receive Ginflow:
+
+```bash
+make install
+```
+
+This copies `skills/ginflow` to `~/.agent/skills/ginflow`, copies `plugins/ginflow-gate` into every installed profile, and updates each profile's native config. Installer ownership is recorded in the setup-repo-root `.ginflow-install.json`, which is gitignored.
+
+Remove only installer-owned files with:
+
+```bash
+make uninstall
+```
+
+Uninstall restores installer backups and refuses to delete paths changed after installation. Resolve reported conflicts manually, then rerun `make uninstall`.
+
 Setup requires existing profiles. It adds only:
 
 - Ginflow skill

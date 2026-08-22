@@ -52,10 +52,14 @@ make setup                         # preview currently active profile
 make setup PROFILES="profile-a"   # preview named profile
 make apply PROFILES="profile-a"   # apply integration wiring
 make verify PROFILES="profile-a"
+make install                       # copy Ginflow skill/plugin to all profiles
+make uninstall                     # remove installer-owned integrations
 make test
 ```
 
 `make apply` requires profiles already installed. It does not create profiles and does not touch `SOUL.md`, `distribution.yaml`, model/provider identity, `.env`, memory, sessions, cron, or release metadata.
+
+For all-profile installation, use `make install`. It copies the universal skill to `~/.agent/skills/ginflow`, copies `ginflow-gate` into every installed profile, updates profile config integrations, and records ownership in the gitignored root `.ginflow-install.json`. Use `make uninstall` for ownership-aware cleanup; changed user files are preserved and reported as conflicts.
 
 Profile location defaults to `$HERMES_REAL_HOME/.hermes/profiles`, or real user home when `HERMES_REAL_HOME` is unset. Set `HERMES_PROFILES_DIR` to override it, useful for test or nonstandard installs.
 
@@ -82,6 +86,7 @@ Restart profile sessions after apply.
 | `docs/architecture/` | Canonical Draw.io source and derived Ginflow mental model | `docs/architecture/README.md` |
 | `Makefile` | Active-profile default selection plus setup, verification, and test entry points | inline comments |
 | `scripts/setup.sh` | Integration preview/apply for active or explicitly named profiles | `INSTALL.md` §3 |
+| `scripts/install.sh` | Copy Ginflow universal skill and plugin into all profiles; uninstall owned copies | source code |
 | `scripts/verify.sh` | Generic integration and harness verification | `INSTALL.md` §3 |
 | `scripts/test-setup.sh` | Regression test for active-profile-only default selection | source code |
 | `scripts/community-setup.sh` | Optional community skill checkout | source code |

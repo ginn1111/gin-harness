@@ -1,4 +1,4 @@
-.PHONY: setup apply verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test harness-core-test plugin-test status-transition-test guidance-test
+.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test harness-core-test plugin-test status-transition-test guidance-test
 
 status-transition-test:
 	bash skills/ginflow/scripts/test-status-transition.sh
@@ -25,6 +25,14 @@ setup:
 ## Apply integrations to existing Hermes-native profiles
 apply:
 	./scripts/setup.sh --apply $(PROFILES)
+
+## Install Ginflow skill and plugin into every Hermes profile
+install:
+	bash scripts/install.sh install
+
+## Remove installer-owned Ginflow integrations
+uninstall:
+	bash scripts/install.sh uninstall
 
 ## Verify integrations in existing profiles via ginflow harness
 verify:
@@ -64,7 +72,10 @@ lint:
 	@echo "lint ok"
 
 ## Run deterministic repository tests
-test: lint setup-test harness-core-test artifact-guidance-test kanban-harness-test plugin-test guidance-test
+test: lint setup-test harness-core-test artifact-guidance-test kanban-harness-test plugin-test guidance-test install-test
+
+install-test:
+	bash scripts/test-install.sh
 
 harness-core-test:
 	python3 skills/ginflow/scripts/test-harness-core.py
