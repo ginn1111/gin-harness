@@ -6,4 +6,5 @@ __pycache__
 .ginflow-install.json
 .hermes/
 .obsidian
+.codegraph/
 docs/architecture/.$*.drawio.bkp
