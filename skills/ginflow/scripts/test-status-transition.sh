@@ -22,6 +22,10 @@ printf '#!/usr/bin/env bash\nset -eu\nprintf "verify ok\\n"\n' > "$TARGET/verify
 chmod +x "$TARGET/verify.sh"
 
 git init -q "$TARGET"
+git -C "$TARGET" config user.name 'Ginflow Test'
+git -C "$TARGET" config user.email 'ginflow-test@example.invalid'
+git -C "$TARGET" add AGENTS.md docs/briefs/TRANSITION-1.md verify.sh
+git -C "$TARGET" commit -qm 'initial test fixture'
 BODY=$(printf 'Objective: Validate startup before claim\nScope:\n- routing\nAcceptance:\n- valid docs reach running\nLinks:\n- docs/briefs/TRANSITION-1.md')
 TASK_JSON=$(hermes kanban create 'TRANSITION-1 — validated startup transition' --body "$BODY" --assignee ginb --workspace "dir:$TARGET" --initial-status blocked --json)
 TASK_ID=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])' <<<"$TASK_JSON")

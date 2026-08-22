@@ -33,6 +33,7 @@ chmod +x "$FAKE_BIN/hermes"
 export PATH="$FAKE_BIN:$PATH"
 export HERMES_REAL_HOME="$HOME_ROOT"
 export HERMES_PROFILES_DIR="$PROFILES"
+export GINFLOW_INSTALL_MANIFEST="$TMP/.ginflow-install.json"
 
 assert_file() { [[ -e "$1" ]] || { echo "missing: $1" >&2; exit 1; }; }
 
@@ -40,7 +41,7 @@ bash "$ROOT/scripts/install.sh" install
 assert_file "$HOME_ROOT/.agent/skills/ginflow/SKILL.md"
 assert_file "$PROFILES/alpha/plugins/ginflow-gate/plugin.yaml"
 assert_file "$PROFILES/beta/plugins/ginflow-gate/plugin.yaml"
-assert_file "$ROOT/.ginflow-install.json"
+assert_file "$GINFLOW_INSTALL_MANIFEST"
 python3 - "$PROFILES/alpha/config.yaml" <<'PY'
 import sys, yaml
 config = yaml.safe_load(open(sys.argv[1]))
@@ -64,7 +65,7 @@ if bash "$ROOT/scripts/install.sh" uninstall >/dev/null 2>&1; then
   exit 1
 fi
 assert_file "$PROFILES/alpha/plugins/ginflow-gate/plugin.yaml"
-assert_file "$ROOT/.ginflow-install.json"
+assert_file "$GINFLOW_INSTALL_MANIFEST"
 
 # Restore the managed copy, then uninstall cleanly.
 rm -rf "$PROFILES/alpha/plugins/ginflow-gate"
@@ -74,6 +75,6 @@ bash "$ROOT/scripts/install.sh" uninstall
 [[ ! -e "$PROFILES/alpha/plugins/ginflow-gate" ]]
 [[ -L "$PROFILES/beta/plugins/ginflow-gate" ]]
 [[ "$(readlink "$PROFILES/beta/plugins/ginflow-gate")" == "$ROOT/plugins/ginflow-gate" ]]
-[[ ! -e "$ROOT/.ginflow-install.json" ]]
+[[ ! -e "$GINFLOW_INSTALL_MANIFEST" ]]
 
 echo "install/uninstall tests passed"

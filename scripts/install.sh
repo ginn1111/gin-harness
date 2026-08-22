@@ -23,7 +23,7 @@ except ImportError as exc:
 
 ROOT = Path(sys.argv[1]).resolve()
 ARGS = sys.argv[2:]
-MANIFEST = ROOT / ".ginflow-install.json"
+MANIFEST = Path(os.environ.get("GINFLOW_INSTALL_MANIFEST", str(ROOT / ".ginflow-install.json"))).expanduser().resolve()
 VERSION = 1
 PROFILE_RE = re.compile(r"^\s*[◆*]?([A-Za-z0-9][A-Za-z0-9._-]*)\s+")
 
