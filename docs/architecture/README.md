@@ -12,5 +12,6 @@ Update Draw.io first when workflow behavior changes, then update the Mermaid exp
 ## Implementation boundaries
 
 - [Ginflow skill](../../skills/ginflow/SKILL.md) — shared workflow, routing, validation, artifacts, and verification guidance.
+- [Ginflow core](../../core/ginflow-core/) — framework-agnostic routing and harness validation primitives.
 - [`ginflow-gate` plugin](../../plugins/ginflow-gate/) — routing-context injection and the blocking Kanban completion gate.
 - [Work-size and output contract](../specs/GINFLOW-WORK-SIZE-OUTPUT-DOCS.md) — conditional Governance Artifact and Direct Work rules.

@@ -3,7 +3,7 @@
 Objective: Extract routing policy into framework-agnostic `ginflow-core` while keeping Hermes integration in `ginflow-gate`.
 
 Scope:
-- Move workspace/card route decisions into `skills/ginflow/lib/routing.py`.
+- Move workspace/card route decisions into `core/ginflow-core/routing.py`.
 - Keep subprocess, environment, cwd, hook registration, and context formatting in `plugins/ginflow-gate/routing.py`.
 - Preserve deterministic routing behavior and regression coverage.
 

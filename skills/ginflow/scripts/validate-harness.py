@@ -5,7 +5,7 @@ import re
 import sys
 from pathlib import Path
 
-LIB = Path(__file__).resolve().parents[1] / "lib"
+LIB = Path(__file__).resolve().parents[3] / "core/ginflow-core"
 if str(LIB) not in sys.path:
     sys.path.insert(0, str(LIB))
 

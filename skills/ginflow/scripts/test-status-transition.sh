@@ -39,7 +39,7 @@ import sys
 from pathlib import Path
 
 root, target, task_id = map(Path, sys.argv[1:])
-spec = importlib.util.spec_from_file_location("harness_core", root / "skills/ginflow/lib/harness_core.py")
+spec = importlib.util.spec_from_file_location("harness_core", root / "core/ginflow-core/harness_core.py")
 assert spec and spec.loader
 core = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(core)

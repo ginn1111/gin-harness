@@ -13,7 +13,7 @@
 
 ## Key directories
 - `skills/ginflow/` — shared workflow, templates, validator, tests
-- `skills/ginflow/lib/` — reusable harness core library
+- `core/ginflow-core/` — reusable Ginflow core library
 - `plugins/ginflow-gate/` — blocking Kanban completion policy plugin
 - `templates/` — target-project starter docs
 - `scripts/` — setup integration scripts

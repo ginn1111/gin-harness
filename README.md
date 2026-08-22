@@ -9,7 +9,7 @@ This repo contains no profile identity, profile manifest, profile registry, prov
 | Owner | Content |
 |---|---|
 | Hermes profile distribution | `SOUL.md`, `distribution.yaml`, native `config.yaml` defaults, profile skills/cron, version, release source |
-| This harness repo | `skills/ginflow`, harness/tests, optional community skills, CodeGraph MCP/tool wiring, target-project starter |
+| This harness repo | `core/ginflow-core`, `skills/ginflow`, harness/tests, optional community skills, CodeGraph MCP/tool wiring, target-project starter |
 | Target project | code, tests, `AGENTS.md` / `.hermes.md`, briefs/specs/plans/handoffs |
 
 No profile names or profile package files belong here.
@@ -76,6 +76,7 @@ Restart profile sessions after apply.
 | Path | Purpose | Docs |
 |---|---|---|
 | `skills/ginflow/` | Shared workflow, templates, validator, tests | `skills/ginflow/SKILL.md` |
+| `core/ginflow-core/` | Framework-agnostic Ginflow routing and harness core | source code |
 | `skills/ginflow-workspace/` | Eval evidence, including gate rejection and independent-profile coverage | inline |
 | `plugins/ginflow-gate/` | Blocking Kanban completion policy | source code |
 | `docs/architecture/` | Canonical Draw.io source and derived Ginflow mental model | `docs/architecture/README.md` |

@@ -19,7 +19,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-CORE = Path(__file__).resolve().parents[2] / "skills/ginflow/lib/harness_core.py"
+CORE = Path(__file__).resolve().parents[2] / "core/ginflow-core/harness_core.py"
 import importlib.util
 
 _spec = importlib.util.spec_from_file_location("ginflow_harness_core", CORE)
@@ -28,7 +28,7 @@ if not _spec or not _spec.loader:
 _core = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_core)
 startup_gate = _core.startup_gate
-CORE_ROUTING = Path(__file__).resolve().parents[2] / "skills/ginflow/lib/routing.py"
+CORE_ROUTING = Path(__file__).resolve().parents[2] / "core/ginflow-core/routing.py"
 _routing_spec = importlib.util.spec_from_file_location("ginflow_routing_core", CORE_ROUTING)
 if not _routing_spec or not _routing_spec.loader:
     raise ImportError(f"unable to load Ginflow routing core: {CORE_ROUTING}")

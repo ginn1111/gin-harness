@@ -14,7 +14,7 @@ Validate linked target-local task documents before a Hermes `todo` or `ready` ca
 ## Scope
 
 - `plugins/ginflow-gate/routing.py`
-- `skills/ginflow/lib/harness_core.py` only if shared startup validation requires changes
+- `core/ginflow-core/harness_core.py` only if shared startup validation requires changes
 - `plugins/ginflow-gate/test_ginflow_gate.py`
 - `skills/ginflow/scripts/test-harness-core.py`
 - This brief

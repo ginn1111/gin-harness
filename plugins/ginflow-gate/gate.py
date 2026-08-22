@@ -8,7 +8,7 @@ import os
 import subprocess
 from pathlib import Path
 
-CORE = Path(__file__).resolve().parents[2] / "skills/ginflow/lib/harness_core.py"
+CORE = Path(__file__).resolve().parents[2] / "core/ginflow-core/harness_core.py"
 _spec = importlib.util.spec_from_file_location("ginflow_harness_core", CORE)
 if not _spec or not _spec.loader:
     raise ImportError(f"unable to load Ginflow harness core: {CORE}")

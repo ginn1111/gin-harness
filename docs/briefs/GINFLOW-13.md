@@ -9,7 +9,7 @@ Map each Gin-harness system section to its implementation ownership layer in the
 ## Scope
 
 - Inspect both pages in `docs/architecture/gin-harness-system.drawio`.
-- Trace sections to `plugins/`, `skills/`, `skills/ginflow/lib/`, and shared setup docs.
+- Trace sections to `plugins/`, `skills/`, `core/ginflow-core/`, and shared setup docs.
 - Add ownership labels: plugin, core, skill, shared, missing, proposed.
 - Preserve red/green/yellow coverage colors and both pages.
 - Add ownership legend.
