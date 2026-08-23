@@ -23,6 +23,7 @@ def main():
     agents_template = (ROOT / "templates/AGENTS.md").read_text()
 
     artifact_paths = (
+
         "docs/specs/<CARD-ID>.md",
         "docs/plans/<CARD-ID>.md",
         "docs/handoffs/<CARD-ID>.md",
@@ -34,6 +35,7 @@ def main():
 
     require(content, (
         "## Authority and boundaries",
+
         "## Spec",
         "## Plan",
         "## Kanban card",

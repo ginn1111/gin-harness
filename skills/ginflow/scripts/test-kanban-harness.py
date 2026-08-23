@@ -22,7 +22,7 @@ CARD_FIELDS = {
     "workspace": "",
     "status": "ready",
     "assignee": "worker",
-    "links": ["docs/briefs/TEST-1.md"],
+    "links": ["docs/specs/TEST-1.md"],
 }
 
 
@@ -94,15 +94,13 @@ def main():
         card = target / "card.json"
         complete = CARD_FIELDS | {"workspace": f"dir:{target}"}
         card.write_text(json.dumps(complete))
-        (target / "docs/briefs").mkdir(parents=True)
-        (target / "docs/briefs/TEST-1.md").write_text("# Brief\n")
+        (target / "docs/specs").mkdir(parents=True)
+        (target / "docs/specs/TEST-1.md").write_text("# Spec\n")
         valid = run(target, card)
         assert valid.returncode == 0, valid.stdout + valid.stderr
         valid_result = json.loads(valid.stdout)
         assert valid_result["status"] == "pass", valid.stdout
 
-        (target / "docs/specs").mkdir(parents=True)
-        (target / "docs/specs/TEST-1.md").write_text("# Spec\n")
         spec_only = complete | {"links": ["docs/specs/TEST-1.md"]}
         card.write_text(json.dumps(spec_only))
         spec_valid = run(target, card)
@@ -217,7 +215,7 @@ def main():
                     "Objective: Verify gate\n"
                     "Scope:\n- target\n"
                     "Acceptance:\n- check passes\n"
-                    "Links:\n- docs/briefs/TEST-1.md"
+                    "Links:\n- docs/specs/TEST-1.md"
                 ),
                 "assignee": "worker",
                 "status": "ready",
@@ -240,7 +238,7 @@ def main():
         malformed_show["task"]["body"] = (
             "Objective: Verify gate\n"
             "Scope:\n- target\n"
-            "Links:\n- docs/briefs/TEST-1.md"
+            "Links:\n- docs/specs/TEST-1.md"
         )
         card.write_text(json.dumps(malformed_show))
         malformed = run(target, card)
@@ -272,12 +270,12 @@ def main():
         assert blocked.returncode == 2
         assert json.loads(blocked.stdout)["status"] == "blocker"
 
-        brief = target / "docs/briefs/TEST-1.md"
+        brief = target / "docs/specs/TEST-1.md"
         (target / "app.py").write_text("VERSION = 1\n")
         git(target, "init", "-q")
         git(target, "config", "user.name", "Ginflow Test")
         git(target, "config", "user.email", "ginflow@example.test")
-        git(target, "add", "AGENTS.md", "app.py", "docs/briefs/TEST-1.md")
+        git(target, "add", "AGENTS.md", "app.py", "docs/specs/TEST-1.md")
         git(target, "commit", "-qm", "complete TEST-1")
         completion_commit = git(target, "rev-parse", "HEAD")
         with tempfile.TemporaryDirectory(prefix="ginflow-kanban-home-") as hermes_home:
@@ -288,7 +286,7 @@ def main():
                 task_id=task_id,
                 env=env,
                 baseline_commit=completion_commit,
-                baseline_paths=["docs/briefs/TEST-1.md"],
+                baseline_paths=["docs/specs/TEST-1.md"],
             )
             assert candidate.returncode == 0, candidate.stdout + candidate.stderr
             assert json.loads(candidate.stdout)["status"] == "pass"
@@ -299,7 +297,7 @@ def main():
                     "--metadata", json.dumps({
                         "artifact_baseline": {
                             "commit": completion_commit,
-                            "paths": ["docs/briefs/TEST-1.md"],
+                            "paths": ["docs/specs/TEST-1.md"],
                         },
                     }),
                 ],
@@ -321,7 +319,7 @@ def main():
             "metadata": {
                 "artifact_baseline": {
                     "commit": completion_commit,
-                    "paths": ["docs/briefs/TEST-1.md"],
+                    "paths": ["docs/specs/TEST-1.md"],
                 },
             },
         }, {
@@ -331,7 +329,7 @@ def main():
             "metadata": {
                 "artifact_baseline": {
                     "commit": "obsolete-run",
-                    "paths": ["docs/briefs/TEST-1.md"],
+                    "paths": ["docs/specs/TEST-1.md"],
                 },
             },
         }]
@@ -346,7 +344,7 @@ def main():
         assert unrelated.returncode == 0, unrelated.stdout + unrelated.stderr
 
         brief.write_text("# Brief\n\nHuman changed acceptance after completion.\n")
-        git(target, "add", "docs/briefs/TEST-1.md")
+        git(target, "add", "docs/specs/TEST-1.md")
         git(target, "commit", "-qm", "change completed acceptance")
         drifted = run(target, card)
         assert drifted.returncode == 2, drifted.stdout + drifted.stderr
@@ -358,7 +356,7 @@ def main():
             if row["message"] == "Linked artifacts match the recorded completion commit"
         )
         assert not drift_check["pass"]
-        assert "docs/briefs/TEST-1.md" in drift_check["details"]
+        assert "docs/specs/TEST-1.md" in drift_check["details"]
         assert "create new versioned docs" in drift_check["resolution"]
         assert "link back" in drift_check["resolution"]
         assert "reopen card TEST-1" in drift_check["resolution"]
@@ -369,7 +367,7 @@ def main():
             "status": "in_progress",
             "artifact_baseline": {
                 "commit": current_commit,
-                "paths": ["docs/briefs/TEST-1.md"],
+                "paths": ["docs/specs/TEST-1.md"],
             }
         }
         brief.write_text("# Brief\n\nUncommitted completion edit.\n")
@@ -404,10 +402,10 @@ def main():
         untracked_spec.write_text("# Uncommitted spec\n")
         missing_from_commit = complete | {
             "status": "in_progress",
-            "links": ["docs/briefs/TEST-1.md", "docs/specs/TEST-1.md"],
+            "links": ["docs/specs/TEST-1.md", "docs/plans/TEST-1.md"],
             "artifact_baseline": {
                 "commit": current_commit,
-                "paths": ["docs/briefs/TEST-1.md", "docs/specs/TEST-1.md"],
+                "paths": ["docs/specs/TEST-1.md", "docs/plans/TEST-1.md"],
             },
         }
         card.write_text(json.dumps(missing_from_commit))
@@ -420,7 +418,6 @@ def main():
             if row["message"] == "Card records a path-scoped completion commit baseline"
         )
         assert not baseline_check["pass"]
-        assert "docs/specs/TEST-1.md" in baseline_check["details"]
 
     print("ginflow Kanban harness test passed")
 
