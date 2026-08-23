@@ -1,127 +1,136 @@
-# gin-harness
+# Gin-harness
 
-Hermes native harness system.
+Gin-harness is the setup and integration repository that makes Hermes Agent work safer to route, execute, verify, and complete. It provides the shared **Ginflow** workflow, reusable core primitives, the `ginflow-gate` Hermes plugin, target-project starter context, architecture diagrams, and deterministic integration tests.
 
-This repo contains no profile identity, profile manifest, profile registry, provider config, or distribution package. Profiles are installed, exported, imported, and updated by Hermes itself. This repo only plugs shared skills, Ginflow harness, MCPs, plugins, and toolsets into profiles selected at runtime.
+It is **not** a product application. Target repositories own product code, local rules, tests, and canonical product verification. Hermes Agent remains the runtime authority for profiles, skill loading, tools, Kanban, and lifecycle execution.
 
-## Ownership
+## Why this project exists
 
-| Owner | Content |
-|---|---|
-| Hermes profile distribution | `SOUL.md`, `distribution.yaml`, native `config.yaml` defaults, profile skills/cron, version, release source |
-| This harness repo | `core/ginflow-core`, `skills/ginflow`, harness/tests, optional community skills, CodeGraph MCP/tool wiring, target-project starter |
-| Target project | code, tests, `AGENTS.md` / `.hermes.md`, briefs/specs/plans/handoffs |
+A raw prompt does not reliably establish:
 
-No profile names or profile package files belong here.
+- the correct target workspace;
+- whether requirements and root cause are understood;
+- whether the work is XS/S, M, or L/XL;
+- whether it has a credible security, data, deployment, compatibility, or rollback impact;
+- which verification command proves the result; or
+- who is allowed to declare governed work complete.
 
-## Ginflow architecture
+Executing before those facts are established can produce the wrong change, collide with another worker, or claim completion without evidence. Ginflow adds a fail-closed vocabulary and lifecycle around Hermes:
 
-Gin-harness is Hermes-heavy: Hermes owns runtime/profile routing, Kanban state and tools, skill loading, and lifecycle execution. Ginflow adds the routing and validation model around those primitives; `ginflow-gate` injects bounded guidance and enforces completion checks.
+- unresolved requirements or routing facts remain **Clarification** and read-only;
+- affirmatively eligible localized XS/S work may use **Direct Work** without a card;
+- larger, risky, coordinated, or artifact-requiring work uses **Governed Work** with a Kanban card and conditional Spec/Plan artifacts; and
+- native Kanban completion is checked for required fields, verification evidence, linked-artifact drift, and a truthful baseline.
 
-The mental model is:
+## What is in the repository
 
-`Prompt → routing and validation → work mode → clarity → size and risk → Direct Work, Governed Work, or Clarification`
-
-The [canonical Draw.io architecture](docs/architecture/gin-harness-system.drawio) is the source of truth. The [Ginflow mental model](docs/architecture/ginflow-flow.md) is a derived GitHub-readable explanation; update Draw.io first when workflow behavior changes.
-
-## Hermes-native profile lifecycle
-
-```bash
-# Install profile from its distribution repository
-hermes profile install github.com/owner/profile --alias
-
-# Update distribution-owned files; preserve user data and config overrides
-hermes profile update <profile>
-
-# Include updated native config defaults when intentionally requested
-hermes profile update <profile> --force-config
-
-# Portable archive flow
-hermes profile export <profile> -o <profile>.tar.gz
-hermes profile import <profile>.tar.gz
-```
-
-Hermes owns update safety: `SOUL.md`, skills, cron, and MCP distribution files update from recorded source; memories, sessions, auth, and `.env` remain local.
-
-## Plug integrations into profiles
-
-```bash
-make doctor
-make community-update              # optional community skill checkout
-make setup                         # preview currently active profile
-make setup PROFILES="profile-a"   # preview named profile
-make apply PROFILES="profile-a"   # apply integration wiring
-make verify PROFILES="profile-a"
-make install                       # copy Ginflow skill/plugin to all profiles
-make uninstall                     # remove installer-owned integrations
-make test
-```
-
-`make apply` requires profiles already installed. It does not create profiles and does not touch `SOUL.md`, `distribution.yaml`, model/provider identity, `.env`, memory, sessions, cron, or release metadata.
-
-For all-profile installation, use `make install`. It copies the universal skill to `~/.agent/skills/ginflow`, copies `ginflow-gate` into every installed profile, updates profile config integrations, and records ownership in the gitignored root `.ginflow-install.json`. Use `make uninstall` for ownership-aware cleanup; changed user files are preserved and reported as conflicts.
-
-Profile location defaults to `$HERMES_REAL_HOME/.hermes/profiles`, or real user home when `HERMES_REAL_HOME` is unset. Set `HERMES_PROFILES_DIR` to override it, useful for test or nonstandard installs.
-
-Applied integrations:
-
-- `skills/ginflow` linked into each selected profile
-- setup repo `skills/` exposed through `skills.external_dirs`
-- optional community skills exposed when checkout exists
-- `plugins/ginflow-gate` linked and enabled; existing plugin entries remain untouched
-- CodeGraph MCP registered as `codegraph serve --mcp`
-- required CLI toolsets enabled, including `mcp-codegraph`
-- one-time native `config.yaml.bak.integration` backup
-
-Restart profile sessions after apply.
-
-## Repository map
-
-| Path | Purpose | Docs |
+| Area | Purpose | Primary evidence |
 |---|---|---|
-| `skills/ginflow/` | Shared workflow, templates, validator, tests | `skills/ginflow/SKILL.md` |
-| `core/ginflow-core/` | Framework-agnostic Ginflow routing and harness core | source code |
-| `skills/ginflow-workspace/` | Eval evidence, including gate rejection and independent-profile coverage | inline |
-| `plugins/ginflow-gate/` | Blocking Kanban completion policy | source code |
-| `docs/architecture/` | Canonical Draw.io source and derived Ginflow mental model | `docs/architecture/README.md` |
-| `Makefile` | Active-profile default selection plus setup, verification, and test entry points | inline comments |
-| `scripts/setup.sh` | Integration preview/apply for active or explicitly named profiles | `INSTALL.md` §3 |
-| `scripts/install.sh` | Copy Ginflow universal skill and plugin into all profiles; uninstall owned copies | source code |
-| `scripts/verify.sh` | Generic integration and harness verification | `INSTALL.md` §3 |
-| `scripts/test-setup.sh` | Regression test for active-profile-only default selection | source code |
-| `scripts/community-setup.sh` | Optional community skill checkout | source code |
-| `scripts/detect-skill-drift.py` | Shared-skill shadow detector utility | source code |
-| `templates/AGENTS.md` | Target-project starter | `templates/AGENTS.md` |
-| `INSTALL.md` | Full native-profile and integration guide | `INSTALL.md` |
+| `skills/ginflow/` | Normative workflow vocabulary, routing/output rules, startup, completion, and artifact layout | `skills/ginflow/SKILL.md` |
+| `core/ginflow-core/` | Reusable routing and validation primitives | `core/ginflow-core/` |
+| `plugins/ginflow-gate/` | Hermes hooks, routing context, completion enforcement, feedback/recovery helpers | `plugins/ginflow-gate/plugin.yaml`, `plugins/ginflow-gate/*.py` |
+| `templates/` | Starter local rules and task/artifact templates for target projects | `templates/` |
+| `docs/architecture/` | Editable Draw.io diagrams and derived architecture explanations | `docs/architecture/` |
+| `docs/specs/`, `docs/plans/`, `docs/briefs/` | Governed work artifacts | `docs/{specs,plans,briefs}/` |
+| `scripts/` | Installation, setup, verification, and test helpers | `scripts/` |
+| `tests/` and component test scripts | Harness and integration verification | `Makefile` |
 
-## Agent workflow
+For the evidence-based component map, dependency inventory, gaps, and trade-offs, read [`docs/architecture/gin-harness-reference.md`](docs/architecture/gin-harness-reference.md). The editable architecture source is [`docs/architecture/gin-harness-system.drawio`](docs/architecture/gin-harness-system.drawio); [`docs/architecture/ginflow-flow.md`](docs/architecture/ginflow-flow.md) is its derived, GitHub-readable flow explanation.
 
-Agents using this setup repo must load and follow `ginflow` for target-project startup, task shaping, execution, completion, and handoff. Do not use this setup repo as target-project workspace. Target-project mutable work requires a selected, complete Kanban card and linked local artifacts.
+## Mental model: who owns what
 
-## Verification boundary
+```text
+User intent
+    │
+    ▼
+Hermes runtime ── loads ──> Ginflow skill
+    │                         │
+    │                         └─ workflow vocabulary and output contract
+    ├─ owns profiles, tools, Kanban, lifecycle
+    │
+    └─ invokes ginflow-gate plugin
+                              │
+                              ├─ injects bounded routing guidance
+                              └─ validates governed completion
 
-`make verify PROFILES="..."` checks selected profiles exist and retain profile-owned identity files while setup integrations work. It does not compare profile identity or distribution metadata against this repo.
+Ginflow core ── reusable routing/validation model
 
-Without `PROFILES`, setup/apply/verify target only profile marked active by `hermes profile use <name>`. Profiles stay independent; harness does not coordinate or hand work between them.
+Target project ── product code, local rules, tests, canonical verification
+```
 
-`make verify-strict PROFILES="..."` additionally fails on uncommitted setup integration changes.
+The plugin provides context and gates; it does not replace Hermes, inspect skills to classify requests, create cards, or authorize Direct Work by itself. Ginflow core provides reusable primitives; the skill provides the operational contract Hermes follows. The target project remains the authority for product behavior and its canonical verification command.
 
-Target-project behavior remains separate. Run project-native verification in target repo.
+## How work flows
 
-## Maintenance
+1. **Startup:** use the real target repository, read `AGENTS.md`/`.hermes.md`, inspect Git state, and read the selected card when governed work applies.
+2. **Routing:** evaluate Work Mode separately from Work Size and Risk Impact.
+3. **Clarification:** if requirements, target, cause, risk, ownership, artifact need, or verification are unknown, inspect read-only and ask for clarity; do not mutate project state.
+4. **Direct Work:** proceed without a card only when every eligibility factor is affirmatively established: clear target, known cause where relevant, genuine XS/S scope, localized reversible change, no actual Risk Impact, no governance artifact need, known verification, project permission, and an unowned single-worker workspace.
+5. **Governed Work:** use a complete Kanban card for M/L/XL, risky, coordinated, or artifact-requiring work. Add a Spec when behavior/contract can drift and a Plan when ordering, investigation, rollback, coordination, or layered verification matters.
+6. **Verification:** run the target project's canonical command and report setup-repository checks separately.
+7. **Completion:** call native `kanban_complete`; `ginflow-gate` validates card fields, linked artifacts, verification metadata, baseline commit, and drift before marking the card done.
+
+Detailed routing and branch boundaries are in [`docs/architecture/ginflow-flow.md`](docs/architecture/ginflow-flow.md) and the normative contract in [`skills/ginflow/SKILL.md`](skills/ginflow/SKILL.md).
+
+## Dependencies and limits
+
+The repository intentionally has a small setup-layer implementation. It uses Python standard-library modules, POSIX shell tools, Make, Git, and Draw.io XML documents. No committed `pyproject.toml`, `package.json`, `go.mod`, `Cargo.toml`, or requirements file was found, so exact third-party/transitive versions are environment-specific and are not invented here.
+
+Runtime and external boundaries include:
+
+- Hermes Agent and its native Kanban/tools/profile runtime;
+- the active Hermes profile configuration and installed plugin/skill wiring;
+- optional CodeGraph/MCP tooling, which is advisory and must not block core work; and
+- each target project's own language/toolchain and canonical verification.
+
+Consequently, Gin-harness cannot guarantee Hermes internals, target-project behavior, deployment topology, production SLOs, or exact environment versions. Those are explicit boundaries or unknowns, not hidden guarantees.
+
+## Strengths and trade-offs
+
+**Strengths**
+
+- Makes ambiguity, risk, ownership, and completion evidence explicit.
+- Reuses one workflow across multiple target repositories.
+- Separates Hermes runtime authority from Ginflow guidance and plugin enforcement.
+- Keeps optional developer tooling advisory instead of making it a hidden blocker.
+- Provides deterministic setup, lint, test, and artifact-drift checks.
+
+**Trade-offs**
+
+- Governed work has more ceremony than a quick prompt-and-edit flow.
+- Users must understand the relationship between Hermes physical states and Ginflow logical routes.
+- Documentation and implementation evidence span skill, core, plugin, templates, scripts, and target projects.
+- Target verification is necessarily project-specific, so setup and product checks may both be required.
+- Strict completion validation rejects missing links, drift, or weak evidence instead of repairing them silently.
+
+## Install and verify
+
+Read [`INSTALL.md`](INSTALL.md) before installing shared profile integrations. Do not copy secrets or modify profile identity without explicit approval.
+
+For this setup repository:
 
 ```bash
-git pull
-make community-update
-make apply PROFILES="profile-a"
-make verify PROFILES="profile-a"
+make lint
 make test
 ```
 
-Profile updates stay independent:
+`make test` runs the canonical lint, setup, harness-core, artifact-guidance, Kanban-harness, and `ginflow-gate` checks. For a target project, run that repository's declared canonical command as a separate verification result; Ginflow does not substitute setup checks for product checks.
 
-```bash
-hermes profile update <profile>
-make apply PROFILES="<profile>"    # re-plug setup integrations if update replaced links/config
-make verify PROFILES="<profile>"
-```
+## Architecture and further reading
+
+- [Reference architecture, dependencies, gaps, and trade-offs](docs/architecture/gin-harness-reference.md)
+- [Editable Draw.io architecture](docs/architecture/gin-harness-system.drawio)
+- [Derived Ginflow flow](docs/architecture/ginflow-flow.md)
+- [Ginflow workflow contract](skills/ginflow/SKILL.md)
+- [`ginflow-gate` plugin](plugins/ginflow-gate/)
+- [Reusable Ginflow core](core/ginflow-core/)
+- [Installation guide](INSTALL.md)
+- [Local setup rules template](templates/AGENTS.md)
+
+## Project rules
+
+See [`AGENTS.md`](AGENTS.md) for setup-repository boundaries, verification order, generated-file handling, and completion rules. Governed documentation for this alignment task is tracked in [`docs/briefs/GINFLOW-14.md`](docs/briefs/GINFLOW-14.md), [`docs/specs/GINFLOW-14.md`](docs/specs/GINFLOW-14.md), and [`docs/plans/GINFLOW-14.md`](docs/plans/GINFLOW-14.md).
+
+**Status: completed**
+
+_Gin-harness documents the workflow around execution; it does not replace the runtime or the target project._
