@@ -72,9 +72,6 @@ The skill defines the workflow contract. Ginflow core provides reusable primitiv
 ## Further reading
 
 - [Installation guide](INSTALL.md)
-- [Architecture overview](docs/architecture/README.md)
-- [Editable Draw.io architecture](docs/architecture/gin-harness-system.drawio)
-- [Ginflow flow](docs/architecture/ginflow-flow.md)
 - [Ginflow workflow skill](skills/ginflow/SKILL.md)
 - [`ginflow-gate` plugin](plugins/ginflow-gate/)
 - [Reusable Ginflow core](core/ginflow-core/)
