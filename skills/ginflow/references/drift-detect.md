@@ -68,6 +68,7 @@ Ginflow permits this baseline commit without human review. The worker must commi
   "artifact_baseline": {
     "commit": "<git-commit>",
     "paths": [
+
       "docs/specs/GIN-123.md"
     ]
   }

@@ -35,6 +35,7 @@ Put these in target repo when project needs them:
 |---|---|
 | `AGENTS.md` | local project rules, cross-agent portable |
 | `.hermes.md` | Hermes-specific project rules |
+
 | `docs/specs/<CARD-ID>.md` | behavior/contract detail when needed |
 | `docs/plans/<CARD-ID>.md` | execution order for medium+ work |
 | `docs/handoffs/<CARD-ID>.md` | optional exported resume snapshot |
@@ -83,6 +84,7 @@ Selected card must contain: ID, title, objective, scope, acceptance, workspace, 
 Rule:
 - Direct Work creates no Kanban card or Governance Artifact.
 - Governed Work requires a card; choose Spec when behavior or contract can drift and Plan when ordering, investigation, rollback, coordination, or layered verification matters.
+
 - Before creating a plan for planning-required work, load and follow the `plan` skill.
 - Use the Kanban card ID across governed artifacts for deterministic linking.
 - Follow linked artifact templates and project-local rules for content quality and boundaries.
@@ -379,6 +381,7 @@ Stop and clarify when:
 - `references/drift-detect.md`
 - `references/blank-project-checklist.md`
 - `references/workspace-health-warnings.md`
+
 - `templates/plan.md`
 - `templates/spec.md`
 - `templates/kanban-task.md`

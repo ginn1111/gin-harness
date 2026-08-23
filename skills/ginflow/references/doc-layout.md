@@ -8,6 +8,7 @@ Suggested layout:
 project/
 ├── AGENTS.md
 ├── docs/
+
 │   ├── specs/
 │   ├── plans/
 │   ├── handoffs/
@@ -20,6 +21,7 @@ Guidelines:
 - put artifact metadata in YAML frontmatter at byte 0; use `status`, `size`, `scope`, and `owner` for specs and plans
 - keep lifecycle metadata in the header rather than duplicating `Status:` prose in the document body
 - keep the target-specific drift contract in `AGENTS.md` or `.hermes.md`: canonical command, local authorities, generated-file relationships, and remediation order
+
 - `docs/specs/<CARD-ID>.md` for behavior and contract detail
 - `docs/plans/<CARD-ID>.md` for execution order
 - `docs/handoffs/<CARD-ID>.md` for optional exported resume snapshots

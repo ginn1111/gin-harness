@@ -16,6 +16,7 @@ Use this guide when writing or updating project artifacts. Keep each fact in its
 
 | Artifact | Owns | Must not become |
 |---|---|---|
+
 | Spec | exact behavior, contracts, states, failure cases, detailed behavioral acceptance | business pitch or implementation checklist |
 | Plan | ordered change and verification path | restated requirements |
 | Kanban card | live assignment, workspace, status, thin summary, links, progress evidence | duplicate spec/plan |

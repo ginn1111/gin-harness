@@ -28,6 +28,7 @@ Links:
 Pass workspace and assignee through Kanban task fields, not duplicate body prose. The harness maps `workspace_kind` + `workspace_path`, status, assignee, and ID from the task row. On completed cards it reads `artifact_baseline` from the latest run metadata.
 
 Use a stable human-facing card key chosen before creation for linked artifacts; use the separate Hermes-generated task ID (`t_...`) for Kanban commands:
+
 - `docs/specs/<CARD-ID>.md`
 - `docs/plans/<CARD-ID>.md`
 

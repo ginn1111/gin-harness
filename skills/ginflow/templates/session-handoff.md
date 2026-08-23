@@ -11,11 +11,13 @@ Content rules: `references/artifact-content-guide.md` in `ginflow`.
 
 ## Work Artifacts
 
+
 - Spec: {{SPEC_LINK}}
 - Plan: {{PLAN_LINK}}
 - Other: {{OTHER_ARTIFACT_LINKS}}
 
 ### Artifact State
+
 
 - Spec status: {{SPEC_STATUS}}
 - Plan status: {{PLAN_STATUS}}

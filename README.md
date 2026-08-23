@@ -1,3 +1,10 @@
+---
+status: completed
+size: M
+scope: Gin-harness project overview and usage guide
+owner: ginb
+---
+
 # Gin-harness
 
 Gin-harness is the setup and integration repository that makes Hermes Agent work safer to route, execute, verify, and complete. It provides the shared **Ginflow** workflow, reusable core primitives, the `ginflow-gate` Hermes plugin, target-project starter context, architecture diagrams, and deterministic integration tests.
@@ -24,16 +31,16 @@ Executing before those facts are established can produce the wrong change, colli
 
 ## What is in the repository
 
-| Area                                         | Purpose                                                                                       | Primary evidence                                                |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `skills/ginflow/`                            | Normative workflow vocabulary, routing/output rules, startup, completion, and artifact layout | `skills/ginflow/SKILL.md`                                       |
-| `core/ginflow-core/`                         | Reusable routing and validation primitives                                                    | `core/ginflow-core/`                                            |
-| `plugins/ginflow-gate/`                      | Hermes hooks, routing context, completion enforcement, feedback/recovery helpers              | `plugins/ginflow-gate/plugin.yaml`, `plugins/ginflow-gate/*.py` |
-| `templates/`                                 | Starter local rules and task/artifact templates for target projects                           | `templates/`                                                    |
-| `docs/architecture/`                         | Editable Draw.io diagrams and derived architecture explanations                               | `docs/architecture/`                                            |
-| `docs/specs/`, `docs/plans/`, `docs/briefs/` | Governed work artifacts                                                                       | `docs/{specs,plans,briefs}/`                                    |
-| `scripts/`                                   | Installation, setup, verification, and test helpers                                           | `scripts/`                                                      |
-| `tests/` and component test scripts          | Harness and integration verification                                                          | `Makefile`                                                      |
+| Area | Purpose | Primary evidence |
+|---|---|---|
+| `skills/ginflow/` | Normative workflow vocabulary, routing/output rules, startup, completion, and artifact layout | `skills/ginflow/SKILL.md` |
+| `core/ginflow-core/` | Reusable routing and validation primitives | `core/ginflow-core/` |
+| `plugins/ginflow-gate/` | Hermes hooks, routing context, completion enforcement, feedback/recovery helpers | `plugins/ginflow-gate/plugin.yaml`, `plugins/ginflow-gate/*.py` |
+| `templates/` | Starter local rules and task/artifact templates for target projects | `templates/` |
+| `docs/architecture/` | Editable Draw.io diagrams and derived architecture explanations | `docs/architecture/` |
+| `docs/specs/`, `docs/plans/`, `docs/briefs/` | Governed work artifacts | `docs/{specs,plans,briefs}/` |
+| `scripts/` | Installation, setup, verification, and test helpers | `scripts/` |
+| `tests/` and component test scripts | Harness and integration verification | `Makefile` |
 
 For the evidence-based component map, dependency inventory, gaps, and trade-offs, read [`docs/architecture/gin-harness-reference.md`](docs/architecture/gin-harness-reference.md). The editable architecture source is [`docs/architecture/gin-harness-system.drawio`](docs/architecture/gin-harness-system.drawio); [`docs/architecture/ginflow-flow.md`](docs/architecture/ginflow-flow.md) is its derived, GitHub-readable flow explanation.
 
