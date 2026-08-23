@@ -15,7 +15,7 @@ Workspace:
 - dir:/abs/path/to/project  # or worktree
 
 Links:
-- <optional docs/briefs/<CARD-ID>.md, spec, or plan path>
+- <optional docs/specs/<CARD-ID>.md, plan, ADR, or other canonical artifact path>
 
 `artifact_baseline` (completion only):
 - commit: <git-commit-containing-all-linked-artifacts>

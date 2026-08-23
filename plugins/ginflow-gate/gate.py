@@ -34,7 +34,7 @@ def load_card(task_id: str, board: str | None = None) -> dict:
 
 
 def linked_documents_missing_completion(card: dict, target: Path) -> list[str]:
-    """Return local linked brief/spec/plan paths without completion footer."""
+    """Return local linked spec/plan paths without completion footer."""
     missing = []
     for link in card.get("links", []):
         path_str = link if isinstance(link, str) else link.get("path") if isinstance(link, dict) else None
@@ -47,7 +47,7 @@ def linked_documents_missing_completion(card: dict, target: Path) -> list[str]:
             continue
         relative = artifact.relative_to(target)
         if artifact.is_file() and artifact.suffix.lower() == ".md" and any(
-            part in {"briefs", "specs", "plans"} for part in relative.parts
+            part in {"specs", "plans"} for part in relative.parts
         ) and "**Status: completed**" not in artifact.read_text(encoding="utf-8"):
             missing.append(path_str)
     return sorted(missing)
