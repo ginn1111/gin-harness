@@ -1,10 +1,3 @@
----
-status: completed
-size: M
-scope: Evidence-based architecture, dependency, gap, and trade-off reference
-owner: ginb
----
-
 # Gin-harness reference architecture
 
 This document is an evidence-based companion to the editable Draw.io diagrams. It explains the current repository implementation and records gaps or external boundaries explicitly.
