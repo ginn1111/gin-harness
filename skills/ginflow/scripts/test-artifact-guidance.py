@@ -23,7 +23,7 @@ def main():
     agents_template = (ROOT / "templates/AGENTS.md").read_text()
 
     artifact_paths = (
-        "docs/briefs/<CARD-ID>.md",
+
         "docs/specs/<CARD-ID>.md",
         "docs/plans/<CARD-ID>.md",
         "docs/handoffs/<CARD-ID>.md",
@@ -31,11 +31,11 @@ def main():
     )
     require(skill, artifact_paths, "SKILL.md")
     require(layout, artifact_paths, "doc-layout.md")
-    require(kanban, artifact_paths[:3], "kanban-guide.md")
+    require(kanban, artifact_paths[:2], "kanban-guide.md")
 
     require(content, (
         "## Authority and boundaries",
-        "## Brief",
+
         "## Spec",
         "## Plan",
         "## Kanban card",
@@ -113,7 +113,7 @@ def main():
     assert not duplicate_snapshots, f"evaluation snapshots must not shadow live ginflow skill: {duplicate_snapshots}"
     require(agents_template, (*target_drift_contract, "artifact_baseline", "blocks use of that card", "Unrelated work remains unblocked"), "templates/AGENTS.md")
 
-    for template in ("brief.md", "spec.md", "plan.md", "kanban-task.md", "session-handoff.md"):
+    for template in ("spec.md", "plan.md", "kanban-task.md", "session-handoff.md"):
         text = (SKILL / "templates" / template).read_text()
         require(text, ("references/artifact-content-guide.md",), template)
 

@@ -15,18 +15,18 @@ cleanup() {
 }
 trap cleanup EXIT
 
-mkdir -p "$TARGET/docs/briefs"
+mkdir -p "$TARGET/docs/specs"
 cp "$ROOT/templates/AGENTS.md" "$TARGET/AGENTS.md"
-printf '# Transition brief\n' > "$TARGET/docs/briefs/TRANSITION-1.md"
+printf '# Transition spec\n' > "$TARGET/docs/specs/TRANSITION-1.md"
 printf '#!/usr/bin/env bash\nset -eu\nprintf "verify ok\\n"\n' > "$TARGET/verify.sh"
 chmod +x "$TARGET/verify.sh"
 
 git init -q "$TARGET"
 git -C "$TARGET" config user.name 'Ginflow Test'
 git -C "$TARGET" config user.email 'ginflow-test@example.invalid'
-git -C "$TARGET" add AGENTS.md docs/briefs/TRANSITION-1.md verify.sh
+git -C "$TARGET" add AGENTS.md docs/specs/TRANSITION-1.md verify.sh
 git -C "$TARGET" commit -qm 'initial test fixture'
-BODY=$(printf 'Objective: Validate startup before claim\nScope:\n- routing\nAcceptance:\n- valid docs reach running\nLinks:\n- docs/briefs/TRANSITION-1.md')
+BODY=$(printf 'Objective: Validate startup before claim\nScope:\n- routing\nAcceptance:\n- valid docs reach running\nLinks:\n- docs/specs/TRANSITION-1.md')
 TASK_JSON=$(hermes kanban create 'TRANSITION-1 — validated startup transition' --body "$BODY" --assignee ginb --workspace "dir:$TARGET" --initial-status blocked --json)
 TASK_ID=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])' <<<"$TASK_JSON")
 
@@ -49,7 +49,7 @@ core = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(core)
 shown = json.loads(subprocess.check_output(["hermes", "kanban", "show", str(task_id), "--json"], text=True))
 task = shown["task"]
-card = {**task, "status": "next", "workspace": f"dir:{target}", "links": ["docs/briefs/TRANSITION-1.md"], "objective": "Validate startup before claim", "scope": ["routing"], "acceptance": ["valid docs reach running"]}
+card = {**task, "status": "next", "workspace": f"dir:{target}", "links": ["docs/specs/TRANSITION-1.md"], "objective": "Validate startup before claim", "scope": ["routing"], "acceptance": ["valid docs reach running"]}
 gate = core.startup_gate(card, target, target)
 assert gate["valid"] is True, gate
 assert gate["transition_required"] is True, gate

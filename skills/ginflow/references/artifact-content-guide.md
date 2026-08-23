@@ -16,30 +16,14 @@ Use this guide when writing or updating project artifacts. Keep each fact in its
 
 | Artifact | Owns | Must not become |
 |---|---|---|
-| Brief | why, outcome, scope, non-goals, outcome acceptance | protocol design or step-by-step plan |
+
 | Spec | exact behavior, contracts, states, failure cases, detailed behavioral acceptance | business pitch or implementation checklist |
 | Plan | ordered change and verification path | restated requirements |
-| Kanban card | live assignment, workspace, status, thin summary, links, progress evidence | duplicate brief/spec/plan |
+| Kanban card | live assignment, workspace, status, thin summary, links, progress evidence | duplicate spec/plan |
 | ADR | durable architectural decision, alternatives, consequences | meeting notes or task plan |
 | Handoff | approved point-in-time resume snapshot sourced from card and links | independent source of truth |
 
-When content conflicts: latest approved requirement wins; update brief first for scope/outcome, spec first for behavior/contract, ADR first for accepted architecture, and card first for live progress/status. Stop work while material conflict remains unresolved.
-
-## Brief
-
-Required:
-- **Objective:** one outcome sentence naming affected user/system and desired change.
-- **Scope:** included capabilities and bounded areas; use paths only when known.
-- **Acceptance criteria:** externally observable outcomes proving objective.
-- **Non-goals:** plausible adjacent work explicitly excluded.
-
-Optional:
-- context/evidence, dependencies, risks, open questions, artifact links.
-
-Strong criterion: `Duplicate delivery with same provider event ID applies payment side effects once.`
-Weak criterion: `Add an idempotency table.` This prescribes implementation and does not prove outcome.
-
-Brief is build-ready only when objective, scope, non-goals, and acceptance are unambiguous enough to estimate and verify.
+When content conflicts: latest approved requirement wins; update the Kanban card for scope/outcome, spec first for behavior/contract, ADR first for accepted architecture, and card first for live progress/status. Stop work while material conflict remains unresolved.
 
 ## Spec
 
@@ -53,7 +37,7 @@ Describe, when relevant:
 
 Use normative language: **must**, **must not**, **may**. Separate confirmed decisions from `TBD` questions. Give behavior stable IDs such as `B1`, `B2` when plan/tests need traceability.
 
-Spec acceptance refines brief acceptance; it must not silently widen scope or change outcome. Escalate conflict to brief owner.
+Spec acceptance must not silently widen the Kanban card's scope or change its outcome. Escalate conflict to the card owner.
 
 ## Plan
 
@@ -61,7 +45,7 @@ Every step must name:
 1. target component, path, or discovery goal
 2. concrete change or decision
 3. verification evidence produced
-4. brief/spec criterion covered when traceability matters
+4. spec criterion covered when traceability matters
 
 Order steps by dependency. Put investigation before code when cause or target is unknown. Put focused failing test before behavior change when project supports tests. Include migration, compatibility, rollback, rollout, or manual checkpoint only when risk requires it.
 
@@ -80,7 +64,7 @@ At creation:
 - bounded scope plus key exclusion
 - acceptance summary
 - real workspace
-- links to brief/spec/plan/ADR as applicable
+- links to spec/plan/ADR as applicable
 - assignee and accurate status
 
 During work or close, record:

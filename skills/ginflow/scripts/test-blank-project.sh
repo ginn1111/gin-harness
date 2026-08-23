@@ -30,13 +30,13 @@ target.write_text(source.read_text().replace("{{WORKSPACE}}", str(workspace)))
 PY
 
 task="$(printf '%s\n' 'slugify CLI' 'line counter CLI' 'JSON key sorter CLI' | shuf -n 1)"
-prompt="The blank target git repo is exactly $TARGET. Load and follow ginflow. The agent's configured working directory may differ; do not ask for another repo. Run every file and git operation against $TARGET using cd $TARGET or absolute paths. Test card TEST-001 requests: $task. Copy the canonical AGENTS template from $ROOT/templates/AGENTS.md, then tailor only local sections and retain ginflow routing. Before doing anything else, add this exact standalone line to AGENTS.md: Canonical verification command: ./verify.sh. This line is mandatory in AGENTS.md, not only in the brief. Create docs/briefs/TEST-001.md. Implement a small standard-library-only solution and tests. Create executable verify.sh using set -eu; document ./verify.sh as canonical verification. Do not create spec or plan unless needed. Do not create session handoff. Before final report verify that AGENTS.md contains the exact canonical-command line, run $TARGET/verify.sh, and run git -C $TARGET status --short. Report only this repo's files and fresh canonical output."
+prompt="The blank target git repo is exactly $TARGET. Load and follow ginflow. The agent's configured working directory may differ; do not ask for another repo. Run every file and git operation against $TARGET using cd $TARGET or absolute paths. Test card TEST-001 requests: $task. Copy the canonical AGENTS template from $ROOT/templates/AGENTS.md, then tailor only local sections and retain ginflow routing. Before doing anything else, add this exact standalone line to AGENTS.md: Canonical verification command: ./verify.sh. This line is mandatory in AGENTS.md, not only in the local task artifacts. Create docs/specs/TEST-001.md. Implement a small standard-library-only solution and tests. Create executable verify.sh using set -eu; document ./verify.sh as canonical verification. Do not create spec or plan unless needed. Do not create session handoff. Before final report verify that AGENTS.md contains the exact canonical-command line, run $TARGET/verify.sh, and run git -C $TARGET status --short. Report only this repo's files and fresh canonical output."
 
 PROFILE="${HERMES_TEST_PROFILE:-default}"
 (cd "$TARGET" && env -u TERMINAL_CWD hermes -p "$PROFILE" -s ginflow -z "$prompt") >"$OUTPUT"
 
 test -f "$TARGET/AGENTS.md"
-test -f "$TARGET/docs/briefs/TEST-001.md"
+test -f "$TARGET/docs/specs/TEST-001.md"
 test -f "$TARGET/verify.sh"
 test ! -e "$TARGET/session-handoff.md"
 grep -q 'come from `ginflow`' "$TARGET/AGENTS.md"
@@ -59,10 +59,10 @@ card = json.loads(card_path.read_text())
 commit = subprocess.check_output(["git", "-C", str(target), "rev-parse", "HEAD"], text=True).strip()
 card.update({
     "status": "done",
-    "links": ["docs/briefs/TEST-001.md"],
+    "links": ["docs/specs/TEST-001.md"],
     "artifact_baseline": {
         "commit": commit,
-        "paths": ["docs/briefs/TEST-001.md"],
+        "paths": ["docs/specs/TEST-001.md"],
     },
 })
 card_path.write_text(json.dumps(card, indent=2) + "\n")

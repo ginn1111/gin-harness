@@ -169,12 +169,12 @@ def test_live_tmp_project_card():
         "Objective: Route temporary card\n"
         "Scope:\n- routing\n"
         "Acceptance:\n- route blocked card\n"
-        "Links:\n- docs/briefs/TMP-1.md"
+        "Links:\n- docs/specs/TMP-1.md"
     )
     with tempfile.TemporaryDirectory(prefix="ginflow-gate-project-") as project, tempfile.TemporaryDirectory(prefix="ginflow-gate-home-") as home:
         target = Path(project)
-        (target / "docs/briefs").mkdir(parents=True)
-        (target / "docs/briefs/TMP-1.md").write_text("# Temporary brief\n")
+        (target / "docs/specs").mkdir(parents=True)
+        (target / "docs/specs/TMP-1.md").write_text("# Temporary brief\n")
         env = os.environ | {"HERMES_HOME": home, "HERMES_TUI_SKILLS": "ginflow"}
         subprocess.run(["hermes", "kanban", "init"], env=env, check=True, capture_output=True, text=True)
         created = subprocess.run(
@@ -202,16 +202,16 @@ def test_live_tmp_next_card_docs():
         "Objective: Start temporary card\n"
         "Scope:\n- routing\n"
         "Acceptance:\n- validate docs\n"
-        "Links:\n- docs/briefs/TMP-2.md"
+        "Links:\n- docs/specs/TMP-2.md"
     )
     with tempfile.TemporaryDirectory(prefix="ginflow-gate-project-") as project, tempfile.TemporaryDirectory(prefix="ginflow-gate-home-") as home:
         target = Path(project)
-        (target / "docs/briefs").mkdir(parents=True)
-        (target / "docs/briefs/TMP-2.md").write_text("# Temporary brief\n")
+        (target / "docs/specs").mkdir(parents=True)
+        (target / "docs/specs/TMP-2.md").write_text("# Temporary brief\n")
         subprocess.run(["git", "init", "-q"], cwd=target, check=True)
         subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
         subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
-        subprocess.run(["git", "add", "docs/briefs/TMP-2.md"], cwd=target, check=True)
+        subprocess.run(["git", "add", "docs/specs/TMP-2.md"], cwd=target, check=True)
         subprocess.run(["git", "commit", "-qm", "baseline"], cwd=target, check=True)
         env = os.environ | {"HERMES_HOME": home}
         subprocess.run(["hermes", "kanban", "init"], env=env, check=True, capture_output=True, text=True)
@@ -235,9 +235,9 @@ def test_live_tmp_next_card_docs():
             assert result and "route=ready_to_start" in result["context"], result
             assert "mutation_allowed=False" in result["context"], result
             assert task["status"] == "next"
-            assert (target / "docs/briefs/TMP-2.md").read_text() == "# Temporary brief\n"
+            assert (target / "docs/specs/TMP-2.md").read_text() == "# Temporary brief\n"
 
-            brief = target / "docs/briefs/TMP-2.md"
+            brief = target / "docs/specs/TMP-2.md"
             brief.write_text("no heading\n")
             result = _routing_context()
             assert result and "route=docs_invalid" in result["context"], result
@@ -248,7 +248,7 @@ def test_live_tmp_next_card_docs():
             assert result and "route=docs_changed" in result["context"], result
             assert brief.read_text() == "# Temporary brief\nchanged\n"
 
-            outside_body = body.replace("docs/briefs/TMP-2.md", "../outside.md")
+            outside_body = body.replace("docs/specs/TMP-2.md", "../outside.md")
             task["body"] = outside_body
             result = _routing_context()
             assert result and "route=docs_invalid" in result["context"], result
@@ -339,7 +339,7 @@ card = {
     "workspace": "dir:/tmp/target",
     "status": "running",
     "assignee": "worker",
-    "links": ["docs/briefs/GATE-1.md"],
+    "links": ["docs/specs/GATE-1.md"],
 }
 setattr(module, "load_card", lambda task_id, board=None: card)
 
@@ -354,7 +354,7 @@ allowed = module.pre_tool_call(
         "task_id": "GATE-1",
         "metadata": {
             "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
-            "artifact_baseline": {"commit": "abc", "paths": ["docs/briefs/GATE-1.md"]},
+            "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
         },
     },
     "",
@@ -362,14 +362,14 @@ allowed = module.pre_tool_call(
 )
 assert allowed is None
 
-setattr(module, "validate_completion", lambda card, metadata: "linked artifact drift: docs/briefs/GATE-1.md")
+setattr(module, "validate_completion", lambda card, metadata: "linked artifact drift: docs/specs/GATE-1.md")
 blocked = module.pre_tool_call(
     "kanban_complete",
     {
         "task_id": "GATE-1",
         "metadata": {
             "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
-            "artifact_baseline": {"commit": "abc", "paths": ["docs/briefs/GATE-1.md"]},
+            "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
         },
     },
     "",
@@ -384,13 +384,13 @@ assert "validation failed closed" in failed_closed["message"]
 
 with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
     target = Path(directory)
-    brief = target / "docs/briefs/GATE-1.md"
+    brief = target / "docs/specs/GATE-1.md"
     brief.parent.mkdir(parents=True)
     brief.write_text("# Gate\n\n---\n**Status: completed** — linked card GATE-1 is done.\n")
     subprocess.run(["git", "init", "-q"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
-    subprocess.run(["git", "add", "docs/briefs/GATE-1.md"], cwd=target, check=True)
+    subprocess.run(["git", "add", "docs/specs/GATE-1.md"], cwd=target, check=True)
     subprocess.run(["git", "commit", "-qm", "baseline"], cwd=target, check=True)
     commit = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=target, text=True, capture_output=True, check=True
@@ -398,7 +398,7 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
     committed_card = card | {"workspace": f"dir:{target}"}
     metadata = {
         "verification_result": {"commit": commit, "command": "make test", "result": "passed"},
-        "artifact_baseline": {"commit": commit, "paths": ["docs/briefs/GATE-1.md"]},
+        "artifact_baseline": {"commit": commit, "paths": ["docs/specs/GATE-1.md"]},
     }
     assert validate_completion(committed_card, metadata) is None
     brief.write_text("# Gate\n")
@@ -408,7 +408,7 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
     setattr(module, "validate_completion", validate_completion)
     blocked = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": metadata}, "")
     assert blocked["action"] == "block"
-    assert "docs/briefs/GATE-1.md" in blocked["message"]
+    assert "docs/specs/GATE-1.md" in blocked["message"]
     assert "then retry kanban_complete" in blocked["message"]
     assert brief.read_text() == "# Gate\n"
     brief.write_text("# Gate\n\n---\n**Status: completed** — linked card GATE-1 is done.\n")

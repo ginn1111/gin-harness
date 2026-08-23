@@ -28,7 +28,7 @@ card = {
     "workspace": "dir:/tmp/target",
     "status": "running",
     "assignee": "worker",
-    "links": ["docs/briefs/GATE-1.md"],
+    "links": ["docs/specs/GATE-1.md"],
 }
 setattr(module.gate, "load_card", lambda task_id, board=None: card)
 
@@ -43,7 +43,7 @@ allowed = module.pre_tool_call(
         "task_id": "GATE-1",
         "metadata": {
             "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
-            "artifact_baseline": {"commit": "abc", "paths": ["docs/briefs/GATE-1.md"]},
+            "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
         },
     },
     "",
@@ -51,14 +51,14 @@ allowed = module.pre_tool_call(
 )
 assert allowed is None
 
-setattr(module.gate, "validate_completion", lambda card, metadata: "linked artifact drift: docs/briefs/GATE-1.md")
+setattr(module.gate, "validate_completion", lambda card, metadata: "linked artifact drift: docs/specs/GATE-1.md")
 blocked = module.pre_tool_call(
     "kanban_complete",
     {
         "task_id": "GATE-1",
         "metadata": {
             "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
-            "artifact_baseline": {"commit": "abc", "paths": ["docs/briefs/GATE-1.md"]},
+            "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
         },
     },
     "",
@@ -73,13 +73,13 @@ assert "validation failed closed" in failed_closed["message"]
 
 with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
     target = Path(directory)
-    brief = target / "docs/briefs/GATE-1.md"
+    brief = target / "docs/specs/GATE-1.md"
     brief.parent.mkdir(parents=True)
     brief.write_text("# Gate\n\n**Status: completed**\n")
     subprocess.run(["git", "init", "-q"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
-    subprocess.run(["git", "add", "docs/briefs/GATE-1.md"], cwd=target, check=True)
+    subprocess.run(["git", "add", "docs/specs/GATE-1.md"], cwd=target, check=True)
     subprocess.run(["git", "commit", "-qm", "baseline"], cwd=target, check=True)
     commit = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=target, text=True, capture_output=True, check=True
@@ -87,7 +87,7 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
     committed_card = card | {"workspace": f"dir:{target}"}
     metadata = {
         "verification_result": {"commit": commit, "command": "make test", "result": "passed"},
-        "artifact_baseline": {"commit": commit, "paths": ["docs/briefs/GATE-1.md"]},
+        "artifact_baseline": {"commit": commit, "paths": ["docs/specs/GATE-1.md"]},
     }
     assert validate_completion(committed_card, metadata) is None
     metadata["verification_result"]["commit"] = "mismatch"

@@ -32,7 +32,7 @@ Example target-local section:
 ```markdown
 ## Drift detection
 - Run `make verify` from the repository root.
-- Treat `AGENTS.md`, the selected card, and its linked brief/spec as authorities.
+- Treat `AGENTS.md`, the selected card, and its linked spec/plan as authorities.
 - Regenerate `api/generated/` after changing `api/schema.yaml`.
 - Resolve authority conflicts before implementation; record unresolved drift on the selected card.
 ```
@@ -68,7 +68,7 @@ Ginflow permits this baseline commit without human review. The worker must commi
   "artifact_baseline": {
     "commit": "<git-commit>",
     "paths": [
-      "docs/briefs/GIN-123.md",
+
       "docs/specs/GIN-123.md"
     ]
   }
