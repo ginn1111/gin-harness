@@ -1,3 +1,10 @@
+---
+status: completed
+size: M
+scope: Evidence-based architecture, dependency, gap, and trade-off reference
+owner: ginb
+---
+
 # Gin-harness reference architecture
 
 This document is an evidence-based companion to the editable Draw.io diagrams. It explains the current repository implementation and records gaps or external boundaries explicitly.
@@ -107,5 +114,3 @@ No committed `pyproject.toml`, `package.json`, `go.mod`, `Cargo.toml`, or requir
 4. [`../../skills/ginflow/SKILL.md`](../../skills/ginflow/SKILL.md) — normative workflow contract.
 5. [`../../plugins/ginflow-gate/`](../../plugins/ginflow-gate/) and [`../../core/ginflow-core/`](../../core/ginflow-core/) — implementation evidence.
 6. [`../specs/GINFLOW-14.md`](../specs/GINFLOW-14.md) — this documentation task's contract.
-
-**Status: completed**

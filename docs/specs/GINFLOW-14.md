@@ -1,6 +1,11 @@
-# Spec — GINFLOW-14 documentation contract
+---
+status: completed
+size: M
+scope: Documentation behavior, evidence, ownership boundaries, and explicit gaps for GINFLOW-14
+owner: ginb
+---
 
-**Status: completed**
+# Spec — GINFLOW-14 documentation contract
 
 ## Problem
 

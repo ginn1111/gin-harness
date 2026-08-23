@@ -1,6 +1,11 @@
-# GINFLOW-14 — Align documentation with current Gin-harness architecture
+---
+status: completed
+size: M
+scope: Gin-harness README, architecture reference, and governed documentation artifacts
+owner: ginb
+---
 
-**Status: completed**
+# GINFLOW-14 — Align documentation with current Gin-harness architecture
 
 ## Objective
 

@@ -1,3 +1,10 @@
+---
+status: draft
+size: XS
+scope:
+owner:
+---
+
 # Spec — <feature or behavior>
 
 Content rules: `references/artifact-content-guide.md` in `ginflow`.

@@ -1,3 +1,10 @@
+---
+status: draft
+size: XS
+scope:
+owner:
+---
+
 # Plan — <task>
 
 Content rules: `references/artifact-content-guide.md` in `ginflow`.

@@ -88,6 +88,7 @@ Rule:
 - Before creating a plan for planning-required work, load and follow the `plan` skill.
 - Use the Kanban card ID across governed artifacts for deterministic linking.
 - Follow linked artifact templates and project-local rules for content quality and boundaries.
+- All Ginflow Markdown artifacts use YAML frontmatter at byte 0 for metadata. Briefs, specs, and plans use `status`, `size`, `scope`, and `owner`; keep lifecycle state in the header and do not duplicate it as body-only `Status:` metadata.
 
 ### Routing guidance and feedback boundary
 

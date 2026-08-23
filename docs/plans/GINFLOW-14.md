@@ -1,6 +1,11 @@
-# Plan — GINFLOW-14 documentation alignment
+---
+status: completed
+size: M
+scope: Evidence-first execution and verification for GINFLOW-14 documentation alignment
+owner: ginb
+---
 
-**Status: completed**
+# Plan — GINFLOW-14 documentation alignment
 
 ## Goal
 

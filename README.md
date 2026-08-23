@@ -1,3 +1,10 @@
+---
+status: completed
+size: M
+scope: Gin-harness project overview and usage guide
+owner: ginb
+---
+
 # Gin-harness
 
 Gin-harness is the setup and integration repository that makes Hermes Agent work safer to route, execute, verify, and complete. It provides the shared **Ginflow** workflow, reusable core primitives, the `ginflow-gate` Hermes plugin, target-project starter context, architecture diagrams, and deterministic integration tests.
@@ -130,7 +137,5 @@ make test
 ## Project rules
 
 See [`AGENTS.md`](AGENTS.md) for setup-repository boundaries, verification order, generated-file handling, and completion rules. Governed documentation for this alignment task is tracked in [`docs/briefs/GINFLOW-14.md`](docs/briefs/GINFLOW-14.md), [`docs/specs/GINFLOW-14.md`](docs/specs/GINFLOW-14.md), and [`docs/plans/GINFLOW-14.md`](docs/plans/GINFLOW-14.md).
-
-**Status: completed**
 
 _Gin-harness documents the workflow around execution; it does not replace the runtime or the target project._
