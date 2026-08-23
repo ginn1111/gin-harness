@@ -69,7 +69,7 @@ Ginflow permits this baseline commit without human review. The worker must commi
     "commit": "<git-commit>",
     "paths": [
 
-      "docs/specs/GIN-123.md"
+      "<target-spec-path>"
     ]
   }
 }

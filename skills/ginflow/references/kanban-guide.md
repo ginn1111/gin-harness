@@ -22,15 +22,15 @@ Scope:
 Acceptance:
 - <observable completion check>
 Links:
-- docs/specs/<CARD-ID>.md
+- <target-spec-path>
 ```
 
 Pass workspace and assignee through Kanban task fields, not duplicate body prose. The harness maps `workspace_kind` + `workspace_path`, status, assignee, and ID from the task row. On completed cards it reads `artifact_baseline` from the latest run metadata.
 
 Use a stable human-facing card key chosen before creation for linked artifacts; use the separate Hermes-generated task ID (`t_...`) for Kanban commands:
 
-- `docs/specs/<CARD-ID>.md`
-- `docs/plans/<CARD-ID>.md`
+- `<target-spec-path>`
+- `<target-plan-path>`
 
 Put the key in the task title and explicit `Links:` paths. The harness follows those links rather than deriving filenames from the generated task ID.
 
@@ -56,7 +56,7 @@ Optional manual/CI candidate check:
 python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --setup-repo <setup-repo> --target <target-repo> \
   --kanban-task-id "$TASK_ID" --baseline-commit "$COMMIT" \
-  --baseline-path docs/specs/<CARD-ID>.md --json
+  --baseline-path <target-spec-path> --json
 ```
 
 Any worker assigned to card makes `kanban_complete` call with verification evidence plus same commit and paths in `metadata={"artifact_baseline": ...}`. Do not route completion through `gintary` or a review handoff. `ginflow-gate` revalidates synchronously before mutation and rejects invalid output. External harness rerun is optional manual/CI evidence.

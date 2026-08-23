@@ -22,10 +22,10 @@ Guidelines:
 - keep lifecycle metadata in the header rather than duplicating `Status:` prose in the document body
 - keep the target-specific drift contract in `AGENTS.md` or `.hermes.md`: canonical command, local authorities, generated-file relationships, and remediation order
 
-- `docs/specs/<CARD-ID>.md` for behavior and contract detail
-- `docs/plans/<CARD-ID>.md` for execution order
-- `docs/handoffs/<CARD-ID>.md` for optional exported resume snapshots
-- `docs/adrs/` for decisions worth keeping
+- Target Spec artifact for behavior and contract detail
+- Target Plan artifact for execution order
+- Target Handoff artifact for optional exported resume snapshots
+- Target ADR location for decisions worth keeping
 - skip folders you do not need
 - prefer smallest artifact set that keeps handoff clear
 - Kanban remains live work state; handoff Markdown is optional

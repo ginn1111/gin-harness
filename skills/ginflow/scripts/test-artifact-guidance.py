@@ -23,15 +23,14 @@ def main():
     agents_template = (ROOT / "templates/AGENTS.md").read_text()
 
     artifact_paths = (
-
-        "docs/specs/<CARD-ID>.md",
-        "docs/plans/<CARD-ID>.md",
-        "docs/handoffs/<CARD-ID>.md",
-        "docs/adrs/",
+        "Target Spec artifact",
+        "Target Plan artifact",
+        "Target Handoff artifact",
+        "Target ADR location",
     )
     require(skill, artifact_paths, "SKILL.md")
     require(layout, artifact_paths, "doc-layout.md")
-    require(kanban, artifact_paths[:2], "kanban-guide.md")
+    require(kanban, ("<target-spec-path>", "<target-plan-path>"), "kanban-guide.md")
 
     require(content, (
         "## Authority and boundaries",

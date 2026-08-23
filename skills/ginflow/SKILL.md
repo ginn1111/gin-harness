@@ -36,10 +36,10 @@ Put these in target repo when project needs them:
 | `AGENTS.md` | local project rules, cross-agent portable |
 | `.hermes.md` | Hermes-specific project rules |
 
-| `docs/specs/<CARD-ID>.md` | behavior/contract detail when needed |
-| `docs/plans/<CARD-ID>.md` | execution order for medium+ work |
-| `docs/handoffs/<CARD-ID>.md` | optional exported resume snapshot |
-| `docs/adrs/` | durable architectural decisions |
+| Target Spec artifact | behavior/contract detail when needed |
+| Target Plan artifact | execution order for medium+ work |
+| Target Handoff artifact | optional exported resume snapshot |
+| Target ADR location | durable architectural decisions |
 
 `<CARD-ID>` is the stable human-facing work key chosen before card creation (for example `APP-9`) and used in the title and artifact paths. `$TASK_ID` is the Hermes-generated task ID (for example `t_ab12`) returned after creation and used by Kanban tools and `--kanban-task-id`. Do not rename artifacts to the generated ID; the harness follows explicit `Links:` paths.
 
@@ -149,7 +149,7 @@ Board reads (`kanban_list`, `kanban_show`) should also use the TOOLS, not the `h
 ```
 kanban_complete(task_id='<card-id>', result='<short result>',
   metadata={'verification_result': {'commit': '<commit>', 'command': 'make test', 'result': 'passed'},
-            'artifact_baseline': {'commit': '<commit>', 'paths': ['docs/specs/<card-id>.md']}})
+            'artifact_baseline': {'commit': '<commit>', 'paths': ['<target-spec-path>']}})
 ```
 
 - ✅ `kanban_complete(task_id='t_abc123', result='Build finished', metadata={...})`
@@ -201,7 +201,7 @@ Scope:
 Acceptance:
 - <observable completion check>
 Links:
-- docs/specs/<CARD-ID>.md
+- <target-spec-path>
 ```
 
 Hermes stores workspace, status, assignee, and ID on the task row. It stores `artifact_baseline` in the latest completion run metadata. The harness reads both locations; do not create a second shadow card JSON format.
@@ -270,7 +270,7 @@ python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
 python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --setup-repo <setup-repo> --target <target-repo> \
   --kanban-task-id "$TASK_ID" --baseline-commit "$COMMIT" \
-  --baseline-path docs/specs/<CARD-ID>.md --json
+  --baseline-path <target-spec-path> --json
 ```
 
 The live harness reads from the current board. `--card <json-file>` remains available for fixtures and accepts either normalized Ginflow JSON or saved `hermes kanban show --json` output. It is optional evidence; workers do not need a separate harness handoff before calling `kanban_complete`.
@@ -299,7 +299,7 @@ Flow:
 4. In target repo, read `git config user.name` and `git config user.email`.
 5. Render `templates/session-handoff.md` preview.
 6. Use `Not recorded on Kanban card.` for missing card data and `Not linked from selected Kanban card.` for missing artifact links. Use `Not configured in Git.` for missing Git identity.
-7. Ask Gin to approve content and output path. Default: `docs/handoffs/<CARD-ID>.md`; local project convention wins.
+7. Ask Gin to approve content and output path. Use the target project's local convention.
 8. Write only after approval.
 
 Never infer missing facts from status, chat, OS identity, commit history, or unrelated cards. Never mutate card status, assignee, links, or content during export.
