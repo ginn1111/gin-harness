@@ -34,10 +34,10 @@
         <mxCell id="routing" parent="plugins" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" value="ginflow-gate routing&#xa;injects Kanban state before LLM call&#xa;no-op when ginflow absent" vertex="1">
           <mxGeometry height="70" width="310" x="25" y="130" as="geometry" />
         </mxCell>
-        <mxCell id="scripts" parent="1" style="swimlane;startSize=30;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" value="Setup / Verification Scripts&#xa;setup.sh · verify.sh · test harnesses" vertex="1">
+        <mxCell id="scripts" parent="1" style="swimlane;startSize=30;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" value="Standalone Verification Scripts&#xa;validation scripts · test harnesses" vertex="1">
           <mxGeometry height="150" width="360" x="820" y="330" as="geometry" />
         </mxCell>
-        <mxCell id="make" parent="scripts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" value="Makefile&#xa;make setup / apply / verify / lint / test" vertex="1">
+        <mxCell id="make" parent="scripts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" value="Makefile&#xa;make verify / lint / test" vertex="1">
           <mxGeometry height="70" width="310" x="25" y="50" as="geometry" />
         </mxCell>
         <mxCell id="mcp" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Optional integrations&#xa;CodeGraph MCP · community skills · toolsets" vertex="1">

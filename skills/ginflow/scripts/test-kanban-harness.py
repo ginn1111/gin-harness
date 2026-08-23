@@ -126,35 +126,9 @@ def main():
             "        import time; time.sleep(6)\n"
             "    print('CodeGraph index healthy')\n"
         )
-        (fake_bin / "hermes").write_text(
-            "#!/usr/bin/env python3\n"
-            "import os, time\n"
-            "import sys\n"
-            "args = sys.argv\n"
-            "if args[1:3] == ['profile', 'list']:\n"
-            "    if os.environ.get('FAKE_PROFILE_STATE') != 'none': print('◆ marker-profile')\n"
-            "    raise SystemExit(0)\n"
-            "if args[-2:] == ['mcp', 'list']:\n"
-            "    mode = os.environ.get('FAKE_MCP_STATE', 'healthy')\n"
-            "    if mode == 'timeout': time.sleep(6)\n"
-            "    if mode == 'unavailable': raise SystemExit(1)\n"
-            "    if mode == 'none': print('MCP Servers:')\n"
-            "    else: print('MCP Servers:\\n  codegraph  codegraph serve --mcp  all  ✓ enabled')\n"
-            "elif len(args) >= 2 and args[-2] == 'test':\n"
-            "    mode = os.environ.get('FAKE_MCP_STATE', 'healthy')\n"
-            "    if mode == 'test-timeout': time.sleep(6)\n"
-            "    if mode == 'test-failed': raise SystemExit(1)\n"
-            "    print('connected')\n"
-            "else:\n"
-            "    raise SystemExit(1)\n"
-        )
-        for executable in ("codegraph", "hermes"):
-            (fake_bin / executable).chmod(0o755)
+        (fake_bin / "codegraph").chmod(0o755)
         (target / ".codegraph").mkdir()
-        optional_env = os.environ | {
-            "HERMES_PROFILE": "test-profile",
-            "PATH": f"{fake_bin}:{os.environ['PATH']}",
-        }
+        optional_env = os.environ | {"PATH": f"{fake_bin}:{os.environ['PATH']}"}
         optional = run(target, card, env=optional_env)
         assert optional.returncode == 0, optional.stdout + optional.stderr
         optional_result = json.loads(optional.stdout)
@@ -188,24 +162,6 @@ def main():
         assert "Recommendation:" in human.stdout
         assert "codegraph init" in human.stdout
 
-        marker_env = optional_env | {"HERMES_PROFILE": ""}
-        marker_result = json.loads(run(target, card, env=marker_env).stdout)
-        assert any("marker-profile" in row["evidence"] for row in marker_result["subsystems"]["optional_tools"]["checks"])
-        explicit_result = json.loads(run(target, card, env=optional_env).stdout)
-        assert any("test-profile" in row["evidence"] for row in explicit_result["subsystems"]["optional_tools"]["checks"])
-        no_profile = json.loads(run(target, card, env=optional_env | {"PATH": f"{fake_bin}:{Path(sys.executable).parent}", "HERMES_PROFILE": "", "FAKE_PROFILE_STATE": "none"}).stdout)
-        assert any(row["tool"] == "mcp" and row["state"] == "not_exercised" for row in no_profile["subsystems"]["optional_tools"]["checks"])
-
-        for state, expected in (("none", "none_configured"), ("unavailable", "unavailable"), ("timeout", "timeout"), ("test-failed", "failed"), ("test-timeout", "timeout")):
-            env = optional_env | {"FAKE_MCP_STATE": state}
-            result = json.loads(run(target, card, env=env).stdout)
-            mcp_rows = [row for row in result["subsystems"]["optional_tools"]["checks"] if row["tool"] == "mcp" or row["tool"] == "codegraph"]
-            if state in {"test-failed", "test-timeout"}:
-                server_row = next(row for row in result["subsystems"]["optional_tools"]["checks"] if row["tool"] == "codegraph" and "MCP test" in row["evidence"])
-                assert server_row["state"] == expected
-            else:
-                mcp_row = next(row for row in result["subsystems"]["optional_tools"]["checks"] if row["tool"] == "mcp")
-                assert mcp_row["state"] == expected, mcp_row
 
         kanban_show = {
             "task": {

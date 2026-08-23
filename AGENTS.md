@@ -1,4 +1,4 @@
-# Setup-repo rules
+# Ginflow artifact-repository rules
 
 ## Ginflow
 - Load and follow `ginflow` for target-project startup, task shaping, execution, completion, and handoff.
@@ -6,17 +6,18 @@
 - Before mutable target-project work, require a selected Kanban card with objective, scope, acceptance, workspace, status, assignee, and links. Stop when missing or incomplete.
 
 ## Boundaries
-- This repo owns shared integrations, Ginflow, harnesses, plugins, setup scripts, and target-project starter docs.
+- This repo owns standalone Ginflow artifacts, harnesses, optional Hermes adapters, and target-project starter docs.
 - Target repos own product code, tests, local `AGENTS.md` / `.hermes.md`, and task artifacts.
 - Shared workflow and Kanban lifecycle come from `ginflow`.
-- Do not edit profile distribution identity, secrets, runtime state, or generated `__pycache__/` files.
+- Hermes profile installation and configuration are outside this repository's runtime.
+- Do not edit secrets, runtime state, or generated `__pycache__/` files.
 
 ## Key directories
 - `skills/ginflow/` — shared workflow, templates, validator, tests
 - `core/ginflow-core/` — reusable Ginflow core library
 - `plugins/ginflow-gate/` — blocking Kanban completion policy plugin
 - `templates/` — target-project starter docs
-- `scripts/` — setup integration scripts
+- `scripts/` — standalone verification and test helpers
 - `.hermes/` — session-scratch artifacts (untracked, auto-generated)
 
 ## Verification
@@ -37,5 +38,5 @@
 - Do not commit credentials, `.env`, profile identity, or runtime state.
 
 ## Completion
-- For Ginflow Kanban work: record verification evidence, changed files, commit, and blockers on the selected card before completing. Run `make test` from setup repo as system check; run target-project canonical command from target repo for product check. The ginflow-gate plugin validates required fields, evidence, baseline commit, and artifact drift before completing.
-- For setup-repo changes (this repo): run `make lint && make test` and confirm all targets pass.
+- For Ginflow Kanban work: record verification evidence, changed files, commit, and blockers on the selected card before completing. Run `make test` from this repository as system check; run target-project canonical command from target repo for product check. The ginflow-gate plugin validates required fields, evidence, baseline commit, and artifact drift before completing.
+- For changes to this repository: run `make lint && make test` and confirm all targets pass.

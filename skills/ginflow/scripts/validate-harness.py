@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import json
-import os
 import re
 import shutil
 import subprocess
@@ -16,10 +15,6 @@ from harness_core import artifact_gate, check, has, linked_artifacts, load_kanba
 
 
 COMMAND_TIMEOUT = 5
-PROFILE_RE = re.compile(r"^\s*[◆*]\s*([A-Za-z0-9][A-Za-z0-9._-]*)\b")
-SERVER_RE = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s+")
-
-
 def run_bounded(command, *, env=None, cwd=None):
     try:
         return subprocess.run(
@@ -34,20 +29,6 @@ def run_bounded(command, *, env=None, cwd=None):
         return None
     except subprocess.TimeoutExpired:
         return "timeout"
-
-
-def infer_profile():
-    explicit = os.environ.get("HERMES_PROFILE", "").strip()
-    if explicit:
-        return explicit
-    result = run_bounded(["hermes", "profile", "list"])
-    if not isinstance(result, subprocess.CompletedProcess):
-        return None
-    for line in result.stdout.splitlines():
-        match = PROFILE_RE.match(line)
-        if match:
-            return match.group(1)
-    return None
 
 
 def optional_row(tool, state, severity, evidence, recommendation=""):
@@ -99,36 +80,8 @@ def inspect_codegraph(target):
     return optional_row(tool, "malformed", "warning", "CodeGraph status returned unrecognized output", f"Run `codegraph status {target}`")
 
 
-def inspect_mcp(profile):
-    if not profile:
-        return [optional_row("mcp", "not_exercised", "warning", "current Hermes profile could not be inferred", "Set HERMES_PROFILE or select an active Hermes profile")]
-    listed = run_bounded(["hermes", "-p", profile, "mcp", "list"])
-    if listed == "timeout":
-        return [optional_row("mcp", "timeout", "warning", f"MCP list timed out for profile {profile}", f"Run `hermes -p {profile} mcp list`")]
-    if listed is None or listed.returncode != 0:
-        return [optional_row("mcp", "unavailable", "warning", f"MCP list failed for profile {profile}", f"Run `hermes -p {profile} mcp list`")]
-    servers = []
-    for line in listed.stdout.splitlines():
-        match = SERVER_RE.match(line)
-        if match and match.group(1).lower() not in {"name", "mcp"}:
-            servers.append(match.group(1))
-    if not servers:
-        return [optional_row("mcp", "none_configured", "pass", f"no configured MCP servers found for profile {profile}")]
-    rows = []
-    for server in servers:
-        result = run_bounded(["hermes", "-p", profile, "mcp", "test", server])
-        if result == "timeout":
-            rows.append(optional_row(server, "timeout", "warning", f"MCP test timed out for profile {profile}", f"Run `hermes -p {profile} mcp test {server}`"))
-        elif result is None or result.returncode != 0:
-            rows.append(optional_row(server, "failed", "warning", f"MCP test failed for profile {profile}", f"Run `hermes -p {profile} mcp test {server}`"))
-        else:
-            rows.append(optional_row(server, "connected", "pass", f"MCP test passed for profile {profile}"))
-    return rows
-
-
 def inspect_optional_tools(target):
     rows = [inspect_codegraph(target)]
-    rows.extend(inspect_mcp(infer_profile()))
     status = "warning" if any(row["severity"] == "warning" for row in rows) else "pass"
     return {"status": status, "checks": rows}
 
@@ -185,7 +138,7 @@ def main():
 
     subsystems = {
         "instructions": check("instructions", [
-            (True, "Profile routing is distribution-owned; setup repo validates ginflow only", "warning"),
+            (True, "Artifact repository provides shared ginflow instructions", "warning"),
             (all(has(ginflow, heading) for heading in ("## Project session startup", "## Execution contract", "## Definition of done", "## Completion report")), "Canonical ginflow instruction sections exist", "warning"),
             (not target or bool(local_path), "Target local instruction file exists when target supplied", "warning"),
             (not target or has(local, "come from `ginflow`"), "Target local instructions route shared workflow to ginflow when target supplied", "warning"),

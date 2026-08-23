@@ -1,8 +1,8 @@
 # Gin-harness
 
-Gin-harness is the setup and integration repository for safer Hermes Agent work. It provides the shared **Ginflow** workflow, reusable routing and validation primitives, the `ginflow-gate` plugin, target-project starter context, and deterministic integration checks.
+Gin-harness is a standalone artifact repository for safer agent work. It provides the shared **Ginflow** workflow, reusable routing and validation primitives, an optional `ginflow-gate` adapter, target-project starter context, and deterministic integration checks.
 
-It is not a product application. Target repositories own product code, local rules, tests, and canonical product verification. Hermes Agent remains the runtime authority for profiles, skills, tools, Kanban, and lifecycle execution.
+It is not a product application. Target repositories own product code, local rules, tests, and canonical product verification. Runtime-specific integrations, including Hermes skill/plugin loading, remain optional consumers of these artifacts.
 
 ## Table of contents
 
@@ -26,7 +26,7 @@ Ginflow adds a fail-closed workflow around Hermes:
 
 ## Installation
 
-Read [`INSTALL.md`](INSTALL.md) for Hermes installation, profile integration, update, uninstall, and troubleshooting instructions.
+Read [`INSTALL.md`](INSTALL.md) for prerequisites, validation, artifact consumption, optional Hermes integration, and troubleshooting.
 
 For this repository, run:
 
@@ -35,19 +35,7 @@ make lint
 make test
 ```
 
-To install Ginflow into Hermes profiles:
-
-```bash
-make install
-```
-
-To remove installer-owned integration files:
-
-```bash
-make uninstall
-```
-
-Do not copy secrets, modify profile identity, or overwrite profile-owned runtime data.
+The repository does not require Hermes, a Hermes profile, or profile configuration. Consume optional Hermes adapters separately when a runtime needs them.
 
 ## Usage
 
@@ -79,7 +67,7 @@ Ginflow core ── reusable routing and validation primitives
 Target project ── product code, local rules, tests, canonical verification
 ```
 
-The skill defines the workflow contract. Ginflow core provides reusable primitives. The plugin supplies bounded routing context and completion enforcement. Hermes owns profiles, tools, Kanban, and lifecycle execution. The target project owns product behavior and its canonical verification.
+The skill defines the workflow contract. Ginflow core provides reusable primitives. The optional plugin supplies bounded routing context and completion enforcement. The consuming runtime owns execution and lifecycle details. The target project owns product behavior and its canonical verification.
 
 ## Further reading
 
