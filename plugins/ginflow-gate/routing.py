@@ -12,6 +12,7 @@ The injected context is ephemeral (per-turn) and never persisted to the session 
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import logging
 import os
@@ -19,16 +20,34 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-CORE = Path(__file__).resolve().parents[2] / "core/ginflow-core/harness_core.py"
-import importlib.util
 
+def _harness_core_path() -> Path:
+    plugin = Path(__file__).resolve()
+    real_home = Path(os.environ.get("HERMES_REAL_HOME", str(Path.home()))).expanduser().resolve()
+    candidates = (
+        plugin.parents[2] / "skills/ginflow/lib/harness_core.py",
+        real_home / ".agents/skills/ginflow/lib/harness_core.py",
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise ImportError("unable to locate Ginflow skill harness core; checked: " + ", ".join(map(str, candidates)))
+
+
+CORE = _harness_core_path()
 _spec = importlib.util.spec_from_file_location("ginflow_harness_core", CORE)
 if not _spec or not _spec.loader:
     raise ImportError(f"unable to load Ginflow harness core: {CORE}")
 _core = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_core)
 startup_gate = _core.startup_gate
-CORE_ROUTING = Path(__file__).resolve().parents[2] / "core/ginflow-core/routing.py"
+CORE_ROUTING_CANDIDATES = (
+    Path(__file__).resolve().parents[2] / "core/ginflow-core/routing.py",
+    Path(__file__).resolve().parent / "lib/routing.py",
+)
+CORE_ROUTING = next((path for path in CORE_ROUTING_CANDIDATES if path.is_file()), None)
+if CORE_ROUTING is None:
+    raise ImportError("unable to locate Ginflow routing core; checked: " + ", ".join(map(str, CORE_ROUTING_CANDIDATES)))
 _routing_spec = importlib.util.spec_from_file_location("ginflow_routing_core", CORE_ROUTING)
 if not _routing_spec or not _routing_spec.loader:
     raise ImportError(f"unable to load Ginflow routing core: {CORE_ROUTING}")

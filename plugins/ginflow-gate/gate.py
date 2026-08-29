@@ -2,13 +2,27 @@
 
 from __future__ import annotations
 
-import json
 import importlib.util
+import json
 import os
 import subprocess
 from pathlib import Path
 
-CORE = Path(__file__).resolve().parents[2] / "core/ginflow-core/harness_core.py"
+
+def _harness_core_path() -> Path:
+    plugin = Path(__file__).resolve()
+    real_home = Path(os.environ.get("HERMES_REAL_HOME", str(Path.home()))).expanduser().resolve()
+    candidates = (
+        plugin.parents[2] / "skills/ginflow/lib/harness_core.py",
+        real_home / ".agents/skills/ginflow/lib/harness_core.py",
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise ImportError("unable to locate Ginflow skill harness core; checked: " + ", ".join(map(str, candidates)))
+
+
+CORE = _harness_core_path()
 _spec = importlib.util.spec_from_file_location("ginflow_harness_core", CORE)
 if not _spec or not _spec.loader:
     raise ImportError(f"unable to load Ginflow harness core: {CORE}")

@@ -38,10 +38,22 @@ export GINFLOW_INSTALL_MANIFEST="$TMP/.ginflow-install.json"
 assert_file() { [[ -e "$1" ]] || { echo "missing: $1" >&2; exit 1; }; }
 
 bash "$ROOT/scripts/install.sh" install
-assert_file "$HOME_ROOT/.agent/skills/ginflow/SKILL.md"
+assert_file "$HOME_ROOT/.agents/skills/ginflow/SKILL.md"
+assert_file "$HOME_ROOT/.agents/skills/ginflow/lib/harness_core.py"
 assert_file "$PROFILES/alpha/plugins/ginflow-gate/plugin.yaml"
+assert_file "$PROFILES/alpha/plugins/ginflow-gate/lib/routing.py"
 assert_file "$PROFILES/beta/plugins/ginflow-gate/plugin.yaml"
 assert_file "$GINFLOW_INSTALL_MANIFEST"
+python3 - "$PROFILES/alpha/plugins/ginflow-gate/gate.py" "$PROFILES/alpha/plugins/ginflow-gate/routing.py" <<'PY'
+import importlib.util
+import sys
+
+for index, path in enumerate(sys.argv[1:]):
+    spec = importlib.util.spec_from_file_location(f"installed_ginflow_{index}", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+PY
 python3 - "$PROFILES/alpha/config.yaml" <<'PY'
 import sys, yaml
 config = yaml.safe_load(open(sys.argv[1]))
@@ -70,8 +82,10 @@ assert_file "$GINFLOW_INSTALL_MANIFEST"
 # Restore the managed copy, then uninstall cleanly.
 rm -rf "$PROFILES/alpha/plugins/ginflow-gate"
 cp -R "$ROOT/plugins/ginflow-gate" "$PROFILES/alpha/plugins/ginflow-gate"
+mkdir "$PROFILES/alpha/plugins/ginflow-gate/lib"
+cp "$ROOT/core/ginflow-core/routing.py" "$PROFILES/alpha/plugins/ginflow-gate/lib/routing.py"
 bash "$ROOT/scripts/install.sh" uninstall
-[[ ! -e "$HOME_ROOT/.agent/skills/ginflow" ]]
+[[ ! -e "$HOME_ROOT/.agents/skills/ginflow" ]]
 [[ ! -e "$PROFILES/alpha/plugins/ginflow-gate" ]]
 [[ -L "$PROFILES/beta/plugins/ginflow-gate" ]]
 [[ "$(readlink "$PROFILES/beta/plugins/ginflow-gate")" == "$ROOT/plugins/ginflow-gate" ]]

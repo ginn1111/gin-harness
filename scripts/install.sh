@@ -163,7 +163,7 @@ def install() -> None:
 
     real_home = Path(os.environ.get("HERMES_REAL_HOME", str(Path.home()))).expanduser().resolve()
     profiles_dir = Path(os.environ.get("HERMES_PROFILES_DIR", str(real_home / ".hermes/profiles"))).expanduser().resolve()
-    universal = real_home / ".agent/skills/ginflow"
+    universal = real_home / ".agents/skills/ginflow"
     profiles = discover_profiles(profiles_dir)
 
     destinations = [universal] + [profile_dir / "plugins/ginflow-gate" for _, profile_dir in profiles]
@@ -195,6 +195,9 @@ def install() -> None:
             if plugin.exists() or plugin.is_symlink():
                 remove_path(plugin)
             copy_tree(source_plugin, plugin)
+            plugin_lib = plugin / "lib"
+            plugin_lib.mkdir()
+            shutil.copy2(ROOT / "core/ginflow-core/routing.py", plugin_lib / "routing.py")
             pre_config_hash = sha256(config)
             post_config_hash, _, config_backup = update_config(config)
             manifest["profiles"][name] = {

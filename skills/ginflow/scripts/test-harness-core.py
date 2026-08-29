@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-CORE = ROOT / "core/ginflow-core/harness_core.py"
+CORE = Path(__file__).resolve().parents[1] / "lib/harness_core.py"
 
 spec = importlib.util.spec_from_file_location("harness_core", CORE)
 assert spec and spec.loader

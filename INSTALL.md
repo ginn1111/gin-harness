@@ -50,7 +50,7 @@ Use the dedicated installer when the universal agent skill and every Hermes prof
 make install
 ```
 
-This copies `skills/ginflow` to `~/.agent/skills/ginflow`, copies `plugins/ginflow-gate` into every installed profile, and updates each profile's native config. Installer ownership is recorded in the setup-repo-root `.ginflow-install.json`, which is gitignored.
+This copies `skills/ginflow`, including `lib/harness_core.py`, to `~/.agents/skills/ginflow`, copies `plugins/ginflow-gate` and its packaged routing core into every installed profile, and updates each profile's native config. Installer ownership is recorded in the setup-repo-root `.ginflow-install.json`, which is gitignored.
 
 Remove only installer-owned files with:
 

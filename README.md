@@ -33,8 +33,8 @@ Executing before those facts are established can produce the wrong change, colli
 
 | Area | Purpose | Primary evidence |
 |---|---|---|
-| `skills/ginflow/` | Normative workflow vocabulary, routing/output rules, startup, completion, and artifact layout | `skills/ginflow/SKILL.md` |
-| `core/ginflow-core/` | Reusable routing and validation primitives | `core/ginflow-core/` |
+| `skills/ginflow/` | Normative workflow vocabulary, routing/output rules, startup, completion, artifact layout, and distributed harness validation | `skills/ginflow/SKILL.md`, `skills/ginflow/lib/harness_core.py` |
+| `core/ginflow-core/` | Reusable routing primitives | `core/ginflow-core/routing.py` |
 | `plugins/ginflow-gate/` | Hermes hooks, routing context, completion enforcement, feedback/recovery helpers | `plugins/ginflow-gate/plugin.yaml`, `plugins/ginflow-gate/*.py` |
 | `templates/` | Starter local rules and task/artifact templates for target projects | `templates/` |
 | `docs/architecture/` | Editable Draw.io diagrams and derived architecture explanations | `docs/architecture/` |
