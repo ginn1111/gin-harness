@@ -72,9 +72,9 @@ Do not leave project work in scratch workspace if files must be read from repo.
 
 Feedback v1 is a pure normalized contract for Governed Work lifecycle signals. It requires a stable `event_id` and Kanban `task_id`; Direct Work is excluded in v1 because it has no card identity. The builder does not persist events, notify, mutate Kanban, or infer work. Supported signals and next actions are defined in `CONTEXT.md`.
 
-## Read-only background watcher
+## Task notifications
 
-When an interactive agent starts a selected `running` card, launch one `/background` watcher pinned to that task ID and board. The watcher records its initial event boundary, reads/polls only that card, and never claims, edits, dispatches, blocks, completes, or mutates workspace/repository state. Suppress historical events, routine heartbeats, and unchanged status. Report only completed/terminal, blocked, failed, reclaimed/retried, or materially stalled transitions with evidence, then stop at terminal state. Do not start duplicate watchers. Non-interactive surfaces use an equivalent read-only process watcher or no watcher; they must not pretend to invoke `/background`.
+Do not launch a `/background` watcher for a selected `running` card. Card creation from a persistent TUI or gateway session auto-subscribes the originating session when `kanban.auto_subscribe_on_create` is enabled; `subscribed: true` confirms registration. Let the dispatcher deliver terminal events and remove the subscription after `done` or `archived`. When creation does not confirm a subscription, use the normal Kanban notification subscription surface or explicit board reads instead of hidden polling.
 
 Run target-declared project verification first. Run ginflow harness externally against target and selected card; never copy harness into target repo. Report project verification and harness result separately.
 After setup-repo updates, use setup repo `scripts/verify.sh` only for profile drift.

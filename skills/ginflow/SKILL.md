@@ -135,15 +135,9 @@ Before target-project work, determine whether the request is Direct Work, Govern
 10. Report project verification and Ginflow harness separately when Governed Work applies.
 11. Follow routing context injected by `ginflow-gate`; it chooses work mode only when no card exists.
 
-### Interactive card watcher
+### Kanban task notifications
 
-After startup validation claims the selected running card, interactive Hermes agents should launch one read-only `/background` watcher for that exact task:
-
-```
-/background Watch Kanban task <TASK_ID> on board <BOARD>. Record current event boundary, then poll/read only this task. Never claim, edit, dispatch, block, complete, or mutate Kanban, workspace, or repository. Ignore historical events, heartbeat-only events, and unchanged state. Report only evidence-based transitions: completed/terminal, blocked, failed, reclaimed or retried, or materially stalled; include task ID, state, and reason/result. Stop after terminal state. Do not start another watcher.
-```
-
-Watcher reports must be concise and user-visible only for those meaningful changes. `/background` is interactive-only; on non-interactive surfaces, use an equivalent read-only process watcher or omit watching. Never replace watcher fallback with a mutating worker.
+Do not launch a `/background` watcher for the selected running card. Kanban task creation from a persistent TUI or gateway session auto-subscribes the originating session when `kanban.auto_subscribe_on_create` is enabled; treat `subscribed: true` in the creation result as confirmation. Terminal events are delivered by the dispatcher, and the subscription is removed after the task reaches `done` or `archived`. If creation does not confirm a subscription, use the normal Kanban notification subscription surface or explicit board reads instead of hidden polling.
 
 Stop when any required input is missing and risk is material.
 
