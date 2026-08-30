@@ -40,7 +40,7 @@ def test_workspace_and_status_routes():
     assert _route([{"id": "blocked", "workspace_path": workspace, "status": "blocked"}])["route"] == "blocked_card"
     next_route = _route([{"id": "next", "workspace_path": "dir:" + workspace, "status": "next"}])
     assert next_route["route"] == "validate_card_docs"
-    assert next_route["action"] == "request_review"
+    assert next_route["action"] == "validate"
     assert _route([{"id": "ready", "workspace_path": workspace, "status": "in_progress"}])["route"] == "ready_to_start"
     assert _route([{"id": "running", "workspace_path": workspace, "status": "running"}])["route"] == "ready_to_start"
     assert _route([{"id": "todo", "workspace_path": workspace, "status": "todo"}])["route"] == "validate_card_docs"
@@ -294,10 +294,14 @@ def test_live_tmp_next_card_docs():
             result = _routing_context()
             assert result and "route=ready_to_start" in result["context"], result
             assert "mutation_allowed=False" in result["context"], result
-            assert f"kanban_request_review(task_id='{task['id']}'" in result["context"], result
-            assert "metadata={'route': 'validate_card_docs', 'validation': 'passed'}" in result["context"], result
-            assert "kanban_complete" in result["context"]
-            assert "not kanban_complete" in result["context"]
+            # startup validation reserves review for completed work only: no premature
+            # kanban_request_review call and no worker-direct kanban_complete guidance.
+            assert "kanban_request_review" in result["context"], result
+            assert "kanban_complete" in result["context"], result
+            # worker must not complete directly: review submission plus reviewer completion
+            assert "do not call kanban_complete directly" in result["context"], result
+            assert f"kanban_request_review(task_id='{task['id']}'" not in result["context"], result
+            assert "metadata={'route': 'validate_card_docs'" not in result["context"], result
             assert task["status"] == "next"
             assert (target / "docs/specs/TMP-2.md").read_text() == "# Temporary brief\n"
 

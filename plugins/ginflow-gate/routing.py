@@ -337,11 +337,11 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
             context = context.replace("route=validate_card_docs", f"route={route_name}")
             if validation["valid"]:
                 context += (
-                    " Linked-document validation passed; register this validation through the "
-                    "native kanban_request_review tool, not kanban_complete: "
-                    f"kanban_request_review(task_id='{card['id']}', "
-                    "summary='Linked documentation validation passed.', "
-                    "metadata={'route': 'validate_card_docs', 'validation': 'passed'})."
+                    " Linked-document validation passed; resume implementation inside the "
+                    "validated workspace and scope. Submit for review via the native "
+                    "kanban_request_review tool only after completing the work and running "
+                    "canonical verification; do not call kanban_complete directly (the "
+                    "reviewer calls it to approve valid work)."
                 )
             else:
                 context += " Validate linked docs before next-to-in_progress transition."
