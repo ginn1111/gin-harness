@@ -3,6 +3,7 @@ bin
 lib
 pyvenv.cfg
 __pycache__
+.ginflow/
 plugins/ginflow-trace/logs/
 plugins/ginflow-trace/errors/
 .ginflow-install.json
@@ -10,3 +11,6 @@ plugins/ginflow-trace/errors/
 .obsidian
 .codegraph/
 docs/architecture/.$*.drawio.bkp
+
+# Per-task Kanban worktrees
+.worktrees/

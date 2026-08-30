@@ -14,7 +14,7 @@ from .sanitize import sanitize
 from .storage import append_record
 
 F = TypeVar("F", bound=Callable[..., Any])
-ROOT = Path(__file__).resolve().parents[1]
+CONFIG_START = Path.cwd
 
 
 def _enabled() -> bool:
@@ -26,9 +26,14 @@ def _enabled() -> bool:
     return _config_trace_enabled()
 
 
+def _project_config() -> dict | None:
+    """Read the nearest project-local Ginflow config."""
+    return _find_config(CONFIG_START())
+
+
 def _config_trace_enabled() -> bool:
-    """Read ginflow.trace from the nearest .ginflow.yaml above the package."""
-    config = _find_config(ROOT.parents[1])
+    """Read ginflow.trace from the nearest project config."""
+    config = _project_config()
     if config is None:
         return False
     context = config.get("ginflow")
@@ -67,14 +72,37 @@ def _timestamp() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
+def _trace_root() -> Path | None:
+    config = _project_config()
+    if config is None:
+        return None
+    context = config.get("ginflow")
+    if not isinstance(context, dict):
+        return None
+    workspace = context.get("workspace")
+    if not isinstance(workspace, str) or not workspace:
+        return None
+    path = Path(workspace).expanduser()
+    if not path.is_absolute() or not path.is_dir():
+        return None
+    return path.resolve() / ".ginflow"
+
+
 def _write(directory: str, identity, record: dict[str, Any]) -> None:
+    root = _trace_root()
+    if root is None:
+        try:
+            print(f"ginflow-trace: unable to write {directory}: invalid workspace", file=sys.stderr)
+        except Exception:
+            pass
+        return
     try:
-        append_record(ROOT / directory, identity.filename, record)
+        append_record(root / directory, identity.filename, record)
     except Exception as error:  # tracing must never affect the wrapped function
         try:
             if directory != "errors":
                 append_record(
-                    ROOT / "errors",
+                    root / "errors",
                     identity.filename,
                     {
                         "timestamp": _timestamp(),

@@ -24,7 +24,7 @@ sys.path.insert(0, str(ROOT))
 
 import ginflow_trace.decorator as decorator
 
-TEST_BOARD = "gin-harness-trace-integration"
+TEST_BOARD = "gin-harness-testing"
 
 BODY = (
     "Objective: Integration trace card\n"
@@ -91,7 +91,10 @@ def test_full_kanban_lifecycle_traced():
         validate_completion = gate.validate_completion
         pre_tool_call = gate.pre_tool_call
 
-        root = decorator.ROOT
+        (target / ".ginflow.yaml").write_text(
+            f"version: 1\nginflow:\n  board: {TEST_BOARD}\n  workspace: {target}\n  trace: true\n"
+        )
+        root = target / ".ginflow"
         session = "itest"
 
         old = {
@@ -104,6 +107,8 @@ def test_full_kanban_lifecycle_traced():
         os.environ["HERMES_KANBAN_TASK"] = task_id
         os.environ["HERMES_HOME"] = home
         os.environ["HERMES_KANBAN_BOARD"] = TEST_BOARD
+        old_config_start = decorator.CONFIG_START
+        decorator.CONFIG_START = lambda: target
         try:
             # 1) CREATE -> load_card — read the real card back through the gate.
             card = load_card(task_id, board=TEST_BOARD)
@@ -133,6 +138,7 @@ def test_full_kanban_lifecycle_traced():
             assert blocked["action"] == "block"
             assert "drift" in blocked["message"].lower() or "docs/specs/TRACE-INT.md" in blocked["message"]
         finally:
+            decorator.CONFIG_START = old_config_start
             for key, value in old.items():
                 if value is None:
                     os.environ.pop(key, None)

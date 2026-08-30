@@ -46,7 +46,9 @@ A malformed `worker` block (wrong type, empty string, or unknown field) blocks
 card creation but does not break read-only board/workspace routing.
 `ginflow.trace` is an optional boolean. When `true`, the opt-in `ginflow-trace`
 plugin records decorated plugin function calls (gate business functions and hook
-entry points) to `plugins/ginflow-trace/logs/` (errors to `errors/`). An
+entry points) under the configured working repo: `<ginflow.workspace>/.ginflow/logs/`
+(errors under `<ginflow.workspace>/.ginflow/errors/`). Missing, malformed, relative,
+or nonexistent workspace values disable that write without falling back to the setup repo. An
 explicit `GINFLOW_LOG` environment value overrides the flag for a single
 process: `GINFLOW_LOG=1` forces tracing on, any other value forces it off, and
 an unset variable falls back to `ginflow.trace`. Defaults to off when omitted.

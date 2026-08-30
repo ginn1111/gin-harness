@@ -69,45 +69,56 @@ def test_disabled_trace_is_noop():
             os.environ["GINFLOW_LOG"] = old
 
 
-def test_trace_success_records_result():
+def test_trace_success_records_result_in_configured_workspace():
     old = os.environ.get("GINFLOW_LOG")
     os.environ["GINFLOW_LOG"] = "1"
     try:
-        import ginflow_trace.decorator as decorator
+        with TemporaryDirectory() as directory:
+            import ginflow_trace.decorator as decorator
 
-        @trace
-        def compute_doubled(value, **kwargs):
-            return {"doubled": value * 2}
+            workspace = Path(directory) / "working-repo"
+            workspace.mkdir()
+            config = {"ginflow": {"workspace": str(workspace), "trace": True}}
 
-        root = decorator.ROOT
-        log_file = root / "logs" / "session-1__task-2.json"
-        log_file.unlink(missing_ok=True)
+            @trace
+            def compute_doubled(value, **kwargs):
+                return {"doubled": value * 2}
 
-        assert compute_doubled(21, session_worker_id="session-1", task_id="task-2") == {"doubled": 42}
+            log_file = workspace / ".ginflow/logs/session-1__task-2.json"
+            with patch.object(decorator, "_project_config", return_value=config):
+                assert compute_doubled(21, session_worker_id="session-1", task_id="task-2") == {"doubled": 42}
 
-        log_files = list((root / "logs").glob("*.json"))
-        assert log_file in log_files, f"{log_file} not in {log_files}"
-        records = json.loads(log_file.read_text(encoding="utf-8"))
-        assert records == [
-            {
-                "timestamp": records[0]["timestamp"],
-                "function": "compute_doubled",
-                "input": {
-                    "args": [21],
-                    "kwargs": {
-                        "session_worker_id": "session-1",
-                        "task_id": "task-2",
+            records = json.loads(log_file.read_text(encoding="utf-8"))
+            assert records == [
+                {
+                    "timestamp": records[0]["timestamp"],
+                    "function": "compute_doubled",
+                    "input": {
+                        "args": [21],
+                        "kwargs": {
+                            "session_worker_id": "session-1",
+                            "task_id": "task-2",
+                        },
                     },
-                },
-                "output": {"doubled": 42},
-                "status": "success",
-            }
-        ]
+                    "output": {"doubled": 42},
+                    "status": "success",
+                }
+            ]
     finally:
         if old is None:
             os.environ.pop("GINFLOW_LOG", None)
         else:
             os.environ["GINFLOW_LOG"] = old
+
+
+def test_trace_does_not_fall_back_when_workspace_is_invalid():
+    import ginflow_trace.decorator as decorator
+
+    identity = resolve_identity((), {"session_worker_id": "session-1", "task_id": "task-2"})
+    with patch.object(decorator, "_find_config", return_value={"ginflow": {"workspace": "relative"}}):
+        with patch.object(decorator, "append_record") as append:
+            decorator._write("logs", identity, {"function": "function", "status": "success"})
+    append.assert_not_called()
 
 
 def test_trace_records_plugin_function_name():
@@ -122,14 +133,16 @@ def test_trace_records_plugin_function_name():
         def validate_completion(card, metadata=None, **kwargs):
             return None
 
-        root = decorator.ROOT
-        log_file = root / "logs" / "session-1__task-2.json"
-        log_file.unlink(missing_ok=True)
+        with TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            config = {"ginflow": {"workspace": str(workspace)}}
+            log_file = workspace / ".ginflow/logs/session-1__task-2.json"
 
-        validate_completion({"id": "X"}, session_worker_id="session-1", task_id="task-2")
+            with patch.object(decorator, "_project_config", return_value=config):
+                validate_completion({"id": "X"}, session_worker_id="session-1", task_id="task-2")
 
-        records = json.loads(log_file.read_text(encoding="utf-8"))
-        assert records[-1]["function"] == "validate_completion"
+            records = json.loads(log_file.read_text(encoding="utf-8"))
+            assert records[-1]["function"] == "validate_completion"
     finally:
         if old is None:
             os.environ.pop("GINFLOW_LOG", None)
