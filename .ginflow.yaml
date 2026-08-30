@@ -1,0 +1,5 @@
+version: 1
+ginflow:
+  board: harness
+  workspace: /Users/gin/dev/gin-harness
+  trace: true
