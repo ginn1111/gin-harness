@@ -1,4 +1,4 @@
-.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test kanban-board-isolation-test project-config-test harness-core-test plugin-test status-transition-test guidance-test
+.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test kanban-board-isolation-test project-config-test harness-core-test plugin-test trace-test status-transition-test guidance-test
 
 status-transition-test:
 	bash skills/ginflow/scripts/test-status-transition.sh
@@ -85,6 +85,10 @@ plugin-test:
 	python3 plugins/ginflow-gate/test_blocker_reporting.py
 	python3 plugins/ginflow-gate/test_recovery_policy.py
 	python3 plugins/ginflow-gate/test_recovery.py
+	$(MAKE) trace-test
+
+trace-test:
+	python3 plugins/ginflow-trace/test_ginflow_trace.py
 
 guidance-test:
 	bash skills/ginflow/scripts/test-guidance.sh

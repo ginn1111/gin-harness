@@ -8,6 +8,18 @@ import os
 import subprocess
 from pathlib import Path
 
+try:
+    from .trace_adapter import trace
+except ImportError:
+    _trace_spec = importlib.util.spec_from_file_location(
+        "ginflow_gate_trace_adapter", Path(__file__).with_name("trace_adapter.py")
+    )
+    if not _trace_spec or not _trace_spec.loader:
+        raise ImportError("unable to load trace adapter")
+    _trace_module = importlib.util.module_from_spec(_trace_spec)
+    _trace_spec.loader.exec_module(_trace_module)
+    trace = _trace_module.trace
+
 
 def _harness_core_path() -> Path:
     plugin = Path(__file__).resolve()
@@ -36,6 +48,7 @@ def _block(message: str) -> dict[str, str]:
     return {"action": "block", "message": f"ginflow-gate: {message}"}
 
 
+@trace
 def load_card(task_id: str, board: str | None = None) -> dict:
     command = ["hermes", "kanban"]
     if board:
@@ -47,6 +60,7 @@ def load_card(task_id: str, board: str | None = None) -> dict:
     return normalize_card(json.loads(result.stdout))
 
 
+@trace
 def linked_documents_missing_completion(card: dict, target: Path) -> list[str]:
     """Return local linked brief/spec/plan paths without completion footer."""
     missing = []
@@ -67,6 +81,7 @@ def linked_documents_missing_completion(card: dict, target: Path) -> list[str]:
     return sorted(missing)
 
 
+@trace
 def validate_completion(card: dict, metadata: dict) -> str | None:
     required = ("id", "title", "objective", "scope", "acceptance", "workspace", "assignee", "links")
     missing = [name for name in required if not card.get(name)]
@@ -104,6 +119,7 @@ def validate_completion(card: dict, metadata: dict) -> str | None:
     return None
 
 
+@trace
 def pre_tool_call(tool_name: str, args: dict, task_id: str = "", **kwargs):
     if tool_name != "kanban_complete":
         return None
@@ -121,6 +137,7 @@ def pre_tool_call(tool_name: str, args: dict, task_id: str = "", **kwargs):
         return _block(f"validation failed closed: {error}")
 
 
+@trace
 def post_tool_call(tool_name: str, result: dict, args: dict, task_id: str = "", **kwargs):
     """Retained compatibility hook; linked documents are finalized before completion."""
     return None
