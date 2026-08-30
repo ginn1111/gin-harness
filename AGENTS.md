@@ -22,7 +22,7 @@
 
 ## Verification
 - Canonical command: `make test`. This is the single authoritative verify command for this repo.
-- `make test` runs `lint`, `setup-test`, `harness-core-test`, `artifact-guidance-test`, `kanban-harness-test`, `ginflow-gate-test`.
+- `make test` runs `lint`, `setup-test`, `lifecycle-test`, `plugin-test`, `install-test`. `lifecycle-test` is the canonical ginflow full-flow integration test and runs the entire suite in one flat sequence with per-step PASS/FAIL reporting.
 - Run `make lint` before declaring docs or script changes done.
 - Run target-project verification from target repo; do not substitute setup verification or Ginflow harness for it, and vice versa.
 

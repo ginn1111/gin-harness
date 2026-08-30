@@ -1,7 +1,4 @@
-.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test kanban-board-isolation-test project-config-test harness-core-test plugin-test trace-test status-transition-test guidance-test
-
-status-transition-test:
-	bash skills/ginflow/scripts/test-status-transition.sh
+.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test lifecycle-test plugin-test trace-test
 
 ACTIVE_PROFILE := $(shell hermes profile list 2>/dev/null | python3 -c 'import re,sys; m=re.search(r"^\s*[◆*]\s*([A-Za-z0-9._-]+)", sys.stdin.read(), re.M); print(m.group(1) if m else "")')
 PROFILES ?= $(ACTIVE_PROFILE)
@@ -72,13 +69,14 @@ lint:
 	@echo "lint ok"
 
 ## Run deterministic repository tests
-test: lint setup-test harness-core-test artifact-guidance-test kanban-board-isolation-test project-config-test kanban-harness-test plugin-test guidance-test install-test
+test: lint setup-test lifecycle-test plugin-test install-test
+
+## Canonical ginflow flat-flow integration test (single command, per-step PASS/FAIL)
+lifecycle-test:
+	python3 skills/ginflow/scripts/test-ginflow-lifecycle.py
 
 install-test:
 	bash scripts/test-install.sh
-
-harness-core-test:
-	python3 skills/ginflow/scripts/test-harness-core.py
 
 plugin-test:
 	python3 plugins/ginflow-gate/test_ginflow_gate.py
@@ -90,25 +88,3 @@ plugin-test:
 trace-test:
 	python3 plugins/ginflow-trace/test_ginflow_trace.py
 	python3 plugins/ginflow-trace/test_ginflow_trace_integration.py
-
-guidance-test:
-	bash skills/ginflow/scripts/test-guidance.sh
-
-## Check ginflow docs layout and artifact content guidance
-artifact-guidance-test:
-	python3 skills/ginflow/scripts/test-artifact-guidance.py
-
-## Ensure live Kanban tests use the dedicated test board
-kanban-board-isolation-test:
-	python3 scripts/test-kanban-board-isolation.py
-
-project-config-test:
-	python3 scripts/test-project-config.py
-
-## Check ginflow Kanban gate and external harness statuses
-kanban-harness-test:
-	python3 skills/ginflow/scripts/test-kanban-harness.py
-
-## Run model-backed ginflow blank-project integration test
-harness-test: artifact-guidance-test kanban-harness-test
-	bash skills/ginflow/scripts/test-blank-project.sh
