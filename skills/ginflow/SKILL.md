@@ -106,6 +106,19 @@ Feedback v1 is a pure Governed Work lifecycle event contract. It validates stabl
 
 ## Project session startup
 
+### Canonical project context
+
+On the first `/ginflow` load in a project, inspect `.ginflow.yaml` at the current repository root. Do not create a `ginflow` CLI and do not read, migrate, or write `.hermes/ginflow.yaml` or Hermes global config. If the project-local file is absent, show the resolved workspace and current/default Kanban board, then ask whether to use that board or create a new one. A new board requires a non-empty user-provided board name; create it through native Kanban operations before writing the config.
+
+```yaml
+version: 1
+ginflow:
+  board: <Kanban board slug>
+  workspace: /absolute/path/to/project
+```
+
+`workspace` is the resolved project directory and `board` is the selected board. Resolution precedence is explicit command/API override, `HERMES_KANBAN_BOARD`, the existing `.ginflow.yaml`, then Hermes's active board. A missing config must be initialized by `/ginflow` before governed Kanban work. A malformed, incomplete, or workspace-mismatched config fails closed; do not overwrite it or silently switch workspace/board. Existing valid config is not rewritten during ordinary skill loading, and project verification only reads it.
+
 Before target-project work, determine whether the request is Direct Work, Governed Work, or Clarification. The card and Kanban checks below apply to Governed Work; Direct Work still requires affirmative eligibility, project-local permission, and known canonical verification.
 
 1. Confirm workspace points at real target repo.
@@ -134,16 +147,12 @@ Watcher reports must be concise and user-visible only for those meaningful chang
 
 Stop when any required input is missing and risk is material.
 
-## Tool-vs-CLI boundary
+## Kanban completion validation
 
-**Complete cards with the `kanban_complete` TOOL — never the `hermes kanban complete` CLI.**
-
-The `ginflow-gate` completion policy only fires on the native `kanban_complete` tool call. The CLI bypasses it:
+The `ginflow-gate` completion policy is integrated with the native `kanban_complete` tool call:
 
 - `pre_tool_call` blocks malformed completions, linked local spec/plan documents that are not marked completed, mismatched verification/artifact commits, and linked-artifact drift.
 - The blocking message lists incomplete linked documents and tells the agent to finalize and commit them before retrying. Documents are never mutated after the card is done.
-
-Board reads (`kanban_list`, `kanban_show`) should also use the TOOLS, not the `hermes kanban` CLI, so progress flows through the same governed path.
 
 **Syntax:**
 ```
@@ -152,10 +161,7 @@ kanban_complete(task_id='<card-id>', result='<short result>',
             'artifact_baseline': {'commit': '<commit>', 'paths': ['docs/specs/<card-id>.md']}})
 ```
 
-- ✅ `kanban_complete(task_id='t_abc123', result='Build finished', metadata={...})`
-- ❌ `hermes kanban complete t_abc123 --result 'Build finished' --metadata {...}`
-
-If you are about to run `hermes kanban complete ...` in a terminal, stop and call the `kanban_complete` tool instead.
+- `kanban_complete(task_id='t_abc123', result='Build finished', metadata={...})`
 
 ## Execution contract
 
@@ -239,7 +245,7 @@ Next session resumes from selected card, linked artifacts, local rules, and repo
 
 ## Completion report
 
-**Complete the card with the `kanban_complete` TOOL — never the `hermes kanban complete` CLI.** Completing via the CLI bypasses the blocking validation gate that requires linked local documents to be finalized before completion. Always route completion through the tool, not a shell command.
+Use the native `kanban_complete` tool when completion must pass through `ginflow-gate`; the external CLI harness remains available for manual and CI validation.
 
 Immediately before reporting completion:
 
@@ -372,7 +378,7 @@ Stop and clarify when:
 - unclear cause but user expects direct fix
 - acceptance criteria missing
 - no verification path
-- **about to complete a card with the `hermes kanban complete` CLI instead of the `kanban_complete` tool**
+
 
 ## References
 

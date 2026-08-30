@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: completed
 size: M
 scope: ginflow project-local Kanban context initialization
 owner: ginb
@@ -88,6 +88,6 @@ make test
 
 ## Scope boundaries
 
-This design does not add a new CLI, modify Hermes global config, migrate legacy config files, select a board silently, switch workspaces, or change profile identity and credentials. Implementation belongs to follow-up card `t_878cec55`.
+This design does not add a new CLI, modify Hermes global config, migrate legacy config files, select a board silently, switch workspaces, or change profile identity and credentials. The implementation is scoped to the Ginflow skill, project-context library, routing/verification adapters, and deterministic tests.
 
-**Status: proposed** — validated in brainstorming on 2026-08-30; implementation not started.
+**Status: completed** — implemented with project-local context validation, fail-closed first-use initialization, native board-creation ordering, and deterministic verification.

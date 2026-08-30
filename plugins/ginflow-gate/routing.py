@@ -17,8 +17,21 @@ import json
 import logging
 import os
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
+
+try:
+    from .trace_adapter import trace
+except ImportError:
+    _trace_spec = importlib.util.spec_from_file_location(
+        "ginflow_gate_trace_adapter", Path(__file__).with_name("trace_adapter.py")
+    )
+    if not _trace_spec or not _trace_spec.loader:
+        raise ImportError("unable to load trace adapter")
+    _trace_module = importlib.util.module_from_spec(_trace_spec)
+    _trace_spec.loader.exec_module(_trace_module)
+    trace = _trace_module.trace
 
 
 def _harness_core_path() -> Path:
@@ -35,6 +48,8 @@ def _harness_core_path() -> Path:
 
 
 CORE = _harness_core_path()
+if str(CORE.parent) not in sys.path:
+    sys.path.insert(0, str(CORE.parent))
 _spec = importlib.util.spec_from_file_location("ginflow_harness_core", CORE)
 if not _spec or not _spec.loader:
     raise ImportError(f"unable to load Ginflow harness core: {CORE}")
@@ -55,6 +70,9 @@ _routing_core = importlib.util.module_from_spec(_routing_spec)
 _routing_spec.loader.exec_module(_routing_core)
 _route_policy = _routing_core.route
 _workspace = _routing_core.workspace
+_resolve_board = _core.resolve_board
+_context_error = _core.context_error
+_config_exists = _core.config_exists
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +97,7 @@ _DEFAULT_OUTPUTS = {
 }
 
 
+@trace
 def format_work_guidance(
     *,
     work_mode: str,
@@ -180,8 +199,13 @@ def _ginflow_loaded() -> bool:
 def _kanban_board_state() -> str | None:
     """Return a snapshot of the Kanban board as concise text, or None."""
     try:
+        current = Path.cwd()
+        if _context_error(current) or not _config_exists(current):
+            return None
+        board = _resolve_board(current)
+        command = ["hermes", "kanban"] + (["--board", board] if board else []) + ["list", "--json"]
         result = subprocess.run(
-            ["hermes", "kanban", "list", "--json"],
+            command,
             text=True,
             capture_output=True,
             timeout=15,
@@ -230,6 +254,7 @@ def _route(tasks: list[dict[str, Any]], explicit_id: str | None = None) -> dict[
     return _route_policy(tasks, Path.cwd(), explicit_id)
 
 
+@trace
 def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
     """Inject deterministic workspace/card routing context when ginflow is active."""
     if not _ginflow_loaded():
@@ -284,7 +309,16 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
             validation = startup_gate(card, current, current)
             route_name = validation["route"]
             context = context.replace("route=validate_card_docs", f"route={route_name}")
-            context += " Validate linked docs before next-to-in_progress transition."
+            if validation["valid"]:
+                context += (
+                    " Linked-document validation passed; register this validation through the "
+                    "native kanban_request_review tool, not kanban_complete: "
+                    f"kanban_request_review(task_id='{card['id']}', "
+                    "summary='Linked documentation validation passed.', "
+                    "metadata={'route': 'validate_card_docs', 'validation': 'passed'})."
+                )
+            else:
+                context += " Validate linked docs before next-to-in_progress transition."
         else:
             context += " Validate linked docs before next-to-in_progress transition."
     elif route_name == "ready_to_start":
@@ -294,6 +328,7 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
     return {"context": context + "]"}
 
 
+@trace
 def _normalize_task(task: dict[str, Any]) -> dict[str, Any]:
     """Adapt live task fields for the shared Ginflow startup validator."""
     body = task.get("body", "")
@@ -310,11 +345,17 @@ def _normalize_task(task: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+@trace
 def _load_tasks() -> list[dict[str, Any]]:
     """Load board tasks as dictionaries; return empty on unavailable board."""
     try:
+        current = Path.cwd()
+        if _context_error(current) or not _config_exists(current):
+            return []
+        board = _resolve_board(current)
+        command = ["hermes", "kanban"] + (["--board", board] if board else []) + ["list", "--json"]
         result = subprocess.run(
-            ["hermes", "kanban", "list", "--json"],
+            command,
             text=True,
             capture_output=True,
             timeout=15,

@@ -9,10 +9,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = ROOT / "skills/ginflow/scripts/validate-harness.py"
+TEST_BOARD = "gin-harness-testing"
 
 help_result = subprocess.run([sys.executable, str(SCRIPT), "--help"], text=True, capture_output=True)
 assert help_result.returncode == 0
-assert "--board" not in help_result.stdout, help_result.stdout
+assert "--board" in help_result.stdout, help_result.stdout
 CARD_FIELDS = {
     "id": "TEST-1",
     "title": "Test",
@@ -32,6 +33,8 @@ def run(target, card=None, task_id=None, env=None, baseline_commit=None, baselin
         command += ["--card", str(card)]
     if task_id:
         command += ["--kanban-task-id", task_id]
+        command += ["--board", TEST_BOARD]
+        env = (env or os.environ.copy()) | {"HERMES_KANBAN_BOARD": TEST_BOARD}
 
     if baseline_commit:
         command += ["--baseline-commit", baseline_commit]
@@ -46,21 +49,17 @@ def git(target, *args):
     ).stdout.strip()
 
 
-def create_live_card(env, target, body, board=None):
+def create_live_card(env, target, body):
     subprocess.run(["hermes", "kanban", "init"], env=env, text=True, capture_output=True, check=True)
-    if board:
-        subprocess.run(
-            ["hermes", "kanban", "boards", "create", board],
-            env=env,
-            text=True,
-            capture_output=True,
-            check=True,
-        )
-    create_command = ["hermes", "kanban"]
-    if board:
-        create_command += ["--board", board]
+    subprocess.run(
+        ["hermes", "kanban", "boards", "create", TEST_BOARD],
+        env=env,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
     created = subprocess.run(
-        create_command + [
+        ["hermes", "kanban", "--board", TEST_BOARD] + [
             "create", "TEST-1 — Test",
             "--body", body,
             "--assignee", "worker",
@@ -90,6 +89,13 @@ def main():
         missing_result = json.loads(missing.stdout)
         assert missing_result["status"] == "blocker"
         assert missing_result["subsystems"]["state"]["status"] == "blocker"
+
+        (target / ".ginflow.yaml").write_text(
+            "version: 1\n"
+            "ginflow:\n"
+            f"  board: {TEST_BOARD}\n"
+            f"  workspace: {target.resolve()}\n"
+        )
 
         card = target / "card.json"
         complete = CARD_FIELDS | {"workspace": f"dir:{target}"}
@@ -292,7 +298,7 @@ def main():
             assert json.loads(candidate.stdout)["status"] == "pass"
             subprocess.run(
                 [
-                    "hermes", "kanban", "complete", task_id,
+                    "hermes", "kanban", "--board", TEST_BOARD, "complete", task_id,
                     "--summary", "verified",
                     "--metadata", json.dumps({
                         "artifact_baseline": {

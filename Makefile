@@ -1,4 +1,4 @@
-.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test harness-core-test plugin-test status-transition-test guidance-test
+.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test harness-test artifact-guidance-test kanban-harness-test kanban-board-isolation-test project-config-test harness-core-test plugin-test status-transition-test guidance-test
 
 status-transition-test:
 	bash skills/ginflow/scripts/test-status-transition.sh
@@ -72,7 +72,7 @@ lint:
 	@echo "lint ok"
 
 ## Run deterministic repository tests
-test: lint setup-test harness-core-test artifact-guidance-test kanban-harness-test plugin-test guidance-test install-test
+test: lint setup-test harness-core-test artifact-guidance-test kanban-board-isolation-test project-config-test kanban-harness-test plugin-test guidance-test install-test
 
 install-test:
 	bash scripts/test-install.sh
@@ -92,6 +92,13 @@ guidance-test:
 ## Check ginflow docs layout and artifact content guidance
 artifact-guidance-test:
 	python3 skills/ginflow/scripts/test-artifact-guidance.py
+
+## Ensure live Kanban tests use the dedicated test board
+kanban-board-isolation-test:
+	python3 scripts/test-kanban-board-isolation.py
+
+project-config-test:
+	python3 scripts/test-project-config.py
 
 ## Check ginflow Kanban gate and external harness statuses
 kanban-harness-test:

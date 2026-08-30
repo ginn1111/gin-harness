@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+import os
+import tempfile
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "skills/ginflow/lib"))
+from project_config import (
+    CONFIG_RELATIVE_PATH,
+    ContextInitializationError,
+    config_exists,
+    config_path,
+    context_error,
+    configured_context,
+    initialize_context,
+    persist_context,
+    resolve_board,
+)
+
+with tempfile.TemporaryDirectory() as directory:
+    target = Path(directory)
+    assert CONFIG_RELATIVE_PATH == Path(".ginflow.yaml")
+    assert config_path(target) == target.resolve() / ".ginflow.yaml"
+    assert resolve_board(target, explicit="explicit") == "explicit"
+    assert not config_exists(target)
+    assert resolve_board(target, env={"HERMES_KANBAN_BOARD": "env"}) == "env"
+    path = persist_context(target, board="project")
+    assert path == config_path(target)
+    assert config_exists(target)
+    assert configured_context(target) == {"board": "project", "workspace": str(target.resolve())}
+    assert resolve_board(target, env={}) == "project"
+    assert resolve_board(target, explicit="override", env={"HERMES_KANBAN_BOARD": "env"}) == "override"
+    assert persist_context(target / "missing", board="ignored") is None
+    assert context_error(target) is None
+
+    selected = target / "selected"
+    selected.mkdir()
+    selected_path = initialize_context(
+        selected, choice="current", current_board="default"
+    )
+    assert selected_path == config_path(selected)
+    assert configured_context(selected)["board"] == "default"
+
+    created = target / "created"
+    created.mkdir()
+    calls = []
+    created_path = initialize_context(
+        created,
+        choice="new",
+        current_board="default",
+        board_name="project-board",
+        create_board=lambda name: calls.append(name) or True,
+    )
+    assert calls == ["project-board"]
+    assert configured_context(created)["board"] == "project-board"
+    assert created_path == config_path(created)
+
+    for kwargs in (
+        {"choice": "new", "current_board": "default", "board_name": "  ", "create_board": lambda _: True},
+        {"choice": "new", "current_board": "default", "board_name": "new", "create_board": lambda _: False},
+        {"choice": "current", "current_board": None},
+    ):
+        failed = target / f"failed-{len(list(target.iterdir()))}"
+        failed.mkdir()
+        try:
+            initialize_context(failed, **kwargs)
+        except ContextInitializationError:
+            assert not config_path(failed).exists()
+        else:
+            raise AssertionError("unsafe initialization unexpectedly succeeded")
+
+    config_path(target).write_text("version: 1\nginflow:\n  board: project\n  workspace: /other/project\n")
+    assert context_error(target) == (
+        f"project config workspace /other/project does not match {target.resolve()}"
+    )
+    assert resolve_board(target, explicit="override", env={"HERMES_KANBAN_BOARD": "env"}) is None
+
+    config_path(target).write_text("not: [valid")
+    assert context_error(target).startswith("project config is malformed:")
+    assert resolve_board(target, env={"HERMES_KANBAN_BOARD": "env"}) is None
+print("project config precedence and persistence passed")

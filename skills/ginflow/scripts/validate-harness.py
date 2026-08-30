@@ -13,6 +13,7 @@ if str(LIB) not in sys.path:
     sys.path.insert(0, str(LIB))
 
 from harness_core import artifact_gate, check, has, linked_artifacts, load_kanban_card, normalize_card
+from project_config import config_exists, config_path, context_error, resolve_board
 
 
 COMMAND_TIMEOUT = 5
@@ -137,6 +138,7 @@ def main():
     parser = argparse.ArgumentParser(description="Validate the ginflow five-subsystem harness")
     parser.add_argument("--setup-repo", type=Path)
     parser.add_argument("--target", type=Path)
+    parser.add_argument("--board", help="Explicit Kanban board override")
     source = parser.add_mutually_exclusive_group()
     source.add_argument("--card", type=Path, help="Card JSON file; accepts normalized Ginflow or `hermes kanban show --json` shape")
     source.add_argument("--kanban-task-id", help="Read a live card with `hermes kanban show <id> --json`")
@@ -152,6 +154,10 @@ def main():
     root = (args.setup_repo or Path(__file__).resolve().parents[3]).resolve()
     ginflow = (root / "skills/ginflow/SKILL.md").read_text()
     target = args.target.resolve() if args.target else None
+    config_error = context_error(target) if target else None
+    if target and not config_error and not config_exists(target):
+        config_error = "project config is absent; run `/ginflow` to initialize .ginflow.yaml"
+    board = resolve_board(target or Path.cwd(), args.board)
     local = ""
     local_path = None
     if target:
@@ -165,10 +171,11 @@ def main():
     if args.card:
         card_document = json.loads(args.card.read_text())
     elif args.kanban_task_id:
-        card_document, card_load_error = load_kanban_card(args.kanban_task_id)
+        card_document, card_load_error = load_kanban_card(args.kanban_task_id, board, target)
     else:
         card_document = {}
     card = normalize_card(card_document)
+
     if args.baseline_commit:
         card["artifact_baseline"] = {
             "commit": args.baseline_commit,
@@ -191,6 +198,13 @@ def main():
             (not target or has(local, "come from `ginflow`"), "Target local instructions route shared workflow to ginflow when target supplied", "warning"),
         ]),
         "state": check("state", [
+            (
+                not config_error,
+                "Project-local Kanban config matches the target workspace",
+                "blocker",
+                config_error or "project-local config is absent or matches the target",
+                "Run `/ginflow` to initialize .ginflow.yaml or repair it before continuing.",
+            ),
             (
                 not card_load_error and bool(card) and all(card.get(field) for field in card_fields),
                 "Selected card has required fields",
@@ -237,6 +251,9 @@ def main():
         "setup_repo": str(root),
         "target": str(target) if target else None,
         "kanban_task_id": args.kanban_task_id,
+        "kanban_board": board,
+        "project_config": str(config_path(target).relative_to(target)) if target and config_path(target).is_file() else None,
+        "project_config_error": config_error,
         "candidate_baseline": bool(args.baseline_commit),
         "card_load_error": card_load_error,
         "subsystems": subsystems,
