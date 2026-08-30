@@ -11,6 +11,11 @@ ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = ROOT / "skills/ginflow/scripts/validate-harness.py"
 TEST_BOARD = "gin-harness-testing"
 
+import sys as _sys
+_sys.path.insert(0, str(ROOT / "skills/ginflow/lib"))
+import project_config as _project_config
+from project_config import WorkerDefaultsError, configured_worker, persist_worker_defaults, resolve_worker_dispatch, worker_error
+
 help_result = subprocess.run([sys.executable, str(SCRIPT), "--help"], text=True, capture_output=True)
 assert help_result.returncode == 0
 assert "--board" in help_result.stdout, help_result.stdout
@@ -424,6 +429,76 @@ def main():
             if row["message"] == "Card records a path-scoped completion commit baseline"
         )
         assert not baseline_check["pass"]
+
+        # Worker dispatch defaults: configured profile maps to assignee and
+        # provider/model become explicit overrides; unresolved profile falls
+        # back to the current profile; malformed defaults fail closed.
+        with tempfile.TemporaryDirectory(prefix="ginflow-worker-defaults-") as worker_dir:
+            worker_target = Path(worker_dir)
+            (worker_target / ".ginflow.yaml").write_text(
+                "version: 1\n"
+                "ginflow:\n"
+                f"  board: {TEST_BOARD}\n"
+                f"  workspace: {worker_target.resolve()}\n"
+                "  worker:\n"
+                "    profile: ginb\n"
+                "    provider: openai-codex\n"
+                "    model: gpt-5.6-luna\n"
+            )
+            assert worker_error(worker_target) is None
+            resolved = resolve_worker_dispatch(worker_target, current_profile="fallback")
+            assert resolved == {
+                "profile": "ginb",
+                "provider": "openai-codex",
+                "model": "gpt-5.6-luna",
+            }
+            override = resolve_worker_dispatch(
+                worker_target,
+                explicit={"provider": "anthropic", "model": "sonnet"},
+                current_profile="fallback",
+            )
+            assert override["profile"] == "ginb"
+            assert override["provider"] == "anthropic"
+            assert override["model"] == "sonnet"
+
+            partial = Path(worker_dir) / "partial"
+            partial.mkdir()
+            (partial / ".ginflow.yaml").write_text(
+                "version: 1\n"
+                "ginflow:\n"
+                f"  board: {TEST_BOARD}\n"
+                f"  workspace: {partial.resolve()}\n"
+            )
+            assert resolve_worker_dispatch(partial, current_profile="fallback") == {
+                "profile": "fallback"
+            }
+            persisted = persist_worker_defaults(
+                partial, profile="writer", provider="openai-api", model="coding"
+            )
+            assert persisted == _project_config.config_path(partial)
+            assert configured_worker(partial) == {
+                "profile": "writer",
+                "provider": "openai-api",
+                "model": "coding",
+            }
+
+            malformed = Path(worker_dir) / "malformed"
+            malformed.mkdir()
+            (malformed / ".ginflow.yaml").write_text(
+                "version: 1\n"
+                "ginflow:\n"
+                f"  board: {TEST_BOARD}\n"
+                f"  workspace: {malformed.resolve()}\n"
+                "  worker:\n"
+                "    profile: []\n"
+            )
+            assert worker_error(malformed) is not None
+            try:
+                resolve_worker_dispatch(malformed, current_profile="fallback")
+            except WorkerDefaultsError:
+                pass
+            else:
+                raise AssertionError("malformed worker defaults unexpectedly resolved")
 
     print("ginflow Kanban harness test passed")
 

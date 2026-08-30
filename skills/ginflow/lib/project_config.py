@@ -14,6 +14,7 @@ except ImportError:  # pragma: no cover - the setup requires PyYAML
 
 CONFIG_RELATIVE_PATH = Path(".ginflow.yaml")
 CONFIG_VERSION = 1
+WORKER_FIELDS = ("profile", "provider", "model")
 
 
 class ContextInitializationError(ValueError):
@@ -88,6 +89,97 @@ def configured_context(workspace: Path) -> dict[str, str]:
     return result
 
 
+class WorkerDefaultsError(ValueError):
+    """Raised when configured worker dispatch defaults are unusable."""
+
+
+def worker_error(workspace: Path) -> str | None:
+    """Validate the optional worker dispatch block without repairing it.
+
+    Returns a deterministic message when the block exists but is invalid,
+    ``None`` when absent or valid. A missing worker block is not an error:
+    ``profile``/``provider``/``model`` remain optional dispatch defaults.
+    """
+    path = config_path(workspace)
+    if not path.exists() or yaml is None:
+        return None
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    context = data.get("ginflow")
+    if not isinstance(context, dict):
+        return None
+    worker = context.get("worker")
+    if worker is None:
+        return None
+    if not isinstance(worker, dict):
+        return "ginflow.worker must be a mapping"
+    for field in WORKER_FIELDS:
+        value = worker.get(field)
+        if value is None:
+            continue
+        if not isinstance(value, str) or not value.strip():
+            return f"ginflow.worker.{field} must be a non-empty string"
+    unknown = set(worker) - set(WORKER_FIELDS)
+    if unknown:
+        return "ginflow.worker has unknown fields: " + ", ".join(sorted(unknown))
+    return None
+
+
+def configured_worker(workspace: Path) -> dict[str, str]:
+    """Return configured worker dispatch defaults for a validated project config.
+
+    Empty or missing values are omitted. The caller distinguishes an absent
+    block from an invalid one via :func:`worker_error`.
+    """
+    data = load_config(workspace)
+    context = data.get("ginflow", data)
+    if not isinstance(context, dict):
+        return {}
+    worker = context.get("worker")
+    if not isinstance(worker, dict):
+        return {}
+    result = {}
+    for field in WORKER_FIELDS:
+        value = worker.get(field)
+        if isinstance(value, str) and value.strip():
+            result[field] = value.strip()
+    return result
+
+
+def resolve_worker_dispatch(
+    workspace: Path,
+    explicit: Mapping[str, str] | None = None,
+    current_profile: str | None = None,
+) -> dict[str, str]:
+    """Resolve worker dispatch defaults per field.
+
+    Precedence per field: explicit per-card override, project-configured
+    default, runtime fallback (current profile; provider/model left unset).
+    Raises :class:`WorkerDefaultsError` when configured defaults are invalid
+    so card creation fails closed rather than silently dropping values.
+    """
+    error = worker_error(workspace)
+    if error:
+        raise WorkerDefaultsError(error)
+    explicit = explicit or {}
+    configured = configured_worker(workspace)
+    result: dict[str, str] = {}
+    for field in WORKER_FIELDS:
+        value = (explicit.get(field) or configured.get(field) or "").strip()
+        if value:
+            result[field] = value
+            continue
+        if field == "profile":
+            profile = (current_profile or "").strip()
+            if profile:
+                result[field] = profile
+    return result
+
+
 def context_mismatch(workspace: Path) -> str | None:
     """Return a deterministic error when a config belongs to another project."""
     error = context_error(workspace)
@@ -151,6 +243,53 @@ def persist_context(workspace: Path, *, board: str | None) -> Path | None:
     return path
 
 
+def persist_worker_defaults(
+    workspace: Path,
+    *,
+    profile: str,
+    provider: str,
+    model: str,
+) -> Path | None:
+    """Atomically add or replace a complete worker dispatch block.
+
+    Requires an existing valid project context so the merge never creates a
+    partial config or silently changes board/workspace. Returns the config
+    path on success and ``None`` on any failure, leaving the original file
+    unchanged.
+    """
+    workspace = Path(workspace).expanduser().resolve()
+    path = config_path(workspace)
+    if not workspace.is_dir() or yaml is None or context_error(workspace):
+        return None
+    values = {"profile": profile, "provider": provider, "model": model}
+    cleaned = {}
+    for field in WORKER_FIELDS:
+        value = (values[field] or "").strip()
+        if not value:
+            return None
+        cleaned[field] = value
+    data = load_config(workspace)
+    context = data.get("ginflow")
+    if not isinstance(context, dict):
+        context = {}
+    merged = dict(context)
+    merged["worker"] = cleaned
+    data = dict(data)
+    data["ginflow"] = merged
+    temporary = path.with_name(path.name + ".tmp")
+    try:
+        temporary.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+        os.replace(temporary, path)
+    except OSError:
+        return None
+    finally:
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
+    return path
+
+
 def initialize_context(
     workspace: Path,
     *,
@@ -193,4 +332,4 @@ def initialize_context(
     return persisted
 
 
-__all__ = ["CONFIG_RELATIVE_PATH", "CONFIG_VERSION", "ContextInitializationError", "active_board", "config_exists", "config_path", "configured_context", "context_error", "context_mismatch", "initialize_context", "load_config", "persist_context", "resolve_board"]
+__all__ = ["CONFIG_RELATIVE_PATH", "CONFIG_VERSION", "WORKER_FIELDS", "ContextInitializationError", "WorkerDefaultsError", "active_board", "config_exists", "config_path", "configured_context", "configured_worker", "context_error", "context_mismatch", "initialize_context", "load_config", "persist_context", "persist_worker_defaults", "resolve_board", "resolve_worker_dispatch", "worker_error"]

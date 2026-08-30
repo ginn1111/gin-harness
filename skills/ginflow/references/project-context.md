@@ -11,6 +11,10 @@ version: 1
 ginflow:
   board: <Kanban board slug>
   workspace: /absolute/path/to/project
+  worker:
+    profile: <worker Hermes profile>
+    provider: <provider name>
+    model: <model name>
 ```
 
 The resolved workspace is the target directory passed to verification. Board precedence is:
@@ -19,6 +23,26 @@ The resolved workspace is the target directory passed to verification. Board pre
 2. `HERMES_KANBAN_BOARD`;
 3. `ginflow.board` in `.ginflow.yaml`;
 4. Hermes's active board.
+
+The optional `worker` block stores repository-local dispatch defaults used when
+Ginflow creates a governed Kanban card: `profile` maps to `assignee`, and
+`provider`/`model` are passed as explicit overrides when present. Only `board`
+and `workspace` are required; the worker block is recommended, not required.
+When a field is missing, `/ginflow` shows the resolved fallback and asks whether
+to configure the complete block before creating the card. Entered defaults are
+validated, then atomically merged into the existing config, preserving board,
+workspace, version, and unrelated keys. Skipping setup leaves the config
+unchanged and uses the current Hermes profile, omitting provider/model
+overrides so the worker profile's own configuration applies.
+
+Worker dispatch resolution per field is:
+
+1. explicit per-card user override;
+2. `ginflow.worker.<field>` in `.ginflow.yaml`;
+3. runtime fallback (current profile; provider/model unset).
+
+A malformed `worker` block (wrong type, empty string, or unknown field) blocks
+card creation but does not break read-only board/workspace routing.
 
 A valid existing config is used by Kanban reads when no override is supplied and is not overwritten during ordinary skill loading. If the file is missing, `/ginflow` asks whether to use the current/default board or create a new board. New-board selection requires a non-empty name and successful native board creation before persistence. Malformed, incomplete, or workspace-mismatched config fails closed and must be repaired or explicitly resolved by the user; it never causes a silent workspace or board switch. Verification reads this file but does not initialize or rewrite it.
 
