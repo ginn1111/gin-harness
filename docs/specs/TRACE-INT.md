@@ -35,3 +35,5 @@ lifecycle.
 - `plugins/ginflow-trace/test_ginflow_trace_integration.py` —
   end-to-end lifecycle test.
 - `docs/specs/GINFLOW-21.md` — parent contract for the trace plugin.
+
+**Status: completed**
