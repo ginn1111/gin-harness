@@ -283,7 +283,7 @@ def main():
                 "artifact_baseline": {"commit": baseline_commit,
                                       "paths": ["docs/specs/LIFE-1.md", "docs/plans/LIFE-1.md"]},
             }
-            # valid completion allowed
+            # valid request-review and completion allowed; invalid evidence blocked
             error = gate.validate_completion(card, metadata)
             assert error is None, error
             # pre_tool_call resolves the card from Kanban; stub load_card to
@@ -291,17 +291,18 @@ def main():
             load_card = getattr(gate, "load_card")
             setattr(gate, "load_card", lambda task_id, board=None: card)
             try:
-                allowed = gate.pre_tool_call(
-                    "kanban_complete", {"task_id": CARD_ID, "metadata": metadata}, "",
-                    profile="worker",
-                )
-                assert allowed is None, allowed
-                blocked = gate.pre_tool_call(
-                    "kanban_complete", {"task_id": CARD_ID, "metadata": {}}, "",
-                    profile="worker",
-                )
-                assert blocked and blocked["action"] == "block"
-                assert "verification_result" in blocked["message"]
+                for tool_name in ("kanban_request_review", "kanban_complete"):
+                    allowed = gate.pre_tool_call(
+                        tool_name, {"task_id": CARD_ID, "metadata": metadata}, "",
+                        profile="worker",
+                    )
+                    assert allowed is None, allowed
+                    blocked = gate.pre_tool_call(
+                        tool_name, {"task_id": CARD_ID, "metadata": {}}, "",
+                        profile="worker",
+                    )
+                    assert blocked and blocked["action"] == "block"
+                    assert "verification_result" in blocked["message"] or "artifact_baseline" in blocked["message"]
             finally:
                 setattr(gate, "load_card", load_card)
             return "valid->allow; missing evidence->block"

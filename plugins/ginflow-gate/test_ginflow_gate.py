@@ -133,7 +133,8 @@ def test_ginflow_skill_active():
         assert "route=" in result["context"] and "mutation_allowed=" in result["context"], \
             "context should expose structured deterministic route"
         assert any(marker in result["context"] for marker in (
-            "Report", "Validate", "Resume", "Do not implement",
+            "Report", "Validate", "Resume", "Do not implement", "Choose work mode",
+            "Run `/ginflow` to initialize", "Repair `.ginflow.yaml`",
         )), "context should provide route action"
         if "no_cards_for_workspace" in result["context"]:
             assert "Choose work mode" in result["context"]
@@ -324,41 +325,50 @@ def test_live_tmp_next_card_docs():
 
 
 def test_blocked_route_context_reports_metadata_without_execution():
-    workspace = str(Path.cwd().resolve())
-    task = {
-        "id": "blocked-with-evidence",
-        "title": "Blocked with evidence",
-        "workspace_path": workspace,
-        "status": "blocked",
-        "blocker_metadata": {
-            "event_id": "evt-1",
-            "event_type": "blocked",
-            "blocker_kind": "transient",
-            "decision": "pending",
-        },
-    }
-    old_loader = module._load_tasks
-    old_skills = os.environ.get("HERMES_TUI_SKILLS")
-    old_task = os.environ.get("HERMES_KANBAN_TASK")
-    try:
-        setattr(module, "_load_tasks", lambda: [task])
-        os.environ["HERMES_TUI_SKILLS"] = "ginflow"
-        os.environ["HERMES_KANBAN_TASK"] = task["id"]
-        result = _routing_context()
-        assert result and "route=blocked_card" in result["context"], result
-        assert "Report blocker to orchestrator; do not implement." in result["context"]
-        assert '"event_id": "evt-1"' in result["context"]
-        assert "Resume implementation" not in result["context"]
-    finally:
-        setattr(module, "_load_tasks", old_loader)
-        if old_skills is None:
-            os.environ.pop("HERMES_TUI_SKILLS", None)
-        else:
-            os.environ["HERMES_TUI_SKILLS"] = old_skills
-        if old_task is None:
-            os.environ.pop("HERMES_KANBAN_TASK", None)
-        else:
-            os.environ["HERMES_KANBAN_TASK"] = old_task
+    with tempfile.TemporaryDirectory(prefix="ginflow-gate-blocked-") as project:
+        target = Path(project)
+        (target / ".ginflow.yaml").write_text(
+            "version: 1\nginflow:\n  board: test\n"
+            f"  workspace: {target.resolve()}\n"
+        )
+        workspace = str(target.resolve())
+        task = {
+            "id": "blocked-with-evidence",
+            "title": "Blocked with evidence",
+            "workspace_path": workspace,
+            "status": "blocked",
+            "blocker_metadata": {
+                "event_id": "evt-1",
+                "event_type": "blocked",
+                "blocker_kind": "transient",
+                "decision": "pending",
+            },
+        }
+        old_loader = module._load_tasks
+        old_skills = os.environ.get("HERMES_TUI_SKILLS")
+        old_task = os.environ.get("HERMES_KANBAN_TASK")
+        old_cwd = Path.cwd()
+        try:
+            os.chdir(target)
+            setattr(module, "_load_tasks", lambda: [task])
+            os.environ["HERMES_TUI_SKILLS"] = "ginflow"
+            os.environ["HERMES_KANBAN_TASK"] = task["id"]
+            result = _routing_context()
+            assert result and "route=blocked_card" in result["context"], result
+            assert "Report blocker to orchestrator; do not implement." in result["context"]
+            assert '"event_id": "evt-1"' in result["context"]
+            assert "Resume implementation" not in result["context"]
+        finally:
+            os.chdir(old_cwd)
+            setattr(module, "_load_tasks", old_loader)
+            if old_skills is None:
+                os.environ.pop("HERMES_TUI_SKILLS", None)
+            else:
+                os.environ["HERMES_TUI_SKILLS"] = old_skills
+            if old_task is None:
+                os.environ.pop("HERMES_KANBAN_TASK", None)
+            else:
+                os.environ["HERMES_KANBAN_TASK"] = old_task
     print("PASS: blocked route reports metadata without execution")
 
 
@@ -407,42 +417,43 @@ card = {
 }
 setattr(module, "load_card", lambda task_id, board=None: card)
 
-blocked = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": {}}, "", profile="worker")
-assert blocked["action"] == "block"
-assert "verification_result" in blocked["message"]
+for tool_name in ("kanban_request_review", "kanban_complete"):
+    blocked = module.pre_tool_call(tool_name, {"task_id": "GATE-1", "metadata": {}}, "", profile="worker")
+    assert blocked["action"] == "block"
+    assert blocked["message"].startswith("ginflow-gate: ")
 
-setattr(module, "validate_completion", lambda card, metadata: None)
-allowed = module.pre_tool_call(
-    "kanban_complete",
-    {
-        "task_id": "GATE-1",
-        "metadata": {
-            "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
-            "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
+    setattr(module, "validate_completion", lambda card, metadata: None)
+    allowed = module.pre_tool_call(
+        tool_name,
+        {
+            "task_id": "GATE-1",
+            "metadata": {
+                "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
+                "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
+            },
         },
-    },
-    "",
-    profile="worker",
-)
-assert allowed is None
+        "",
+        profile="worker",
+    )
+    assert allowed is None
 
-setattr(module, "validate_completion", lambda card, metadata: "linked artifact drift: docs/specs/GATE-1.md")
-blocked = module.pre_tool_call(
-    "kanban_complete",
-    {
-        "task_id": "GATE-1",
-        "metadata": {
-            "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
-            "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
+    setattr(module, "validate_completion", lambda card, metadata: "linked artifact drift: docs/specs/GATE-1.md")
+    blocked = module.pre_tool_call(
+        tool_name,
+        {
+            "task_id": "GATE-1",
+            "metadata": {
+                "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
+                "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
+            },
         },
-    },
-    "",
-)
-assert blocked["action"] == "block"
-assert "drift" in blocked["message"]
+        "",
+    )
+    assert blocked["action"] == "block"
+    assert "drift" in blocked["message"]
 
 setattr(module, "load_card", lambda task_id, board=None: (_ for _ in ()).throw(RuntimeError("DB unavailable")))
-failed_closed = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": {}}, "")
+failed_closed = module.pre_tool_call("kanban_request_review", {"task_id": "GATE-1", "metadata": {}}, "")
 assert failed_closed["action"] == "block"
 assert "validation failed closed" in failed_closed["message"]
 
@@ -470,10 +481,10 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
     assert "status: completed" in incomplete_error
     setattr(module, "load_card", lambda task_id, board=None: committed_card)
     setattr(module, "validate_completion", validate_completion)
-    blocked = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": metadata}, "")
+    blocked = module.pre_tool_call("kanban_request_review", {"task_id": "GATE-1", "metadata": metadata}, "")
     assert blocked["action"] == "block"
     assert "docs/specs/GATE-1.md" in blocked["message"]
-    assert "then retry kanban_complete" in blocked["message"]
+    assert "retry" in blocked["message"]
     assert brief.read_text() == "# Gate\n\n**Status: completed**\n"
     brief.write_text("---\nstatus: completed\n---\n# Gate\n\n**Status: in_progress**\n")
     assert module.linked_documents_missing_completion(committed_card, target) == []
