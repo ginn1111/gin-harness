@@ -6,6 +6,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "skills/ginflow/lib"))
+import project_config
 from project_config import (
     CONFIG_RELATIVE_PATH,
     ContextInitializationError,
@@ -33,6 +34,23 @@ with tempfile.TemporaryDirectory() as directory:
     assert resolve_board(target, explicit="override", env={"HERMES_KANBAN_BOARD": "env"}) == "override"
     assert persist_context(target / "missing", board="ignored") is None
     assert context_error(target) is None
+
+    config_path(target).write_text(
+        "version: 1\nginflow:\n  board: project\n  workspace: .\n"
+    )
+    assert context_error(target) == "project config ginflow.workspace must be an absolute path"
+    config_path(target).unlink()
+
+    atomic_failure = target / "atomic-failure"
+    atomic_failure.mkdir()
+    original_replace = project_config.os.replace
+    project_config.os.replace = lambda *_: (_ for _ in ()).throw(OSError("replace failed"))
+    try:
+        assert persist_context(atomic_failure, board="project") is None
+    finally:
+        project_config.os.replace = original_replace
+    assert not config_path(atomic_failure).exists()
+    assert not config_path(atomic_failure).with_name(".ginflow.yaml.tmp").exists()
 
     selected = target / "selected"
     selected.mkdir()

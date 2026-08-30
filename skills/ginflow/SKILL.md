@@ -117,7 +117,7 @@ ginflow:
   workspace: /absolute/path/to/project
 ```
 
-`workspace` is the resolved project directory and `board` is the selected board. Resolution precedence is explicit command/API override, `HERMES_KANBAN_BOARD`, the existing `.ginflow.yaml`, then Hermes's active board. A missing config must be initialized by `/ginflow` before governed Kanban work. A malformed, incomplete, or workspace-mismatched config fails closed; do not overwrite it or silently switch workspace/board. Existing valid config is not rewritten during ordinary skill loading, and project verification only reads it.
+`workspace` is the resolved project directory and `board` is the selected board. Resolution precedence is explicit command/API override, `HERMES_KANBAN_BOARD`, the existing `.ginflow.yaml`, then Hermes's active board. A missing config must be initialized by `/ginflow` before governed Kanban work. First-load initialization is agent-procedural: runtime validation and persistence enforce the contract, but no runtime hook or CLI silently initializes a project. A malformed, incomplete, or workspace-mismatched config fails closed; do not overwrite it or silently switch workspace/board. Existing valid config is not rewritten during ordinary skill loading, and project verification only reads it. Gate routing distinguishes missing config (run `/ginflow` to initialize) from invalid config (repair `.ginflow.yaml`); a valid config with no workspace cards remains a normal no-card work-shaping route.
 
 Before target-project work, determine whether the request is Direct Work, Governed Work, or Clarification. The card and Kanban checks below apply to Governed Work; Direct Work still requires affirmative eligibility, project-local permission, and known canonical verification.
 

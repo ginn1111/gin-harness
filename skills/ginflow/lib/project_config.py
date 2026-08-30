@@ -62,8 +62,11 @@ def context_error(workspace: Path) -> str | None:
         return "project config is missing ginflow.board"
     if not isinstance(configured, str) or not configured.strip():
         return "project config is missing ginflow.workspace"
+    configured_path = Path(configured).expanduser()
+    if not configured_path.is_absolute():
+        return "project config ginflow.workspace must be an absolute path"
     try:
-        expected = Path(configured).expanduser().resolve()
+        expected = configured_path.resolve()
     except (OSError, TypeError, ValueError):
         return "project config has an invalid workspace"
     actual = Path(workspace).expanduser().resolve()
@@ -135,8 +138,16 @@ def persist_context(workspace: Path, *, board: str | None) -> Path | None:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {"version": CONFIG_VERSION, "ginflow": {"board": board, "workspace": str(workspace)}}
     temporary = path.with_name(path.name + ".tmp")
-    temporary.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
-    os.replace(temporary, path)
+    try:
+        temporary.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+        os.replace(temporary, path)
+    except OSError:
+        return None
+    finally:
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
     return path
 
 

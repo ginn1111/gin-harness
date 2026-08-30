@@ -254,11 +254,38 @@ def _route(tasks: list[dict[str, Any]], explicit_id: str | None = None) -> dict[
     return _route_policy(tasks, Path.cwd(), explicit_id)
 
 
+def _project_config_route(current: Path) -> tuple[str, str] | None:
+    """Return a mutation-blocking route when project context is unusable."""
+    error = _context_error(current)
+    if error:
+        return "project_config_invalid", (
+            f"Project-local `.ginflow.yaml` is invalid: {error}. "
+            "Repair `.ginflow.yaml` for this workspace before continuing; "
+            "do not silently switch workspace or board."
+        )
+    if not _config_exists(current):
+        return "project_config_missing", (
+            "Project-local `.ginflow.yaml` is missing. Run `/ginflow` to initialize "
+            "the project context by choosing the current/default board or creating "
+            "a new board before continuing."
+        )
+    return None
+
+
 @trace
 def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
     """Inject deterministic workspace/card routing context when ginflow is active."""
     if not _ginflow_loaded():
         return None
+
+    current = Path.cwd().resolve()
+    config_route = _project_config_route(current)
+    if config_route:
+        route_name, guidance = config_route
+        return {"context": (
+            f"[ginflow-gate routing: route={route_name}; workspace={current}; "
+            "mutation_allowed=False; task=none; candidates=none. " + guidance + "]"
+        )}
 
     tasks = _load_tasks()
     explicit_id = os.environ.get("HERMES_KANBAN_TASK") or None
@@ -266,7 +293,6 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
     route_name = route["route"]
     candidates = route.get("candidates", [])
     candidate_ids = [item["id"] if isinstance(item, dict) else item for item in candidates]
-    current = Path.cwd().resolve()
     if route_name == "no_card":
         route_name = "no_cards_for_workspace"
     if route_name == "invalid_status":

@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PLUGIN = ROOT / "plugins/ginflow-gate/routing.py"
+TEST_BOARD = "gin-harness-testing"
 
 spec = importlib.util.spec_from_file_location("ginflow_gate_routing", PLUGIN)
 assert spec and spec.loader
@@ -19,6 +20,7 @@ spec.loader.exec_module(module)
 _ginflow_loaded = module._ginflow_loaded
 _routing_context = module._routing_context
 _route = module._route
+_project_config_route = module._project_config_route
 format_work_guidance = module.format_work_guidance
 
 
@@ -36,7 +38,9 @@ def test_workspace_and_status_routes():
     assert ambiguous["action"] == "orchestrator"
     assert ambiguous["candidates"] == [{"id": "one", "title": "First"}, {"id": "two", "title": "Second"}]
     assert _route([{"id": "blocked", "workspace_path": workspace, "status": "blocked"}])["route"] == "blocked_card"
-    assert _route([{"id": "next", "workspace_path": "dir:" + workspace, "status": "next"}])["route"] == "validate_card_docs"
+    next_route = _route([{"id": "next", "workspace_path": "dir:" + workspace, "status": "next"}])
+    assert next_route["route"] == "validate_card_docs"
+    assert next_route["action"] == "request_review"
     assert _route([{"id": "ready", "workspace_path": workspace, "status": "in_progress"}])["route"] == "ready_to_start"
     assert _route([{"id": "running", "workspace_path": workspace, "status": "running"}])["route"] == "ready_to_start"
     assert _route([{"id": "todo", "workspace_path": workspace, "status": "todo"}])["route"] == "validate_card_docs"
@@ -65,6 +69,49 @@ def test_no_ginflow_skill():
             os.environ.pop("HERMES_TUI_SKILLS", None)
 
     print("PASS: no ginflow → routing not called")
+
+
+def test_project_config_routes_fail_closed():
+    with tempfile.TemporaryDirectory(prefix="ginflow-config-routing-") as directory:
+        target = Path(directory)
+        old_cwd = Path.cwd()
+        old_skills = os.environ.get("HERMES_TUI_SKILLS")
+        try:
+            os.chdir(target)
+            os.environ["HERMES_TUI_SKILLS"] = "ginflow"
+            missing = _routing_context()
+            assert "route=project_config_missing" in missing["context"]
+            assert "Run `/ginflow` to initialize" in missing["context"]
+            assert "mutation_allowed=False" in missing["context"]
+
+            (target / ".ginflow.yaml").write_text(
+                "version: 1\nginflow:\n  board: test\n  workspace: relative\n"
+            )
+            invalid = _routing_context()
+            assert "route=project_config_invalid" in invalid["context"]
+            assert "must be an absolute path" in invalid["context"]
+            assert "Repair `.ginflow.yaml`" in invalid["context"]
+            assert "mutation_allowed=False" in invalid["context"]
+
+            (target / ".ginflow.yaml").write_text(
+                "version: 1\nginflow:\n  board: test\n"
+                f"  workspace: {target.resolve()}\n"
+            )
+            assert _project_config_route(target) is None
+            old_loader = module._load_tasks
+            module._load_tasks = lambda: []
+            try:
+                no_cards = _routing_context()
+            finally:
+                module._load_tasks = old_loader
+            assert "route=no_cards_for_workspace" in no_cards["context"]
+        finally:
+            os.chdir(old_cwd)
+            if old_skills is None:
+                os.environ.pop("HERMES_TUI_SKILLS", None)
+            else:
+                os.environ["HERMES_TUI_SKILLS"] = old_skills
+    print("PASS: project config routing diagnostics")
 
 
 def test_ginflow_skill_active():
@@ -175,10 +222,14 @@ def test_live_tmp_project_card():
         target = Path(project)
         (target / "docs/specs").mkdir(parents=True)
         (target / "docs/specs/TMP-1.md").write_text("# Temporary brief\n")
-        env = os.environ | {"HERMES_HOME": home, "HERMES_TUI_SKILLS": "ginflow"}
+        env = os.environ | {"HERMES_HOME": home, "HERMES_TUI_SKILLS": "ginflow", "HERMES_KANBAN_BOARD": TEST_BOARD}
         subprocess.run(["hermes", "kanban", "init"], env=env, check=True, capture_output=True, text=True)
+        subprocess.run(
+            ["hermes", "kanban", "boards", "create", TEST_BOARD],
+            env=env, check=True, capture_output=True, text=True,
+        )
         created = subprocess.run(
-            ["hermes", "kanban", "create", "TMP-1 — temporary routing card", "--body", body,
+            ["hermes", "kanban", "--board", TEST_BOARD, "create", "TMP-1 — temporary routing card", "--body", body,
              "--assignee", "ginb", "--workspace", f"dir:{target}",
              "--initial-status", "blocked", "--json"],
             env=env, check=True, capture_output=True, text=True,
@@ -208,15 +259,23 @@ def test_live_tmp_next_card_docs():
         target = Path(project)
         (target / "docs/specs").mkdir(parents=True)
         (target / "docs/specs/TMP-2.md").write_text("# Temporary brief\n")
+        (target / ".ginflow.yaml").write_text(
+            "version: 1\nginflow:\n  board: " + TEST_BOARD + "\n"
+            f"  workspace: {target.resolve()}\n"
+        )
         subprocess.run(["git", "init", "-q"], cwd=target, check=True)
         subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
         subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
         subprocess.run(["git", "add", "docs/specs/TMP-2.md"], cwd=target, check=True)
         subprocess.run(["git", "commit", "-qm", "baseline"], cwd=target, check=True)
-        env = os.environ | {"HERMES_HOME": home}
+        env = os.environ | {"HERMES_HOME": home, "HERMES_KANBAN_BOARD": TEST_BOARD}
         subprocess.run(["hermes", "kanban", "init"], env=env, check=True, capture_output=True, text=True)
+        subprocess.run(
+            ["hermes", "kanban", "boards", "create", TEST_BOARD],
+            env=env, check=True, capture_output=True, text=True,
+        )
         created = subprocess.run(
-            ["hermes", "kanban", "create", "TMP-2 — temporary startup card", "--body", body,
+            ["hermes", "kanban", "--board", TEST_BOARD, "create", "TMP-2 — temporary startup card", "--body", body,
              "--assignee", "ginb", "--workspace", f"dir:{target}",
              "--initial-status", "blocked", "--json"],
             env=env, check=True, capture_output=True, text=True,
@@ -234,6 +293,10 @@ def test_live_tmp_next_card_docs():
             result = _routing_context()
             assert result and "route=ready_to_start" in result["context"], result
             assert "mutation_allowed=False" in result["context"], result
+            assert f"kanban_request_review(task_id='{task['id']}'" in result["context"], result
+            assert "metadata={'route': 'validate_card_docs', 'validation': 'passed'}" in result["context"], result
+            assert "kanban_complete" in result["context"]
+            assert "not kanban_complete" in result["context"]
             assert task["status"] == "next"
             assert (target / "docs/specs/TMP-2.md").read_text() == "# Temporary brief\n"
 
@@ -302,6 +365,7 @@ def test_blocked_route_context_reports_metadata_without_execution():
 if __name__ == "__main__":
     test_workspace_and_status_routes()
     test_no_ginflow_skill()
+    test_project_config_routes_fail_closed()
     test_ginflow_skill_active()
     test_work_guidance_maps_modes_to_bounded_skills()
     test_work_guidance_routes_known_failure_and_unknown_separately()
