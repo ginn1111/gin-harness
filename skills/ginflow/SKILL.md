@@ -254,7 +254,7 @@ Immediately before reporting completion:
 3. Report only files under selected card workspace.
 4. Quote canonical project command and exact fresh result.
 5. Record same evidence on selected Kanban card before completing it.
-6. Finalize every linked local spec/plan with `**Status: completed**`, commit those document changes, update matching verification and artifact-baseline commits, then call `kanban_complete` directly. Any worker may complete its assigned card; do not route completion to `gintary` or a review handoff.
+6. Finalize every linked local spec/plan with YAML frontmatter at byte 0 declaring `status: completed`, commit those document changes, update matching verification and artifact-baseline commits, then call `kanban_complete` directly. Body status text is ignored. Any worker may complete its assigned card; do not route completion to `gintary` or a review handoff.
 7. Provide `metadata.verification_result` (`commit`, `command`, `result`) and matching `metadata.artifact_baseline` (`commit`, `paths`). `ginflow-gate` validates these synchronously, including exact linked paths and drift, and rejects invalid completion.
 8. The external CLI harness remains available for manual and CI validation independent of the live plugin gate.
 9. Review target workspace using `references/workspace-health-warnings.md`. Record concise findings under `Workspace warnings` on card and in completion report. Warnings do not block by default; promote only when acceptance, canonical verification, security, privacy, data integrity, or restartability is affected. Do not copy warning policy or scanner files into target repo.

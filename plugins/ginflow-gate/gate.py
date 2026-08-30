@@ -8,6 +8,8 @@ import os
 import subprocess
 from pathlib import Path
 
+import yaml
+
 try:
     from .trace_adapter import trace
 except ImportError:
@@ -62,7 +64,7 @@ def load_card(task_id: str, board: str | None = None) -> dict:
 
 @trace
 def linked_documents_missing_completion(card: dict, target: Path) -> list[str]:
-    """Return local linked brief/spec/plan paths without completion footer."""
+    """Return linked local brief/spec/plan paths without completed frontmatter."""
     missing = []
     for link in card.get("links", []):
         path_str = link if isinstance(link, str) else link.get("path") if isinstance(link, dict) else None
@@ -76,8 +78,19 @@ def linked_documents_missing_completion(card: dict, target: Path) -> list[str]:
         relative = artifact.relative_to(target)
         if artifact.is_file() and artifact.suffix.lower() == ".md" and any(
             part in {"briefs", "specs", "plans"} for part in relative.parts
-        ) and "**Status: completed**" not in artifact.read_text(encoding="utf-8"):
-            missing.append(path_str)
+        ):
+            text = artifact.read_text(encoding="utf-8")
+            if not text.startswith("---\n"):
+                missing.append(path_str)
+                continue
+            lines = text.splitlines()
+            try:
+                end = lines.index("---", 1)
+                frontmatter = yaml.safe_load("\n".join(lines[1:end]))
+            except (ValueError, yaml.YAMLError):
+                frontmatter = None
+            if not isinstance(frontmatter, dict) or frontmatter.get("status") != "completed":
+                missing.append(path_str)
     return sorted(missing)
 
 
@@ -105,8 +118,9 @@ def validate_completion(card: dict, metadata: dict) -> str | None:
     incomplete = linked_documents_missing_completion(card, target)
     if incomplete:
         return (
-            "linked target-local documents are not marked completed: " + ", ".join(incomplete)
-            + ". Finalize each document with '**Status: completed**', commit those changes, "
+            "linked target-local documents require valid YAML frontmatter with status: completed: "
+            + ", ".join(incomplete)
+            + ". Add the frontmatter at byte 0, commit those changes, "
               "update verification_result.commit and artifact_baseline.commit, then retry kanban_complete."
         )
 

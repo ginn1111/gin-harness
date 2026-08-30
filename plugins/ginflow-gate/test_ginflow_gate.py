@@ -450,7 +450,7 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
     target = Path(directory)
     brief = target / "docs/specs/GATE-1.md"
     brief.parent.mkdir(parents=True)
-    brief.write_text("# Gate\n\n---\n**Status: completed** — linked card GATE-1 is done.\n")
+    brief.write_text("---\nstatus: completed\n---\n# Gate\n")
     subprocess.run(["git", "init", "-q"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
@@ -465,19 +465,27 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
         "artifact_baseline": {"commit": commit, "paths": ["docs/specs/GATE-1.md"]},
     }
     assert validate_completion(committed_card, metadata) is None
-    brief.write_text("# Gate\n")
+    brief.write_text("# Gate\n\n**Status: completed**\n")
     incomplete_error = validate_completion(committed_card, metadata)
-    assert "not marked completed" in incomplete_error
+    assert "status: completed" in incomplete_error
     setattr(module, "load_card", lambda task_id, board=None: committed_card)
     setattr(module, "validate_completion", validate_completion)
     blocked = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": metadata}, "")
     assert blocked["action"] == "block"
     assert "docs/specs/GATE-1.md" in blocked["message"]
     assert "then retry kanban_complete" in blocked["message"]
-    assert brief.read_text() == "# Gate\n"
-    brief.write_text("# Gate\n\n---\n**Status: completed** — linked card GATE-1 is done.\n")
+    assert brief.read_text() == "# Gate\n\n**Status: completed**\n"
+    brief.write_text("---\nstatus: completed\n---\n# Gate\n\n**Status: in_progress**\n")
+    assert module.linked_documents_missing_completion(committed_card, target) == []
     metadata["verification_result"]["commit"] = "mismatch"
     assert "must match" in validate_completion(committed_card, metadata)
+
+    for contents in ("---\nstatus: draft\n---\n# Gate\n", "---\nstatus: [\n---\n# Gate\n", "# Gate\n"):
+        brief.write_text(contents)
+        error = validate_completion(committed_card, metadata | {
+            "verification_result": {"commit": commit, "command": "make test", "result": "passed"}
+        })
+        assert "status: completed" in error
 
 class Hooks:
     def __init__(self):

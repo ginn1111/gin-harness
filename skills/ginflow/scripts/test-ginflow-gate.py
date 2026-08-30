@@ -75,7 +75,7 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
     target = Path(directory)
     brief = target / "docs/specs/GATE-1.md"
     brief.parent.mkdir(parents=True)
-    brief.write_text("# Gate\n\n**Status: completed**\n")
+    brief.write_text("---\nstatus: completed\n---\n# Gate\n\n**Status: stale**\n")
     subprocess.run(["git", "init", "-q"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
