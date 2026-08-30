@@ -50,7 +50,8 @@ def test_sanitizes_sensitive_and_large_values():
 
 
 def test_disabled_trace_is_noop():
-    old = os.environ.pop("GINFLOW_LOG", None)
+    old = os.environ.get("GINFLOW_LOG")
+    os.environ["GINFLOW_LOG"] = "0"  # explicit off overrides any ginflow.trace config
     try:
         calls = []
 
@@ -62,7 +63,77 @@ def test_disabled_trace_is_noop():
         assert function(1) == 2
         assert calls == [1]
     finally:
-        if old is not None:
+        if old is None:
+            os.environ.pop("GINFLOW_LOG", None)
+        else:
+            os.environ["GINFLOW_LOG"] = old
+
+
+def test_trace_success_records_result():
+    old = os.environ.get("GINFLOW_LOG")
+    os.environ["GINFLOW_LOG"] = "1"
+    try:
+        import ginflow_trace.decorator as decorator
+
+        @trace
+        def compute_doubled(value, **kwargs):
+            return {"doubled": value * 2}
+
+        root = decorator.ROOT
+        log_file = root / "logs" / "session-1__task-2.json"
+        log_file.unlink(missing_ok=True)
+
+        assert compute_doubled(21, session_worker_id="session-1", task_id="task-2") == {"doubled": 42}
+
+        log_files = list((root / "logs").glob("*.json"))
+        assert log_file in log_files, f"{log_file} not in {log_files}"
+        records = json.loads(log_file.read_text(encoding="utf-8"))
+        assert records == [
+            {
+                "timestamp": records[0]["timestamp"],
+                "function": "compute_doubled",
+                "input": {
+                    "args": [21],
+                    "kwargs": {
+                        "session_worker_id": "session-1",
+                        "task_id": "task-2",
+                    },
+                },
+                "output": {"doubled": 42},
+                "status": "success",
+            }
+        ]
+    finally:
+        if old is None:
+            os.environ.pop("GINFLOW_LOG", None)
+        else:
+            os.environ["GINFLOW_LOG"] = old
+
+
+def test_trace_records_plugin_function_name():
+    """The recorded function name must match the decorated plugin function,
+    not a generic or fixed value (ginflow-gate decorates real gate functions)."""
+    old = os.environ.get("GINFLOW_LOG")
+    os.environ["GINFLOW_LOG"] = "1"
+    try:
+        import ginflow_trace.decorator as decorator
+
+        @trace
+        def validate_completion(card, metadata=None, **kwargs):
+            return None
+
+        root = decorator.ROOT
+        log_file = root / "logs" / "session-1__task-2.json"
+        log_file.unlink(missing_ok=True)
+
+        validate_completion({"id": "X"}, session_worker_id="session-1", task_id="task-2")
+
+        records = json.loads(log_file.read_text(encoding="utf-8"))
+        assert records[-1]["function"] == "validate_completion"
+    finally:
+        if old is None:
+            os.environ.pop("GINFLOW_LOG", None)
+        else:
             os.environ["GINFLOW_LOG"] = old
 
 
@@ -107,6 +178,47 @@ def test_trace_write_failure_is_non_blocking_and_recorded():
         with patch.object(decorator, "append_record", failing_append):
             assert function() == "result"
         assert writes == [("logs", "success"), ("errors", "trace_error")]
+    finally:
+        if old is None:
+            os.environ.pop("GINFLOW_LOG", None)
+        else:
+            os.environ["GINFLOW_LOG"] = old
+
+
+def test_config_trace_enablement():
+    """_enabled() obeys ginflow.trace in .ginflow.yaml when the env var is absent."""
+    import ginflow_trace.decorator as decorator
+
+    old = os.environ.get("GINFLOW_LOG")
+    os.environ.pop("GINFLOW_LOG", None)
+    try:
+        with patch.object(decorator, "_find_config", return_value={"ginflow": {"trace": True}}):
+            assert decorator._enabled() is True
+        with patch.object(decorator, "_find_config", return_value={"ginflow": {"trace": False}}):
+            assert decorator._enabled() is False
+        with patch.object(decorator, "_find_config", return_value={"ginflow": {}}):
+            assert decorator._enabled() is False
+        with patch.object(decorator, "_find_config", return_value=None):
+            assert decorator._enabled() is False
+    finally:
+        if old is None:
+            os.environ.pop("GINFLOW_LOG", None)
+        else:
+            os.environ["GINFLOW_LOG"] = old
+
+
+def test_env_overrides_config_enablement():
+    """Explicit GINFLOW_LOG env wins over ginflow.trace config."""
+    import ginflow_trace.decorator as decorator
+
+    old = os.environ.get("GINFLOW_LOG")
+    try:
+        os.environ["GINFLOW_LOG"] = "0"
+        with patch.object(decorator, "_find_config", return_value={"ginflow": {"trace": True}}):
+            assert decorator._enabled() is False
+        os.environ["GINFLOW_LOG"] = "1"
+        with patch.object(decorator, "_find_config", return_value={"ginflow": {"trace": False}}):
+            assert decorator._enabled() is True
     finally:
         if old is None:
             os.environ.pop("GINFLOW_LOG", None)

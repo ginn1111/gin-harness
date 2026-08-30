@@ -89,6 +89,7 @@ plugin-test:
 
 trace-test:
 	python3 plugins/ginflow-trace/test_ginflow_trace.py
+	python3 plugins/ginflow-trace/test_ginflow_trace_integration.py
 
 guidance-test:
 	bash skills/ginflow/scripts/test-guidance.sh

@@ -18,7 +18,49 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _enabled() -> bool:
-    return os.environ.get("GINFLOW_LOG") == "1"
+    """Tracing is on when GINFLOW_LOG=1 or the project config enables ginflow.trace."""
+    if os.environ.get("GINFLOW_LOG") == "1":
+        return True
+    if os.environ.get("GINFLOW_LOG") is not None:
+        return False
+    return _config_trace_enabled()
+
+
+def _config_trace_enabled() -> bool:
+    """Read ginflow.trace from the nearest .ginflow.yaml above the package."""
+    config = _find_config(ROOT.parents[1])
+    if config is None:
+        return False
+    context = config.get("ginflow")
+    if not isinstance(context, dict):
+        return False
+    value = context.get("trace")
+    return value is True
+
+
+def _read_config(file: Path) -> dict | None:
+    try:
+        import yaml
+    except ImportError:
+        return None
+    try:
+        data = yaml.safe_load(file.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _find_config(start: Path) -> dict | None:
+    path = Path(start).expanduser().resolve()
+    while True:
+        candidate = path / ".ginflow.yaml"
+        if candidate.is_file():
+            data = _read_config(candidate)
+            if data is not None:
+                return data
+        if path.parent == path:
+            return None
+        path = path.parent
 
 
 def _timestamp() -> str:

@@ -3,6 +3,8 @@ bin
 lib
 pyvenv.cfg
 __pycache__
+plugins/ginflow-trace/logs/
+plugins/ginflow-trace/errors/
 .ginflow-install.json
 .hermes/
 .obsidian
