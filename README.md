@@ -1,9 +1,3 @@
----
-status: completed
-size: M
-scope: Gin-harness project overview and usage guide
-owner: ginb
----
 
 # Gin-harness
 
