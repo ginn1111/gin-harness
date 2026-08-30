@@ -12,11 +12,13 @@ Provide an independent `ginflow-trace` plugin package that records Ginflow plugi
 
 ## Contract
 
-Tracing is disabled unless `GINFLOW_LOG=1`. When enabled, decorated functions append JSON events to `plugins/ginflow-trace/logs/`. Each file represents one session-worker/Kanban-worker pair and contains a JSON list. The filename is `<session_worker_id>__<kanban_worker_id>.json`; if either identity is unknown, append a UUID suffix only for that fallback case.
+Tracing is disabled by default. Enable it per-process with `GINFLOW_LOG=1`, or per-project by setting `ginflow: { trace: true }` in `.ginflow.yaml`. An explicit `GINFLOW_LOG` value overrides the config flag (any non-`1` value turns tracing off even if the config enables it); when the variable is absent the config flag decides. When enabled, decorated functions append JSON events to `plugins/ginflow-trace/logs/`. Each file represents one session-worker/Kanban-worker pair and contains a JSON list. The filename is `<session_worker_id>__<kanban_worker_id>.json`; if either identity is unknown, append a UUID suffix only for that fallback case.
 
 Identity resolution uses hook context first and then `HERMES_SESSION_WORKER_ID` / `HERMES_KANBAN_TASK`. Missing values are represented as `unknown` in the filename and the generated UUID prevents collisions.
 
 Each event records a UTC RFC3339 timestamp, the bare function name, sanitized/truncated input and output, and status. Sensitive keys are redacted. Function exceptions are recorded under `errors/` and then re-raised. Trace/storage errors never block or alter the wrapped plugin function.
+
+The full lifecycle is covered by an integration test that drives the real ginflow-gate through a live Kanban card from creation to completion and asserts every traced gate function (`load_card`, `validate_completion`, `linked_documents_missing_completion`, `pre_tool_call`) is recorded with its real name.
 
 ## Scope
 
