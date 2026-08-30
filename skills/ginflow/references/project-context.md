@@ -15,6 +15,7 @@ ginflow:
     profile: <worker Hermes profile>
     provider: <provider name>
     model: <model name>
+  trace: false # optional; enables ginflow-trace function logging for this project
 ```
 
 The resolved workspace is the target directory passed to verification. Board precedence is:
@@ -43,6 +44,12 @@ Worker dispatch resolution per field is:
 
 A malformed `worker` block (wrong type, empty string, or unknown field) blocks
 card creation but does not break read-only board/workspace routing.
+`ginflow.trace` is an optional boolean. When `true`, the opt-in `ginflow-trace`
+plugin records decorated plugin function calls (gate business functions and hook
+entry points) to `plugins/ginflow-trace/logs/` (errors to `errors/`). An
+explicit `GINFLOW_LOG` environment value overrides the flag for a single
+process: `GINFLOW_LOG=1` forces tracing on, any other value forces it off, and
+an unset variable falls back to `ginflow.trace`. Defaults to off when omitted.
 
 A valid existing config is used by Kanban reads when no override is supplied and is not overwritten during ordinary skill loading. If the file is missing, `/ginflow` asks whether to use the current/default board or create a new board. New-board selection requires a non-empty name and successful native board creation before persistence. Malformed, incomplete, or workspace-mismatched config fails closed and must be repaired or explicitly resolved by the user; it never causes a silent workspace or board switch. Verification reads this file but does not initialize or rewrite it.
 
