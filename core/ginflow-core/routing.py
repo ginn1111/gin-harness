@@ -45,7 +45,7 @@ def route(tasks: list[dict[str, Any]], current: Path, explicit_id: str | None = 
                 "blocker_metadata": selected.get("blocker_metadata") or (
                     metadata.get("blocker") if isinstance(metadata, dict) else None)}
     if status == "next":
-        return {"route": "validate_card_docs", "action": "validate_docs", "id": selected.get("id")}
+        return {"route": "validate_card_docs", "action": "request_review", "id": selected.get("id")}
     if status == "in_progress":
         return {"route": "ready_to_start", "action": "execute", "id": selected.get("id")}
     if status in {"done", "cancelled", "archived"}:

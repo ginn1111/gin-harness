@@ -5,6 +5,8 @@ import json
 import subprocess
 from pathlib import Path
 
+TEST_BOARD = "gin-harness-testing"
+
 # Step 1: create card with linked brief
 CARD_TITLE = "GINFLOW-3 Test tool-based completion"
 CARD_BODY = """Objective: Test that ginflow-gate post_tool_call hook updates linked artifacts when using kanban_complete TOOL (not CLI).
@@ -17,8 +19,21 @@ Acceptance:
 Links:
 - docs/briefs/GINFLOW-3.md"""
 
+subprocess.run(["hermes", "kanban", "init"], check=True, capture_output=True, text=True)
+boards = json.loads(
+    subprocess.run(
+        ["hermes", "kanban", "boards", "list", "--json"],
+        check=True, capture_output=True, text=True,
+    ).stdout
+)
+if not any(board["slug"] == TEST_BOARD for board in boards):
+    subprocess.run(
+        ["hermes", "kanban", "boards", "create", TEST_BOARD, "--name", "Gin Harness Testing"],
+        check=True, capture_output=True, text=True,
+    )
+
 CREATE_CMD = [
-    "hermes", "kanban", "create", CARD_TITLE,
+    "hermes", "kanban", "--board", TEST_BOARD, "create", CARD_TITLE,
     "--body", CARD_BODY,
     "--initial-status", "blocked",
     "--workspace", "dir:/Users/gin/dev/agent-hype",
@@ -72,4 +87,4 @@ print(f"Brief committed at {commit}")
 
 # Step 4: report - agent should call kanban_complete tool here
 print("\n=== AGENT SHOULD NOW CALL ===")
-print(f"kanban_complete(task_id='{task_id}', result='test', metadata={{'verification_result': {{'commit': '{commit[:7]}', 'command': 'make test', 'result': 'passed'}}, 'artifact_baseline': {{'commit': '{commit[:7]}', 'paths': ['docs/briefs/GINFLOW-3.md']}}}})")
+print(f"kanban_complete(task_id='{task_id}', board='{TEST_BOARD}', result='test', metadata={{'verification_result': {{'commit': '{commit[:7]}', 'command': 'make test', 'result': 'passed'}}, 'artifact_baseline': {{'commit': '{commit[:7]}', 'paths': ['docs/briefs/GINFLOW-3.md']}}}})")
