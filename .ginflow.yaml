@@ -1,5 +1,5 @@
 version: 1
 ginflow:
   board: harness
-  workspace: /Users/gin/dev/gin-harness
+  workspace: /Users/gin/dev/gin-harness/.worktrees/t_3f0c3c4c
   trace: true

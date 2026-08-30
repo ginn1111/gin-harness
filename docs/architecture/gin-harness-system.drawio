@@ -120,16 +120,61 @@
         <mxCell id="8GSNGzi7Y_Io7RYP8qZd-33" parent="1" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.start_2;whiteSpace=wrap;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="End" vertex="1">
           <mxGeometry height="100" width="100" x="280" y="860" as="geometry" />
         </mxCell>
-        <mxCell id="8GSNGzi7Y_Io7RYP8qZd-61" edge="1" parent="1" source="8GSNGzi7Y_Io7RYP8qZd-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="8GSNGzi7Y_Io7RYP8qZd-60">
+        <mxCell id="review-worker-to-request" edge="1" parent="1" source="8GSNGzi7Y_Io7RYP8qZd-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="review-request">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="8GSNGzi7Y_Io7RYP8qZd-64" connectable="0" parent="8GSNGzi7Y_Io7RYP8qZd-61" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;sketch=1;curveFitting=1;jiggle=2;" value="Yes" vertex="1">
-          <mxGeometry relative="1" x="-0.4364" y="-3" as="geometry">
-            <mxPoint y="1" as="offset" />
+        <mxCell id="review-request" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Worker verify + finalize artifacts" vertex="1">
+          <mxGeometry height="60" width="170" x="245" y="595" as="geometry" />
+        </mxCell>
+        <mxCell id="review-request-edge" edge="1" parent="1" source="review-request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="review-state">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="review-request-tool" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="kanban_request_review&lt;br/&gt;&lt;b&gt;Ownership: Hermes Kanban&lt;/b&gt;" vertex="1">
+          <mxGeometry height="70" width="170" x="470" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="review-tool-edge" edge="1" parent="1" source="review-request-tool" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="review-state">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="review-state" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Review state&lt;br/&gt;&lt;b&gt;Ownership: Hermes Kanban&lt;/b&gt;" vertex="1">
+          <mxGeometry height="70" width="170" x="700" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="review-decision-yes" edge="1" parent="1" source="review-state" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="review-complete">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="review-complete" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="kanban_complete&lt;br/&gt;&lt;b&gt;Ownership: Hermes Kanban&lt;/b&gt;" vertex="1">
+          <mxGeometry height="70" width="170" x="930" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="review-complete-end" edge="1" parent="1" source="review-complete" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="8GSNGzi7Y_Io7RYP8qZd-33">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="review-complete-label" connectable="0" parent="review-decision-yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;sketch=1;curveFitting=1;jiggle=2;" value="Approve" vertex="1">
+          <mxGeometry relative="1" x="-0.1" y="-2" as="geometry">
+            <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="8GSNGzi7Y_Io7RYP8qZd-34" parent="1" style="rhombus;whiteSpace=wrap;html=1;shapeInside=1;fontFamily=Architects Daughter;strokeWidth=2;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Can complete?" vertex="1">
-          <mxGeometry height="80" width="80" x="290" y="610" as="geometry" />
+        <mxCell id="review-reject-edge" edge="1" parent="1" source="review-state" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="review-reject" value="Request changes">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="785" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="review-reject" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="kanban_request_changes&lt;br/&gt;reason · evidence · next_action" vertex="1">
+          <mxGeometry height="70" width="170" x="700" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="review-reject-to-rework" edge="1" parent="1" source="review-reject" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="review-rework">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="review-rework" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Worker rework" vertex="1">
+          <mxGeometry height="60" width="140" x="470" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="review-rework-loop" edge="1" parent="1" source="review-rework" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="review-request">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="430" y="790" />
+              <mxPoint x="430" y="625" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="8GSNGzi7Y_Io7RYP8qZd-42" edge="1" parent="1" source="8GSNGzi7Y_Io7RYP8qZd-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="8GSNGzi7Y_Io7RYP8qZd-41">
           <mxGeometry relative="1" as="geometry" />
@@ -157,9 +202,6 @@
         <mxCell id="8GSNGzi7Y_Io7RYP8qZd-50" edge="1" parent="1" source="8GSNGzi7Y_Io7RYP8qZd-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="8GSNGzi7Y_Io7RYP8qZd-33">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="8GSNGzi7Y_Io7RYP8qZd-55" edge="1" parent="1" source="8GSNGzi7Y_Io7RYP8qZd-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="8GSNGzi7Y_Io7RYP8qZd-34">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="8GSNGzi7Y_Io7RYP8qZd-53" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Start card&lt;br/&gt;&lt;b&gt;Ownership: core&lt;/b&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="270" y="490" as="geometry" />
         </mxCell>
@@ -176,12 +218,6 @@
         </mxCell>
         <mxCell id="8GSNGzi7Y_Io7RYP8qZd-56" parent="1" style="rounded=1;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https://fonts.googleapis.com/css?family=Architects+Daughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Repair" vertex="1">
           <mxGeometry height="60" width="120" x="100" y="250" as="geometry" />
-        </mxCell>
-        <mxCell id="8GSNGzi7Y_Io7RYP8qZd-62" edge="1" parent="1" source="8GSNGzi7Y_Io7RYP8qZd-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="8GSNGzi7Y_Io7RYP8qZd-33">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="8GSNGzi7Y_Io7RYP8qZd-60" parent="1" style="whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;" value="Make card as review" vertex="1">
-          <mxGeometry height="60" width="120" x="270" y="745" as="geometry" />
         </mxCell>
         <mxCell id="8GSNGzi7Y_Io7RYP8qZd-70" edge="1" parent="1" source="8GSNGzi7Y_Io7RYP8qZd-65" style="edgeStyle=orthogonalEdgeStyle;rounded=0;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;" target="8GSNGzi7Y_Io7RYP8qZd-67">
           <mxGeometry relative="1" as="geometry" />

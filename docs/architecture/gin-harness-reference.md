@@ -36,7 +36,7 @@ The repository addresses a recurring failure mode: a raw prompt does not by itse
 4. **Direct Work** — only affirmatively eligible XS/S work may proceed without a card or governance artifact. It must be localized, reversible, low-risk, project-permitted, and verifiable.
 5. **Governed Work** — M/L/XL, risky, or artifact-requiring work starts from a complete Kanban card. A Spec is conditional on behavior/contract drift; a Plan is conditional on ordering, investigation, rollback, coordination, or layered verification.
 6. **Execution and verification** — the worker changes only the selected workspace and runs the target project's canonical checks. Setup checks remain separate evidence.
-7. **Completion** — the native `kanban_complete` tool and `ginflow-gate` validate required fields, linked artifact state, verification metadata, baseline commit, and drift before the card becomes done.
+7. **Review and completion** — workers submit governed work with native `kanban_request_review` after canonical verification and linked-artifact finalization. Hermes Kanban owns review-state transitions and the reviewer rework loop. Reviewers call native `kanban_complete` to finish valid work or `kanban_request_changes` with a minimal handoff (`reason`, `evidence`, `next_action`) to return invalid work. `ginflow-gate` validates Ginflow-specific evidence, linked artifact state, verification metadata, baseline commit, and drift at the native transition points.
 
 The detailed branch model is in [`ginflow-flow.md`](./ginflow-flow.md), and the routing vocabulary is in [`../../skills/ginflow/SKILL.md`](../../skills/ginflow/SKILL.md).
 

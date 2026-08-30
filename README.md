@@ -69,7 +69,7 @@ The plugin provides context and gates; it does not replace Hermes, inspect skill
 4. **Direct Work:** proceed without a card only when every eligibility factor is affirmatively established: clear target, known cause where relevant, genuine XS/S scope, localized reversible change, no actual Risk Impact, no governance artifact need, known verification, project permission, and an unowned single-worker workspace.
 5. **Governed Work:** use a complete Kanban card for M/L/XL, risky, coordinated, or artifact-requiring work. Add a Spec when behavior/contract can drift and a Plan when ordering, investigation, rollback, coordination, or layered verification matters.
 6. **Verification:** run the target project's canonical command and report setup-repository checks separately.
-7. **Completion:** call native `kanban_complete`; `ginflow-gate` validates card fields, linked artifacts, verification metadata, baseline commit, and drift before marking the card done.
+7. **Review and completion:** workers submit governed work with native `kanban_request_review` after canonical verification and linked-artifact finalization. Hermes Kanban owns the `running -> review -> done` lifecycle and reviewer rework loop; reviewers either call native `kanban_complete` to finish valid work or `kanban_request_changes` with a minimal handoff (`reason`, `evidence`, `next_action`) to return it for rework. `ginflow-gate` validates Ginflow-specific evidence at the native transition points; it does not own lifecycle state machinery.
 
 Detailed routing and branch boundaries are in [`docs/architecture/ginflow-flow.md`](docs/architecture/ginflow-flow.md) and the normative contract in [`skills/ginflow/SKILL.md`](skills/ginflow/SKILL.md).
 
