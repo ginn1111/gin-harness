@@ -49,7 +49,7 @@ Governed Work starts with a build-ready Kanban card. The card owns the objective
 
 Known M, L/XL, or risky work produces the canonical governed outputs: the card plus a Spec or Plan when required. A Spec is conditional on behavior or contract drift. A Plan is conditional on ordering, investigation, rollback, coordination, or layered verification. There is no Brief output in this model. Larger work may be split when the resulting cards are independently verifiable, then returns to validation and the card lifecycle.
 
-Completion remains gated: a repairable completion problem returns to repair and validation; an unrepairable problem is reported to the orchestrator; only a valid completion makes the card done.
+Review and completion remain gated: after execution and canonical verification, the worker submits governed work with native `kanban_request_review`. Hermes Kanban owns the `running -> review -> done` lifecycle and reviewer rework loop. Reviewers call native `kanban_complete` to finish valid work or `kanban_request_changes` with a minimal handoff (`reason`, `evidence`, `next_action`) to return invalid work. `ginflow-gate` validates Ginflow-specific evidence at those native transition points; it does not implement lifecycle state machinery.
 
 ### Clarification
 
@@ -88,9 +88,15 @@ flowchart TD
     repairable -- "No" --> report["Report to orchestrator"]
     report --> end0(("End"))
     valid -- "Yes" --> start["Start card<br/>Ownership: core"]
-    start --> complete{"Can complete?"}
-    complete -- "Yes" --> done["Make card done"]
+    start --> workerVerify["Worker verify + finalize artifacts"]
+    workerVerify --> requestReview["kanban_request_review<br/>Ownership: Hermes Kanban"]
+    requestReview --> review["Review state<br/>Ownership: Hermes Kanban"]
+    review --> reviewerDecision{"Reviewer approves?"}
+    reviewerDecision -- "Yes" --> done["kanban_complete<br/>Ownership: Hermes Kanban"]
     done --> end1(("End"))
+    reviewerDecision -- "No" --> reject["kanban_request_changes<br/>minimal handoff: reason · evidence · next_action"]
+    reject --> rework["Worker rework"]
+    rework --> workerVerify
 
     kanban -- "No" --> mode
     mode --> requirements{"Requirements clear?"}
@@ -116,6 +122,9 @@ flowchart TD
 
     route["Inject skill + canonical output guidance<br/>Ownership: plugin"] -.-> eligibility
     route -.-> size
+    route -.-> workerVerify
+    route -.-> requestReview
+    route -.-> review
 ```
 
 ## Further reading
