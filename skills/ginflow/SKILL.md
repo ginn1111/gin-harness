@@ -153,22 +153,24 @@ Do not launch a `/background` watcher for the selected running card. Kanban task
 
 Stop when any required input is missing and risk is material.
 
-## Kanban completion validation
+## Kanban review and completion validation
 
-The `ginflow-gate` completion policy is integrated with the native `kanban_complete` tool call:
+The `ginflow-gate` completion policy is integrated with native `kanban_request_review` and `kanban_complete` tool calls:
 
-- `pre_tool_call` blocks malformed completions, linked local spec/plan documents that are not marked completed, mismatched verification/artifact commits, and linked-artifact drift.
+- `pre_tool_call` blocks malformed review requests and completions, linked local spec/plan documents that are not marked completed, mismatched verification/artifact commits, and linked-artifact drift.
 - The blocking message lists incomplete linked documents and tells the agent to finalize and commit them before retrying. Documents are never mutated after the card is done.
 
 **Syntax:**
 
 ```
-kanban_complete(task_id='<card-id>', result='<short result>',
+kanban_request_review(task_id='<card-id>', summary='<short review request>',
   metadata={'verification_result': {'commit': '<commit>', 'command': 'make test', 'result': 'passed'},
             'artifact_baseline': {'commit': '<commit>', 'paths': ['docs/specs/<card-id>.md']}})
 ```
 
-- `kanban_complete(task_id='t_abc123', result='Build finished', metadata={...})`
+- `kanban_complete(task_id='t_abc123', summary='Review approved', metadata={...})`
+
+Reviewer returns an invalid review with native `kanban_request_changes` using a minimal handoff: `reason` (what failed), `evidence` (file:line, failing command, or gate error), and `next_action` (specific worker fix). Hermes returns the card to the original worker under normal dependency gating; review findings never count as blocker-loop failures. `ginflow-gate` validates only Ginflow-specific evidence on request-review and completion transitions; Hermes owns all state transitions.
 
 ## Execution contract
 
@@ -255,7 +257,7 @@ Next session resumes from selected card, linked artifacts, local rules, and repo
 
 ## Completion report
 
-Use the native `kanban_complete` tool when completion must pass through `ginflow-gate`; the external CLI harness remains available for manual and CI validation.
+Use native `kanban_request_review` for worker handoff and native `kanban_complete` for reviewer completion; both pass through `ginflow-gate`. External CLI harness remains available for manual and CI validation.
 
 Immediately before reporting completion:
 
@@ -263,13 +265,13 @@ Immediately before reporting completion:
 2. Read target-repo `git status --short`; use `git diff --stat` when useful.
 3. Report only files under selected card workspace.
 4. Quote canonical project command and exact fresh result.
-5. Record same evidence on selected Kanban card before completing it.
-6. Finalize every linked local spec/plan with YAML frontmatter at byte 0 declaring `status: completed`, commit those document changes, update matching verification and artifact-baseline commits, then call `kanban_complete` directly. Body status text is ignored. Any worker may complete its assigned card; do not route completion to `gintary` or a review handoff.
-7. Provide `metadata.verification_result` (`commit`, `command`, `result`) and matching `metadata.artifact_baseline` (`commit`, `paths`). `ginflow-gate` validates these synchronously, including exact linked paths and drift, and rejects invalid completion.
+5. Record same evidence on selected Kanban card before requesting review or completing it.
+6. Worker finalizes every linked local spec/plan with YAML frontmatter at byte 0 declaring `status: completed`, commits those document changes, updates matching verification and artifact-baseline commits, then calls `kanban_request_review` with summary plus metadata. Body status text is ignored.
+7. Reviewer independently validates scope, acceptance, diff, and evidence, then calls final `kanban_complete` with `metadata.verification_result` (`commit`, `command`, `result`) and matching `metadata.artifact_baseline` (`commit`, `paths`). `ginflow-gate` validates these synchronously, including exact linked paths and drift, and rejects invalid review or completion transitions.
 8. The external CLI harness remains available for manual and CI validation independent of the live plugin gate.
 9. Review target workspace using `references/workspace-health-warnings.md`. Record concise findings under `Workspace warnings` on card and in completion report. Warnings do not block by default; promote only when acceptance, canonical verification, security, privacy, data integrity, or restartability is affected. Do not copy warning policy or scanner files into target repo.
 
-Project verification proves product behavior and should be reported truthfully. `ginflow-gate` is completion authority: it validates card fields, verification metadata, linked artifact baseline, and drift synchronously, then rejects invalid `kanban_complete` calls. External harness remains optional manual/CI evidence and never substitutes for project verification.
+Project verification proves product behavior and should be reported truthfully. `ginflow-gate` is evidence authority: it validates card fields, verification metadata, linked artifact baseline, and drift synchronously, then rejects invalid `kanban_request_review` and `kanban_complete` calls. External harness remains optional manual/CI evidence and never substitutes for project verification.
 
 Temporary or ad-hoc checks are not completion evidence unless selected card explicitly targets that temporary artifact. Do not create or report unrelated temporary checks when canonical project verification exists. If canonical verification is unavailable or fails, report blocked/not done.
 
@@ -281,15 +283,15 @@ python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --setup-repo <setup-repo> --target <target-repo> \
   --kanban-task-id "$TASK_ID" --json
 
-# Optional CI/manual candidate check before kanban_complete.
-# ginflow-gate performs authoritative validation during the tool call.
+# Optional CI/manual candidate check before kanban_request_review.
+# ginflow-gate performs authoritative validation during both tool calls.
 python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --setup-repo <setup-repo> --target <target-repo> \
   --kanban-task-id "$TASK_ID" --baseline-commit "$COMMIT" \
   --baseline-path docs/specs/<CARD-ID>.md --json
 ```
 
-The live harness reads from the current board. `--card <json-file>` remains available for fixtures and accepts either normalized Ginflow JSON or saved `hermes kanban show --json` output. It is optional evidence; workers do not need a separate harness handoff before calling `kanban_complete`.
+The live harness reads from the current board. `--card <json-file>` remains available for fixtures and accepts either normalized Ginflow JSON or saved `hermes kanban show --json` output. It is optional evidence; workers do not need a separate harness handoff before calling `kanban_request_review`.
 
 ## Harness subsystem mapping
 
@@ -340,9 +342,9 @@ Rule:
 
 ### Completed-card artifact gate
 
-- The worker must commit every linked artifact and prepare truthful `artifact_baseline.commit` and exact target-local linked `artifact_baseline.paths` when calling `kanban_complete`. Worker may create this baseline commit without human review; stage only exact linked artifacts and intended card-scoped implementation files.
+- The worker must commit every linked artifact and prepare truthful `artifact_baseline.commit` and exact target-local linked `artifact_baseline.paths` when calling `kanban_request_review`. Worker may create this baseline commit without human review; stage only exact linked artifacts and intended card-scoped implementation files.
 - Never copy harness script into target repo. Report project verification and ginflow harness as separate results.
-- `ginflow-gate` is enforcement authority. During `kanban_complete`, it synchronously validates required card fields, verification metadata, baseline commit, exact linked paths, and artifact drift. Invalid or unavailable evidence rejects completion.
+- `ginflow-gate` is enforcement authority. During `kanban_request_review` and `kanban_complete`, it synchronously validates required card fields, verification metadata, baseline commit, exact linked paths, and artifact drift. Invalid or unavailable evidence rejects transition.
 - On startup, resume, handoff, or derived work involving a completed card, compare only linked paths against completion commit. Do not compare the whole repository.
 - A missing/unavailable commit, path-list mismatch, missing artifact, committed change, or uncommitted change is drift detected by gate/harness and blocks affected lifecycle use. Unrelated paths remain unblocked.
 - External harness checks are optional manual/CI evidence, not a required worker handoff.

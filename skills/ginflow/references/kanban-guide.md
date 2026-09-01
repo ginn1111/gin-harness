@@ -42,7 +42,7 @@ Before closing unfinished or blocked work, record outcome, changed files, verifi
 
 Before completion, re-run canonical verification in target repo and derive changed-file evidence from target-repo `git status --short`. Temporary checks outside card workspace do not prove completion.
 
-Before `kanban_complete`, worker prepares truthful verification evidence and exact linked target-local paths in `artifact_baseline`. Human review is not required for this baseline commit; never include unrelated work. The worker must commit every linked artifact and stage only exact linked artifacts plus intended card work. `ginflow-gate` validates card fields, verification metadata, baseline commit, exact paths, and drift during the tool call. Invalid or unavailable evidence rejects completion. Before startup, resume, handoff, or derived work involving that card, compare only those paths against commit. Unrelated paths and cards remain unblocked. Propose:
+Before `kanban_request_review`, worker prepares truthful verification evidence and exact linked target-local paths in `artifact_baseline`. Human review is not required for this baseline commit; never include unrelated work. The worker must commit every linked artifact and stage only exact linked artifacts plus intended card work. `ginflow-gate` validates card fields, verification metadata, baseline commit, exact paths, and drift during both `kanban_request_review` and final reviewer `kanban_complete`. Invalid or unavailable evidence rejects transition. Before startup, resume, handoff, or derived work involving that card, compare only those paths against commit. Unrelated paths and cards remain unblocked. Propose:
 
 - restore the completed docs, create new versioned docs and a follow-up card, and link back to the completed card;
 - reopen the card, reconcile docs with implementation and evidence, commit, record a new completion commit, rerun verification and the harness, and complete again; or
@@ -59,7 +59,9 @@ python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --baseline-path docs/specs/<CARD-ID>.md --json
 ```
 
-Any worker assigned to card makes `kanban_complete` call with verification evidence plus same commit and paths in `metadata={"artifact_baseline": ...}`. Do not route completion through `gintary` or a review handoff. `ginflow-gate` revalidates synchronously before mutation and rejects invalid output. External harness rerun is optional manual/CI evidence.
+Assigned worker requests review with `kanban_request_review(summary=..., metadata={"verification_result": ..., "artifact_baseline": ...})`. Reviewer makes final `kanban_complete` call after independent validation. `ginflow-gate` revalidates synchronously before each mutation and rejects invalid output. External harness rerun is optional manual/CI evidence.
+
+Invalid review: reviewer calls `kanban_request_changes` with a minimal handoff (`reason`, `evidence`, `next_action`) so the worker can fix and re-request review. This is a normal rework loop, not a blocker; `kanban_block` stays reserved for external blockers.
 
 Workspace rule:
 - use real target repo

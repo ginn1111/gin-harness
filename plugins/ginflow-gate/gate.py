@@ -121,7 +121,7 @@ def validate_completion(card: dict, metadata: dict) -> str | None:
             "linked target-local documents require valid YAML frontmatter with status: completed: "
             + ", ".join(incomplete)
             + ". Add the frontmatter at byte 0, commit those changes, "
-              "update verification_result.commit and artifact_baseline.commit, then retry kanban_complete."
+              "update verification_result.commit and artifact_baseline.commit, then retry review request or completion."
         )
 
     candidate = card | {"artifact_baseline": baseline}
@@ -133,14 +133,17 @@ def validate_completion(card: dict, metadata: dict) -> str | None:
     return None
 
 
+VALIDATED_TOOLS = {"kanban_request_review", "kanban_complete"}
+
+
 @trace
 def pre_tool_call(tool_name: str, args: dict, task_id: str = "", **kwargs):
-    if tool_name != "kanban_complete":
+    if tool_name not in VALIDATED_TOOLS:
         return None
     try:
         selected = str(args.get("task_id") or task_id or os.environ.get("HERMES_KANBAN_TASK") or "").strip()
         if not selected:
-            return _block("kanban_complete requires task_id")
+            return _block(f"{tool_name} requires task_id")
         metadata = args.get("metadata")
         if not isinstance(metadata, dict):
             return _block("metadata object is required")
