@@ -35,10 +35,10 @@ An isolated integration test uses a temporary Hermes Kanban database/runtime to 
 ## Acceptance criteria
 
 - [x] Scope and expected transition defined.
-- [ ] Focused test proves `running` to `review` through native Hermes behavior.
-- [ ] Valid review summary and metadata persist.
-- [ ] Rejected review leaves task `running`.
-- [ ] `make lint` and `make test` pass.
+- [x] Focused test proves `running` to `review` through native Hermes behavior.
+- [x] Valid review summary and metadata persist.
+- [x] Rejected review leaves task `running`.
+- [x] `make lint` and `make test` pass.
 
 ## Edge cases
 

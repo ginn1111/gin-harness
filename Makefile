@@ -83,6 +83,7 @@ plugin-test:
 	python3 plugins/ginflow-gate/test_blocker_reporting.py
 	python3 plugins/ginflow-gate/test_recovery_policy.py
 	python3 plugins/ginflow-gate/test_recovery.py
+	python3 plugins/ginflow-gate/test_native_review_transition.py
 	$(MAKE) trace-test
 
 trace-test:
