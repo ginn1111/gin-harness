@@ -46,6 +46,9 @@ def test_native_review_transition():
         subprocess.run(["git", "commit", "-qm", "baseline"], cwd=target, check=True)
         baseline = subprocess.run(["git", "rev-parse", "HEAD"], cwd=target, text=True, capture_output=True, check=True).stdout.strip()
         env = os.environ | {"HERMES_HOME": home, "HERMES_KANBAN_BOARD": BOARD}
+        home_path = Path(home)
+        home_path.mkdir(parents=True, exist_ok=True)
+        (home_path / "config.yaml").write_text("kanban:\n  default_reviewer_profile: gintary\n")
         run_hermes(env, "kanban", "init")
         run_hermes(env, "kanban", "boards", "create", BOARD)
         created = run_hermes(env, "kanban", "--board", BOARD, "create", "HARNESS-REVIEW-1 — transition", "--body", BODY, "--assignee", "ginb", "--workspace", f"dir:{target}", "--initial-status", "blocked", "--json")
@@ -60,9 +63,10 @@ def test_native_review_transition():
         gate = load_gate()
         card = gate.load_card(task_id, board=BOARD)
         assert gate.pre_tool_call("kanban_request_review", {"task_id": task_id, "metadata": metadata}, "", board=BOARD) is None
-        run_hermes(env, "kanban", "--board", BOARD, "request-review", task_id, "--summary", "transition verified", "--metadata", json.dumps(metadata), "--force")
+        run_hermes(env, "kanban", "--board", BOARD, "request-review", task_id, "--summary", "transition verified", "--metadata", json.dumps(metadata))
         reviewed = json.loads(run_hermes(env, "kanban", "--board", BOARD, "show", task_id, "--json").stdout)["task"]
         assert reviewed["status"] == "review"
+        assert reviewed["assignee"] == "gintary"
         show = json.loads(run_hermes(env, "kanban", "--board", BOARD, "show", task_id, "--json").stdout)
         assert show["task"]["status"] == "review"
         review_runs = [run for run in show.get("runs", []) if run.get("summary") == "transition verified"]
