@@ -7,6 +7,8 @@ owner: ginb
 
 # Native Review Transition Test Fix Implementation Plan
 
+**Status: completed**
+
 > **For Hermes:** Use subagent-driven-development skill to implement this plan task-by-task.
 
 **Goal:** Restore `make test` and verify complete native same-card lifecycle: `ginb` implementation dispatch, `gintary` review dispatch, approval completion, and rejected-review return to `ginb`.
