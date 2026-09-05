@@ -29,9 +29,25 @@ def load_gate():
 
 
 def run_hermes(env, *args):
-    return subprocess.run(
-        ["hermes", *args], env=env, text=True, capture_output=True, check=True
+    command = ["hermes", *args]
+    result = subprocess.run(command, env=env, text=True, capture_output=True)
+    assert result.returncode == 0, (
+        f"command failed ({result.returncode}): {' '.join(command)}\n"
+        f"stdout:\n{result.stdout}\n"
+        f"stderr:\n{result.stderr}"
     )
+    return result
+
+
+def claim_as_worker(env, task_id):
+    run_hermes(env, "kanban", "--board", BOARD, "claim", task_id)
+    snapshot = json.loads(
+        run_hermes(env, "kanban", "--board", BOARD, "show", task_id, "--json").stdout
+    )
+    run = next(run for run in snapshot["runs"] if run["status"] == "running")
+    scoped = dict(env)
+    scoped.update({"HERMES_KANBAN_TASK": task_id, "HERMES_KANBAN_RUN_ID": str(run["id"])})
+    return scoped
 
 
 def test_native_review_transition():
@@ -48,22 +64,24 @@ def test_native_review_transition():
         env = os.environ | {"HERMES_HOME": home, "HERMES_KANBAN_BOARD": BOARD}
         home_path = Path(home)
         home_path.mkdir(parents=True, exist_ok=True)
-        (home_path / "config.yaml").write_text("kanban:\n  default_reviewer_profile: gintary\n")
+        (home_path / "config.yaml").write_text("kanban:\n  default_reviewer_profile: gintary\n  review_dispatch: true\n")
         run_hermes(env, "kanban", "init")
         run_hermes(env, "kanban", "boards", "create", BOARD)
         created = run_hermes(env, "kanban", "--board", BOARD, "create", "HARNESS-REVIEW-1 — transition", "--body", BODY, "--assignee", "ginb", "--workspace", f"dir:{target}", "--initial-status", "blocked", "--json")
         task_id = json.loads(created.stdout)["id"]
         run_hermes(env, "kanban", "--board", BOARD, "unblock", task_id)
-        run_hermes(env, "kanban", "--board", BOARD, "claim", task_id)
+        worker_env = claim_as_worker(env, task_id)
         old_home = os.environ.get("HERMES_HOME")
         old_board = os.environ.get("HERMES_KANBAN_BOARD")
         os.environ["HERMES_HOME"] = home
         os.environ["HERMES_KANBAN_BOARD"] = BOARD
+        os.environ["HERMES_KANBAN_TASK"] = task_id
+        os.environ["HERMES_KANBAN_RUN_ID"] = worker_env["HERMES_KANBAN_RUN_ID"]
         metadata = {"verification_result": {"commit": baseline, "command": "make test", "result": "passed"}, "artifact_baseline": {"commit": baseline, "paths": ["docs/specs/HARNESS-REVIEW-1.md"]}}
         gate = load_gate()
         card = gate.load_card(task_id, board=BOARD)
         assert gate.pre_tool_call("kanban_request_review", {"task_id": task_id, "metadata": metadata}, "", board=BOARD) is None
-        run_hermes(env, "kanban", "--board", BOARD, "request-review", task_id, "--summary", "transition verified", "--metadata", json.dumps(metadata))
+        run_hermes(worker_env, "kanban", "--board", BOARD, "request-review", task_id, "--summary", "transition verified", "--reviewer", "gintary", "--metadata", json.dumps(metadata))
         reviewed = json.loads(run_hermes(env, "kanban", "--board", BOARD, "show", task_id, "--json").stdout)["task"]
         assert reviewed["status"] == "review"
         assert reviewed["assignee"] == "gintary"
@@ -73,10 +91,14 @@ def test_native_review_transition():
         assert review_runs, show
         assert review_runs[0]["metadata"]["verification_result"]["command"] == "make test"
 
+        # Review dispatch is owned by dispatcher; this fixture stops at queued review.
+
         rejected = run_hermes(env, "kanban", "--board", BOARD, "create", "HARNESS-REVIEW-1-rejected", "--body", BODY, "--assignee", "ginb", "--workspace", f"dir:{target}", "--initial-status", "blocked", "--json")
         rejected_id = json.loads(rejected.stdout)["id"]
         run_hermes(env, "kanban", "--board", BOARD, "unblock", rejected_id)
-        run_hermes(env, "kanban", "--board", BOARD, "claim", rejected_id)
+        rejected_worker = claim_as_worker(env, rejected_id)
+        os.environ["HERMES_KANBAN_TASK"] = rejected_id
+        os.environ["HERMES_KANBAN_RUN_ID"] = rejected_worker["HERMES_KANBAN_RUN_ID"]
         blocked = gate.pre_tool_call("kanban_request_review", {"task_id": rejected_id, "metadata": {}}, "", board=BOARD)
         assert blocked["action"] == "block"
         rejected_card = json.loads(run_hermes(env, "kanban", "--board", BOARD, "show", rejected_id, "--json").stdout)["task"]
