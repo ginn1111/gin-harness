@@ -42,15 +42,16 @@ make apply PROFILES="profile-a"
 make verify PROFILES="profile-a"
 ```
 
-### Install all-profile Ginflow integration
+### Install Ginflow skill into Hermes profiles
 
-Use the dedicated installer when the universal agent skill and every Hermes profile must receive Ginflow:
+Use dedicated installer for selected profiles:
 
 ```bash
-make install
+make install                              # currently active profile
+make install PROFILES="profile-a profile-b"
 ```
 
-This copies `skills/ginflow`, including `lib/harness_core.py`, to `~/.agents/skills/ginflow`, copies `plugins/ginflow-gate` and its packaged routing core into every installed profile, and updates each profile's native config. Installer ownership is recorded in the setup-repo-root `.ginflow-install.json`, which is gitignored.
+This copies `skills/ginflow`, including `lib/harness_core.py`, into each selected profile at `~/.hermes/profiles/<profile>/skills/ginflow`. It does not install into universal agent skills or modify profile config/plugins. Installer ownership is recorded in setup-repo-root `.ginflow-install.json`, which is gitignored.
 
 Remove only installer-owned files with:
 

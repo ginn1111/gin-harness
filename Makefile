@@ -23,9 +23,10 @@ setup:
 apply:
 	./scripts/setup.sh --apply $(PROFILES)
 
-## Install Ginflow skill and plugin into every Hermes profile
+## Install Ginflow skill into selected Hermes profiles
 install:
-	bash scripts/install.sh install
+	@test -n "$(PROFILES)" || (echo 'No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES="<name>"' >&2; exit 2)
+	bash scripts/install.sh install $(PROFILES)
 
 ## Remove installer-owned Ginflow integrations
 uninstall:
