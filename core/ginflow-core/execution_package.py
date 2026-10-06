@@ -2,13 +2,17 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from datetime import datetime
+from copy import deepcopy
+from datetime import datetime, timezone
 from typing import Any
 
 
 CONTRACT_STATES = frozenset({"draft", "approved", "active", "completed", "cancelled"})
 ARTIFACT_STATES = frozenset({"draft", "approved", "active", "completed", "superseded", "cancelled"})
 REQUIRED_UNIT_FIELDS = ("key", "plan_key", "owner", "scope", "acceptance", "workspace")
+REQUIRED_CONTRACT_FIELDS = ("key", "objective", "boundaries", "exclusions", "acceptance", "verification")
+REQUIRED_SPEC_FIELDS = ("key", "behavior", "interfaces", "rules", "edge_cases", "constraints")
+REQUIRED_PLAN_FIELDS = ("key", "unit_key", "state", "steps", "verification")
 
 
 def _text(value: Any) -> bool:
@@ -23,6 +27,49 @@ def _utc(value: Any) -> bool:
     except ValueError:
         return False
     return parsed.tzinfo is not None
+
+
+def shape_package(
+    initiative_key: str,
+    contract: Mapping[str, Any],
+    spec: Mapping[str, Any],
+    units: Sequence[Mapping[str, Any]],
+    plans: Sequence[Mapping[str, Any]],
+    baseline: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Build one draft package without dispatching work or mutating inputs."""
+    return {
+        "workflow_version": 2,
+        "initiative_key": initiative_key,
+        "contract": {**deepcopy(dict(contract)), "state": "draft"},
+        "spec": {**deepcopy(dict(spec)), "state": "draft"},
+        "units": deepcopy(list(units)),
+        "plans": [{**deepcopy(dict(plan)), "state": "draft"} for plan in plans],
+        "baseline": deepcopy(dict(baseline)),
+    }
+
+
+def approve_package(
+    package: Mapping[str, Any], approver: str, approved_at: str | None = None
+) -> dict[str, Any]:
+    """Approve complete package once; reject incomplete packages."""
+    candidate = deepcopy(dict(package))
+    timestamp = approved_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    contract = candidate.get("contract")
+    if not isinstance(contract, Mapping):
+        raise ValueError("contract must be a mapping")
+    candidate["contract"] = {
+        **contract, "state": "approved", "approval": {"approver": approver, "approved_at": timestamp}
+    }
+    if isinstance(candidate.get("spec"), Mapping):
+        candidate["spec"] = {**candidate["spec"], "state": "approved"}
+    candidate["plans"] = [
+        {**plan, "state": "approved"} for plan in candidate.get("plans", [])
+    ]
+    result = validate_package(candidate)
+    if not result["valid"]:
+        raise ValueError("incomplete execution package: " + "; ".join(result["errors"]))
+    return candidate
 
 
 def validate_package(package: Mapping[str, Any]) -> dict[str, Any]:
@@ -48,8 +95,10 @@ def validate_package(package: Mapping[str, Any]) -> dict[str, Any]:
             errors.append("contract.state must be approved")
         if contract.get("state") not in CONTRACT_STATES:
             errors.append("contract.state is invalid")
-        if not _text(contract.get("key")):
-            errors.append("contract.key is required")
+        for field in REQUIRED_CONTRACT_FIELDS:
+            value = contract.get(field)
+            if not (_text(value) if field in {"key", "objective"} else isinstance(value, Sequence) and not isinstance(value, (str, bytes)) and bool(value)):
+                errors.append(f"contract.{field} is required")
         approval = contract.get("approval")
         if not isinstance(approval, Mapping):
             errors.append("contract.approval must be a mapping")
@@ -67,8 +116,10 @@ def validate_package(package: Mapping[str, Any]) -> dict[str, Any]:
             errors.append("spec.state must be approved")
         if spec.get("state") not in ARTIFACT_STATES:
             errors.append("spec.state is invalid")
-        if not _text(spec.get("key")):
-            errors.append("spec.key is required")
+        for field in REQUIRED_SPEC_FIELDS:
+            value = spec.get(field)
+            if not (_text(value) if field == "key" else isinstance(value, Sequence) and not isinstance(value, (str, bytes)) and bool(value)):
+                errors.append(f"spec.{field} is required")
 
     units = package.get("units")
     plans = package.get("plans")
@@ -116,6 +167,16 @@ def validate_package(package: Mapping[str, Any]) -> dict[str, Any]:
         if key in plan_keys:
             errors.append(f"duplicate plan key: {key}")
         plan_keys.add(key)
+        for field in REQUIRED_PLAN_FIELDS:
+            value = plan.get(field)
+            if field == "unit_key":
+                valid = value in unit_keys
+            elif field in {"key", "state"}:
+                valid = _text(value)
+            else:
+                valid = isinstance(value, Sequence) and not isinstance(value, (str, bytes)) and bool(value)
+            if not valid:
+                errors.append(f"plan {key}.{field} is required")
         if plan.get("state") != "approved":
             errors.append(f"plan {key}.state must be approved")
         if plan.get("unit_key") not in unit_keys:
