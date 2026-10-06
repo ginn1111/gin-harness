@@ -61,9 +61,10 @@ def test_native_review_transition():
         subprocess.run(["git", "add", "."], cwd=target, check=True)
         subprocess.run(["git", "commit", "-qm", "baseline"], cwd=target, check=True)
         baseline = subprocess.run(["git", "rev-parse", "HEAD"], cwd=target, text=True, capture_output=True, check=True).stdout.strip()
-        env = os.environ | {"HERMES_HOME": home, "HERMES_KANBAN_BOARD": BOARD}
-        home_path = Path(home)
+        home_path = Path(home) / "profiles" / "test"
         home_path.mkdir(parents=True, exist_ok=True)
+        profile_home = str(home_path)
+        env = os.environ | {"HERMES_HOME": profile_home, "HERMES_KANBAN_BOARD": BOARD}
         (home_path / "config.yaml").write_text("kanban:\n  default_reviewer_profile: gintary\n  review_dispatch: true\n")
         run_hermes(env, "kanban", "init")
         run_hermes(env, "kanban", "boards", "create", BOARD)
@@ -73,7 +74,7 @@ def test_native_review_transition():
         worker_env = claim_as_worker(env, task_id)
         old_home = os.environ.get("HERMES_HOME")
         old_board = os.environ.get("HERMES_KANBAN_BOARD")
-        os.environ["HERMES_HOME"] = home
+        os.environ["HERMES_HOME"] = profile_home
         os.environ["HERMES_KANBAN_BOARD"] = BOARD
         os.environ["HERMES_KANBAN_TASK"] = task_id
         os.environ["HERMES_KANBAN_RUN_ID"] = worker_env["HERMES_KANBAN_RUN_ID"]
