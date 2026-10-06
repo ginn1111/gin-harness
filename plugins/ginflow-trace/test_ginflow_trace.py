@@ -188,8 +188,11 @@ def test_trace_write_failure_is_non_blocking_and_recorded():
         def function():
             return "result"
 
-        with patch.object(decorator, "append_record", failing_append):
-            assert function() == "result"
+        with TemporaryDirectory() as directory:
+            config = {"ginflow": {"workspace": directory}}
+            with patch.object(decorator, "_project_config", return_value=config):
+                with patch.object(decorator, "append_record", failing_append):
+                    assert function() == "result"
         assert writes == [("logs", "success"), ("errors", "trace_error")]
     finally:
         if old is None:
