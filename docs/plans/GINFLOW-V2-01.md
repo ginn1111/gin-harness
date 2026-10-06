@@ -1,5 +1,5 @@
 ---
-status: approved
+status: completed
 size: XL
 scope: GINFLOW-V2-01
 owner: ginb
@@ -23,7 +23,7 @@ None — can start immediately.
 
 ## Acceptance criteria
 
-- [ ] Canonical terms and lifecycle states are documented and used consistently.
-- [ ] An ADR records the artifact-first decision and its trade-offs.
-- [ ] A minimal approved version 2 package validates through one deterministic seam.
-- [ ] Existing version 1 behavior remains unchanged.
+- [x] Canonical terms and lifecycle states are documented and used consistently.
+- [x] An ADR records the artifact-first decision and its trade-offs.
+- [x] A minimal approved version 2 package validates through one deterministic seam.
+- [x] Existing version 1 behavior remains unchanged.

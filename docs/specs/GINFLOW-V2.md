@@ -1,5 +1,5 @@
 ---
-status: approved
+status: completed
 size: XL
 scope: Ginflow v2 artifact-first workflow
 owner: gin
