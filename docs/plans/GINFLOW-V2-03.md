@@ -1,5 +1,5 @@
 ---
-status: approved
+status: completed
 size: XL
 scope: GINFLOW-V2-03
 owner: ginb
