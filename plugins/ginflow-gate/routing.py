@@ -12,23 +12,57 @@ The injected context is ephemeral (per-turn) and never persisted to the session 
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import logging
 import os
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
-CORE = Path(__file__).resolve().parents[2] / "core/ginflow-core/harness_core.py"
-import importlib.util
+try:
+    from .trace_adapter import trace
+except ImportError:
+    _trace_spec = importlib.util.spec_from_file_location(
+        "ginflow_gate_trace_adapter", Path(__file__).with_name("trace_adapter.py")
+    )
+    if not _trace_spec or not _trace_spec.loader:
+        raise ImportError("unable to load trace adapter")
+    _trace_module = importlib.util.module_from_spec(_trace_spec)
+    _trace_spec.loader.exec_module(_trace_module)
+    trace = _trace_module.trace
 
+
+def _harness_core_path() -> Path:
+    plugin = Path(__file__).resolve()
+    real_home = Path(os.environ.get("HERMES_REAL_HOME", str(Path.home()))).expanduser().resolve()
+    candidates = (
+        plugin.parents[2] / "skills/ginflow/lib/harness_core.py",
+        real_home / ".agents/skills/ginflow/lib/harness_core.py",
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise ImportError("unable to locate Ginflow skill harness core; checked: " + ", ".join(map(str, candidates)))
+
+
+CORE = _harness_core_path()
+if str(CORE.parent) not in sys.path:
+    sys.path.insert(0, str(CORE.parent))
 _spec = importlib.util.spec_from_file_location("ginflow_harness_core", CORE)
 if not _spec or not _spec.loader:
     raise ImportError(f"unable to load Ginflow harness core: {CORE}")
 _core = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_core)
 startup_gate = _core.startup_gate
-CORE_ROUTING = Path(__file__).resolve().parents[2] / "core/ginflow-core/routing.py"
+CORE_ROUTING_CANDIDATES = (
+    Path(__file__).resolve().parents[2] / "core/ginflow-core/routing.py",
+    Path(__file__).resolve().parent / "lib/routing.py",
+)
+CORE_ROUTING = next((path for path in CORE_ROUTING_CANDIDATES if path.is_file()), None)
+if CORE_ROUTING is None:
+    raise ImportError("unable to locate Ginflow routing core; checked: " + ", ".join(map(str, CORE_ROUTING_CANDIDATES)))
 _routing_spec = importlib.util.spec_from_file_location("ginflow_routing_core", CORE_ROUTING)
 if not _routing_spec or not _routing_spec.loader:
     raise ImportError(f"unable to load Ginflow routing core: {CORE_ROUTING}")
@@ -36,6 +70,9 @@ _routing_core = importlib.util.module_from_spec(_routing_spec)
 _routing_spec.loader.exec_module(_routing_core)
 _route_policy = _routing_core.route
 _workspace = _routing_core.workspace
+_resolve_board = _core.resolve_board
+_context_error = _core.context_error
+_config_exists = _core.config_exists
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +97,7 @@ _DEFAULT_OUTPUTS = {
 }
 
 
+@trace
 def format_work_guidance(
     *,
     work_mode: str,
@@ -161,8 +199,13 @@ def _ginflow_loaded() -> bool:
 def _kanban_board_state() -> str | None:
     """Return a snapshot of the Kanban board as concise text, or None."""
     try:
+        current = Path.cwd()
+        if _context_error(current) or not _config_exists(current):
+            return None
+        board = _resolve_board(current)
+        command = ["hermes", "kanban"] + (["--board", board] if board else []) + ["list", "--json"]
         result = subprocess.run(
-            ["hermes", "kanban", "list", "--json"],
+            command,
             text=True,
             capture_output=True,
             timeout=15,
@@ -211,10 +254,38 @@ def _route(tasks: list[dict[str, Any]], explicit_id: str | None = None) -> dict[
     return _route_policy(tasks, Path.cwd(), explicit_id)
 
 
+def _project_config_route(current: Path) -> tuple[str, str] | None:
+    """Return a mutation-blocking route when project context is unusable."""
+    error = _context_error(current)
+    if error:
+        return "project_config_invalid", (
+            f"Project-local `.ginflow.yaml` is invalid: {error}. "
+            "Repair `.ginflow.yaml` for this workspace before continuing; "
+            "do not silently switch workspace or board."
+        )
+    if not _config_exists(current):
+        return "project_config_missing", (
+            "Project-local `.ginflow.yaml` is missing. Run `/ginflow` to initialize "
+            "the project context by choosing the current/default board or creating "
+            "a new board before continuing."
+        )
+    return None
+
+
+@trace
 def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
     """Inject deterministic workspace/card routing context when ginflow is active."""
     if not _ginflow_loaded():
         return None
+
+    current = Path.cwd().resolve()
+    config_route = _project_config_route(current)
+    if config_route:
+        route_name, guidance = config_route
+        return {"context": (
+            f"[ginflow-gate routing: route={route_name}; workspace={current}; "
+            "mutation_allowed=False; task=none; candidates=none. " + guidance + "]"
+        )}
 
     tasks = _load_tasks()
     explicit_id = os.environ.get("HERMES_KANBAN_TASK") or None
@@ -222,7 +293,6 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
     route_name = route["route"]
     candidates = route.get("candidates", [])
     candidate_ids = [item["id"] if isinstance(item, dict) else item for item in candidates]
-    current = Path.cwd().resolve()
     if route_name == "no_card":
         route_name = "no_cards_for_workspace"
     if route_name == "invalid_status":
@@ -265,7 +335,16 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
             validation = startup_gate(card, current, current)
             route_name = validation["route"]
             context = context.replace("route=validate_card_docs", f"route={route_name}")
-            context += " Validate linked docs before next-to-in_progress transition."
+            if validation["valid"]:
+                context += (
+                    " Linked-document validation passed; resume implementation inside the "
+                    "validated workspace and scope. Submit for review via the native "
+                    "kanban_request_review tool only after completing the work and running "
+                    "canonical verification; do not call kanban_complete directly (the "
+                    "reviewer calls it to approve valid work)."
+                )
+            else:
+                context += " Validate linked docs before next-to-in_progress transition."
         else:
             context += " Validate linked docs before next-to-in_progress transition."
     elif route_name == "ready_to_start":
@@ -275,6 +354,7 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
     return {"context": context + "]"}
 
 
+@trace
 def _normalize_task(task: dict[str, Any]) -> dict[str, Any]:
     """Adapt live task fields for the shared Ginflow startup validator."""
     body = task.get("body", "")
@@ -291,11 +371,17 @@ def _normalize_task(task: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+@trace
 def _load_tasks() -> list[dict[str, Any]]:
     """Load board tasks as dictionaries; return empty on unavailable board."""
     try:
+        current = Path.cwd()
+        if _context_error(current) or not _config_exists(current):
+            return []
+        board = _resolve_board(current)
+        command = ["hermes", "kanban"] + (["--board", board] if board else []) + ["list", "--json"]
         result = subprocess.run(
-            ["hermes", "kanban", "list", "--json"],
+            command,
             text=True,
             capture_output=True,
             timeout=15,

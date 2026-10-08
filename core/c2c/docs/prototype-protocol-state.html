@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<!-- PROTOTYPE — throwaway. Question: does the C2C two-layer state model feel right?
+     Wire states ChatGPT sees vs local checkpoint the agent resumes from.
+     Pure module: C2C below. Lift into real codebase if validated; delete this shell. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE — C2C Protocol State Machine</title>
+<style>
+  :root {
+    --accent: #0f766e;
+    --accent-soft: #ccfbf1;
+    --bg: #fafaf9;
+    --panel: #ffffff;
+    --ink: #1c1917;
+    --muted: #78716c;
+    --line: #e7e5e4;
+    --reject: #b91c1c;
+    --reject-soft: #fee2e2;
+    --ok: #15803d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2rem 1rem 4rem;
+    background: var(--bg); color: var(--ink);
+    font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin: 0 0 .4rem; }
+  h2 { font-size: 1rem; margin: 2rem 0 .6rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .question {
+    background: var(--accent-soft); border-left: 4px solid var(--accent);
+    padding: .8rem 1rem; border-radius: 0 6px 6px 0; margin-bottom: 1.5rem;
+  }
+  .question p { margin: 0; }
+  .badge {
+    display: inline-block; font-size: .7rem; font-weight: 700; letter-spacing: .08em;
+    background: var(--accent); color: #fff; border-radius: 3px; padding: .1rem .45rem;
+    vertical-align: middle; margin-left: .5rem;
+  }
+  /* state panels */
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 700px) { .panels { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 1rem 1.1rem;
+  }
+  .panel h3 { margin: 0 0 .6rem; font-size: .85rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .row { display: flex; justify-content: space-between; gap: 1rem; padding: .22rem 0; border-bottom: 1px dotted var(--line); }
+  .row:last-child { border-bottom: none; }
+  .row .k { color: var(--muted); }
+  .row .v { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  .v.on { color: var(--accent); }
+  .v.off { color: var(--muted); font-weight: 400; }
+  .resume-note {
+    margin-top: .8rem; padding: .55rem .7rem; background: var(--bg);
+    border: 1px dashed var(--line); border-radius: 6px; font-size: .88rem;
+  }
+  .resume-note strong { color: var(--accent); }
+  /* result */
+  .result {
+    margin-top: 1rem; padding: .7rem .9rem; border-radius: 6px; border: 1px solid var(--line);
+    background: var(--panel); min-height: 3.2rem;
+  }
+  .result.ok { border-color: var(--ok); }
+  .result.no { border-color: var(--reject); background: var(--reject-soft); }
+  .result .tag { font-weight: 700; font-size: .8rem; letter-spacing: .05em; }
+  .result.ok .tag { color: var(--ok); }
+  .result.no .tag { color: var(--reject); }
+  .result .why { display: block; margin-top: .2rem; }
+  /* buttons */
+  .btn {
+    font: inherit; font-size: .9rem; padding: .45rem .8rem; margin: 0 .4rem .4rem 0;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+    cursor: pointer; color: var(--ink);
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.danger { border-color: var(--reject); color: var(--reject); }
+  .btn.danger:hover { background: var(--reject-soft); }
+  .btn-group-label { font-size: .8rem; color: var(--muted); margin: .8rem 0 .3rem; }
+  /* tabs */
+  .tabs { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .8rem; }
+  .tab {
+    font: inherit; font-size: .88rem; padding: .4rem .8rem; background: var(--panel);
+    border: 1px solid var(--line); border-bottom: none; border-radius: 6px 6px 0 0; cursor: pointer;
+  }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  .scenario {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 0 8px 8px 8px; padding: 1rem 1.1rem;
+  }
+  .scenario p.desc { margin: 0 0 .8rem; }
+  .steps { display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; }
+  .step {
+    font: inherit; font-size: .88rem; padding: .4rem .75rem; background: var(--accent-soft);
+    border: 1px solid var(--accent); border-radius: 6px; cursor: pointer; color: var(--ink);
+  }
+  .step:disabled { background: var(--bg); border-color: var(--line); color: var(--muted); cursor: default; }
+  .step.done { background: var(--bg); border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+  .step-arrow { color: var(--muted); font-size: .85rem; }
+  .foot { margin-top: 2.5rem; font-size: .8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Does the C2C state model feel right?<span class="badge">PROTOTYPE</span></h1>
+  <div class="question">
+    <p>C2C runs two state layers that must stay in step: the <strong>wire states ChatGPT sees</strong>
+    (INIT / PLAN / EXECUTED / DONE … typed into the web UI) and the <strong>local checkpoint the agent
+    resumes from</strong> after a crash or a lost chat. This demo pushes both through the awkward cases —
+    restart while waiting for review, lost chat mid-loop, iteration cap, attempts to invent a
+    <code>STATE: RESUME</code> — so you can feel whether the model holds or leaks.</p>
+  </div>
+
+  <h2>Current state</h2>
+  <div class="panels">
+    <div class="panel">
+      <h3>What ChatGPT sees (wire)</h3>
+      <div id="wire"></div>
+    </div>
+    <div class="panel">
+      <h3>What the agent knows (local)</h3>
+      <div id="local"></div>
+    </div>
+  </div>
+  <div class="resume-note" id="resume"></div>
+  <div class="result" id="result"></div>
+
+  <h2>Free play — press anything</h2>
+  <div class="btn-group-label">Agent actions (typed into ChatGPT / run locally)</div>
+  <div id="agentActions"></div>
+  <div class="btn-group-label">ChatGPT actions (replies in the chat)</div>
+  <div id="gptActions"></div>
+  <div class="btn-group-label">Interruptions</div>
+  <div id="interrupts"></div>
+  <div class="btn-group-label">Resist (should be rejected)</div>
+  <div id="resist"></div>
+
+  <h2>Guided walkthroughs</h2>
+  <div class="tabs" id="tabs"></div>
+  <div class="scenario">
+    <p class="desc" id="scenarioDesc"></p>
+    <div class="steps" id="scenarioSteps"></div>
+  </div>
+
+  <p class="foot">PROTOTYPE — throwaway. Source of truth: <code>docs/protocol.md</code> +
+  <code>skill/SKILL.md</code> resume table. No persistence; refresh resets everything.</p>
+</div>
+
+<script>
+/* ============================================================
+   PURE MODULE — lift this block into the real codebase if validated.
+   (state, action) => { state, accepted, reason }. No DOM here.
+   ============================================================ */
+const C2C = (() => {
+  const MAX_ITER = 12;
+
+  const initial = () => ({
+    checkpoint: null,        // null = legacy session, no checkpoint yet
+    waitingFor: 'none',      // 'GPT_PLAN' | 'GPT_REVIEW' | 'none'
+    iteration: 0,
+    taskId: null,
+    chatAlive: true,
+    handoffSent: false,
+    error: false,
+    loopPaused: false,
+  });
+
+  // What the wire state ChatGPT infers from the local checkpoint.
+  const wireOf = (s) => {
+    if (s.error) return 'ERROR (infrastructure)';
+    if (!s.chatAlive && s.checkpoint) return 'CHAT LOST (no visible state)';
+    if (s.handoffSent && s.checkpoint === 'INIT') return 'HANDOFF received, waiting for PLAN';
+    return ({
+      null: 'IDLE (no task in flight)',
+      INIT: 'INIT sent, waiting for PLAN',
+      PLAN_RECEIVED: 'PLAN in hand (ChatGPT awaiting EXECUTED)',
+      EXECUTING: 'EXECUTING sent (optional)',
+      EXECUTED_LOCAL: 'EXECUTED not yet typed',
+      EXECUTED_SENT: 'EXECUTED sent, ChatGPT reviewing',
+      DONE: 'DONE received',
+      BLOCKED: 'BLOCKED received',
+    })[s.checkpoint];
+  };
+
+  // Resume table from skill/SKILL.md — what the agent must do after a restart.
+  const resumeOf = (s) => ({
+    null: 'Legacy session: continue the normal loop; the first iteration writes a checkpoint automatically.',
+    INIT: 'Claim the tab and wait for PLAN. Do NOT resend INIT.',
+    PLAN_RECEIVED: 'Execute that PLAN. Do NOT INIT a new task.',
+    EXECUTING: 'Continue the current PLAN. If it is gone, HANDOFF and ask ChatGPT to restate it.',
+    EXECUTED_LOCAL: 'Only send EXECUTED (record first if missing). Do NOT re-run.',
+    EXECUTED_SENT: 'Stay on the saved chat and wait for review. Do NOT resend EXECUTED.',
+    DONE: 'Summarise to the user, then clear the checkpoint.',
+    BLOCKED: 'Surface ChatGPT’s reason. Do NOT INIT.',
+  })[s.checkpoint];
+
+  const fail = (s, reason) => ({ state: s, accepted: false, reason });
+  const ok = (s, reason) => ({ state: s, accepted: true, reason });
+
+  const ACTIONS = {
+    agent_send_init: (s) => {
+      if (s.error) return fail(s, 'Infrastructure is down. Repair first.');
+      if (s.checkpoint === 'BLOCKED')
+        return fail(s, 'ChatGPT is BLOCKED — surface its reason to the user first. Do NOT INIT; the user decides how to unblock, then clears the checkpoint.');
+      if (['INIT', 'PLAN_RECEIVED', 'EXECUTING', 'EXECUTED_LOCAL', 'EXECUTED_SENT'].includes(s.checkpoint))
+        return fail(s, 'Task already in flight — ' + resumeOf(s));
+      if (s.checkpoint === 'DONE' || s.checkpoint === null) {
+        const n = { ...s };
+        if (n.checkpoint === null || n.checkpoint === 'DONE') {
+          n.taskId = 'c2c_' + Math.random().toString(16).slice(2, 6);
+          n.iteration = 0;
+        }
+        n.checkpoint = 'INIT'; n.waitingFor = 'GPT_PLAN'; n.handoffSent = false; n.chatAlive = true;
+        return ok(n, 'INIT typed into ChatGPT (goal only, < 1 KB). Checkpoint → INIT; waiting for PLAN.');
+      }
+      return fail(s, 'Not allowed from ' + s.checkpoint + '.');
+    },
+
+    gpt_reply_plan: (s) => {
+      if (s.error) return fail(s, 'Infrastructure is down.');
+      if (s.waitingFor !== 'GPT_PLAN') {
+        if (s.checkpoint === null) return fail(s, 'No task in flight — agent never sent INIT.');
+        return fail(s, 'Agent is not waiting for a PLAN right now (waiting for: ' + s.waitingFor + ').');
+      }
+      const n = { ...s, checkpoint: 'PLAN_RECEIVED', waitingFor: 'none' };
+      n.iteration += 1;
+      if (n.iteration >= MAX_ITER) {
+        n.loopPaused = true;
+        return ok(n, 'PLAN accepted, iteration cap (' + MAX_ITER + ') reached → loop paused. Agent must ask the user before executing.');
+      }
+      return ok(n, 'PLAN received (actions, files, tests, success criteria). Checkpoint → PLAN_RECEIVED.');
+    },
+
+    agent_begin_executing: (s) => {
+      if (s.error) return fail(s, 'Infrastructure is down.');
+      if (s.loopPaused) return fail(s, 'Loop paused at the iteration cap. Ask the user to continue first.');
+      if (s.checkpoint !== 'PLAN_RECEIVED') return fail(s, 'No PLAN in hand — nothing to execute.');
+      return ok({ ...s, checkpoint: 'EXECUTING' }, 'Agent starts executing the plan with its own tools. Checkpoint → EXECUTING.');
+    },
+
+    agent_finish_and_record: (s) => {
+      if (s.error) return fail(s, 'Infrastructure is down.');
+      if (s.checkpoint !== 'EXECUTING') return fail(s, 'Execution has not started.');
+      return ok({ ...s, checkpoint: 'EXECUTED_LOCAL' },
+        'c2c record written (changed files, tests, exit status). Checkpoint → EXECUTED_LOCAL. EXECUTED not typed yet.');
+    },
+
+    agent_send_executed: (s) => {
+      if (s.error) return fail(s, 'Infrastructure is down.');
+      if (s.checkpoint === 'EXECUTED_SENT') return fail(s, 'EXECUTED already typed. Do NOT resend — wait for review.');
+      if (s.checkpoint !== 'EXECUTED_LOCAL') return fail(s, 'Nothing recorded yet — finish execution first.');
+      return ok({ ...s, checkpoint: 'EXECUTED_SENT', waitingFor: 'GPT_REVIEW' },
+        'EXECUTED typed (metadata only — 4 files, 27 tests passed). Checkpoint → EXECUTED_SENT; ChatGPT reviews via MCP.');
+    },
+
+    gpt_review_plan: (s) => {
+      if (s.error) return fail(s, 'Infrastructure is down.');
+      if (s.checkpoint !== 'EXECUTED_SENT' || s.waitingFor !== 'GPT_REVIEW')
+        return fail(s, 'ChatGPT is not reviewing anything — agent has not sent EXECUTED.');
+      if (s.loopPaused)
+        return fail(s, 'Loop paused at the iteration cap. User must approve more iterations first.');
+      const n = { ...s, checkpoint: 'PLAN_RECEIVED', waitingFor: 'none', iteration: s.iteration + 1 };
+      if (n.iteration >= MAX_ITER) {
+        n.loopPaused = true;
+        return ok(n, 'Review verdict: another PLAN (iteration ' + n.iteration + '), but the cap (' + MAX_ITER + ') is reached → loop paused until the user approves.');
+      }
+      return ok(n, 'Review verdict: another PLAN (iteration ' + n.iteration + '). Checkpoint → PLAN_RECEIVED.');
+    },
+
+    gpt_review_done: (s) => {
+      if (s.checkpoint !== 'EXECUTED_SENT') return fail(s, 'Nothing to review — agent has not sent EXECUTED.');
+      return ok({ ...s, checkpoint: 'DONE', waitingFor: 'none' },
+        'Review verdict: DONE — success criteria met. Checkpoint → DONE (terminal until cleared).');
+    },
+
+    gpt_review_blocked: (s) => {
+      if (s.checkpoint !== 'EXECUTED_SENT') return fail(s, 'Nothing to review — agent has not sent EXECUTED.');
+      return ok({ ...s, checkpoint: 'BLOCKED', waitingFor: 'none' },
+        'Review verdict: BLOCKED with a reason. Not an error — user decides how to unblock; agent must not INIT.');
+    },
+
+    agent_handoff: (s) => {
+      if (s.error) return fail(s, 'Infrastructure is down.');
+      if (s.checkpoint === null) return fail(s, 'No checkpoint — nothing to brief a replacement chat with.');
+      if (s.checkpoint === 'DONE') return fail(s, 'Task is DONE. Clear the checkpoint instead of handing off.');
+      if (s.checkpoint === 'BLOCKED') return fail(s, 'Surface the BLOCKED reason to the user first. A new task starts with INIT, not HANDOFF.');
+      const n = { ...s, handoffSent: true, chatAlive: true };
+      if (s.checkpoint === 'EXECUTING') {
+        // lost PLAN: the replacement chat restates it as a new PLAN reply
+        n.waitingFor = 'GPT_PLAN';
+        return ok(n, 'HANDOFF typed into a NEW chat; asked ChatGPT to restate the last PLAN. Waiting for PLAN.');
+      }
+      // EXECUTED_SENT keeps waiting for REVIEW — the new chat finishes the review it inherited
+      return ok(n, 'HANDOFF typed into a NEW chat (goal, progress, issues, next step — no data). Still waiting for: ' + (s.waitingFor === 'none' ? 'nothing (agent continues locally)' : s.waitingFor.replace('GPT_', 'ChatGPT ')) + '.');
+    },
+
+    chat_lost: (s) => {
+      if (s.checkpoint === null) return fail(s, 'Nothing in flight — a dead chat changes nothing.');
+      const extra = s.checkpoint === 'EXECUTED_SENT'
+        ? ' EXECUTED_SENT + lost chat: HANDOFF from checkpoint, then wait for review — do not re-run.'
+        : s.checkpoint === 'EXECUTING'
+          ? ' EXECUTING + lost chat: HANDOFF and ask ChatGPT to restate the PLAN.'
+          : '';
+      return ok({ ...s, chatAlive: false }, 'Saved chat is gone (404). Wire state is now undefined. ' + resumeOf(s) + extra);
+    },
+
+    agent_restart: (s) => {
+      const n = { ...s };
+      return ok(n, 'Agent process restarted. Resume directive: ' + resumeOf(s));
+    },
+
+    infra_error: (s) => ({ ...fail({ ...s, error: true }, 'Tunnel / bridge / MCP broke. Checkpoint preserved — it is the recovery source.') }),
+
+    infra_repaired: (s) => {
+      if (!s.error) return fail(s, 'Infrastructure is already healthy.');
+      return ok({ ...s, error: false }, 'Bridge + tunnel green again. Resume from checkpoint: ' + resumeOf(s));
+    },
+
+    user_approve_continue: (s) => {
+      if (!s.loopPaused) return fail(s, 'Loop is not paused.');
+      return ok({ ...s, loopPaused: false }, 'User approved more iterations. Agent may execute the held PLAN.');
+    },
+
+    user_clear_checkpoint: (s) => {
+      if (s.checkpoint !== 'DONE' && s.checkpoint !== 'BLOCKED')
+        return fail(s, 'Only a DONE or BLOCKED task may be cleared (got: ' + (s.checkpoint || 'legacy') + ').');
+      return ok({ ...initial() }, 'Checkpoint cleared. Idle again — next INIT starts a fresh task.');
+    },
+
+    invent_resume: (s) => fail(s, 'Protocol has no STATE: RESUME. There is no wire message for it. Recovery = HANDOFF built from the local checkpoint (never from logs), then wait.'),
+  };
+
+  return { initial, wireOf, resumeOf, ACTIONS, MAX_ITER };
+})();
+
+/* ============================================================
+   PAGE SHELL — throwaway. Wires buttons to the pure module.
+   ============================================================ */
+(() => {
+  let state = C2C.initial();
+  let last = { accepted: true, reason: 'Ready. No task in flight.' };
+  let scenario = null;      // active walkthrough id
+  let scenarioStep = 0;
+
+  const AGENT = [
+    ['agent_send_init', 'Agent sends INIT (goal)'],
+    ['agent_begin_executing', 'Agent begins executing PLAN'],
+    ['agent_finish_and_record', 'Agent finishes + records (c2c record)'],
+    ['agent_send_executed', 'Agent sends EXECUTED (metadata only)'],
+    ['agent_handoff', 'Agent sends HANDOFF (new chat)'],
+  ];
+  const GPT = [
+    ['gpt_reply_plan', 'ChatGPT replies PLAN'],
+    ['gpt_review_plan', 'Review → PLAN (another round)'],
+    ['gpt_review_done', 'Review → DONE'],
+    ['gpt_review_blocked', 'Review → BLOCKED'],
+  ];
+  const INTERRUPT = [
+    ['agent_restart', 'Agent process restarts'],
+    ['chat_lost', 'Chat lost (404)'],
+    ['infra_error', 'Infrastructure error'],
+    ['infra_repaired', 'Infrastructure repaired'],
+    ['user_approve_continue', 'User approves more iterations'],
+    ['user_clear_checkpoint', 'User clears checkpoint (after DONE)'],
+  ];
+  const RESIST = [
+    ['invent_resume', 'Invent "STATE: RESUME"'],
+    ['agent_send_init', 'Re-send INIT while waiting'],
+    ['agent_send_executed', 'Re-send EXECUTED'],
+  ];
+
+  const SCENARIOS = [
+    { id: 'happy', name: '1 · Happy path',
+      desc: 'One clean round. Watch the two layers move in step: ChatGPT only ever sees INIT / PLAN / EXECUTED / DONE, while the local checkpoint carries the finer states (EXECUTED_LOCAL vs EXECUTED_SENT) that make crash-recovery precise.',
+      steps: ['agent_send_init', 'gpt_reply_plan', 'agent_begin_executing', 'agent_finish_and_record', 'agent_send_executed', 'gpt_review_done', 'user_clear_checkpoint'] },
+    { id: 'restart', name: '2 · Restart while waiting for review',
+      desc: 'The trap this model exists for. Agent typed EXECUTED and waits for review, then crashes and restarts. A naive agent INITs a new task or re-runs the plan. The checkpoint says: stay, wait, do nothing.',
+      steps: ['agent_send_init', 'gpt_reply_plan', 'agent_begin_executing', 'agent_finish_and_record', 'agent_send_executed', 'agent_restart', 'gpt_review_done'] },
+    { id: 'lost', name: '3 · Lost chat mid-loop',
+      desc: 'Saved chat 404s after EXECUTED was sent. Wire state is gone, but the checkpoint survives — HANDOFF rebuilt from checkpoint fields (never logs) into a fresh chat, then the review still arrives.',
+      steps: ['agent_send_init', 'gpt_reply_plan', 'agent_begin_executing', 'agent_finish_and_record', 'agent_send_executed', 'chat_lost', 'agent_handoff', 'gpt_review_done'] },
+    { id: 'cap', name: '4 · Iteration cap',
+      desc: 'maxIterations = 12. Steps 1–4 run one clean round up to EXECUTED_SENT. Then keep pressing "Review → PLAN" in free-play above: each round increments the iteration; at 12 the loop pauses — "Agent begins executing" starts rejecting until "User approves more iterations". The cap protects against 40-step epics.',
+      steps: ['agent_send_init', 'gpt_reply_plan', 'agent_begin_executing', 'agent_finish_and_record', 'agent_send_executed'] },
+    { id: 'resume', name: '5 · No RESUME state',
+      desc: 'Someone reaches for a STATE: RESUME message on restart. It does not exist and never will — recovery is HANDOFF from the local checkpoint. Also shows a legacy session (no checkpoint) starting cleanly.',
+      steps: ['invent_resume', 'agent_restart', 'agent_send_init', 'agent_handoff'] },
+  ];
+
+  const $ = (id) => document.getElementById(id);
+
+  function dispatch(actionId) {
+    const fn = C2C.ACTIONS[actionId];
+    if (!fn) return;
+    const r = fn(state);
+    state = r.state;
+    last = { accepted: r.accepted, reason: r.reason };
+    render();
+  }
+
+  function row(k, v, cls) {
+    return '<div class="row"><span class="k">' + k + '</span><span class="v ' + (cls || '') + '">' + v + '</span></div>';
+  }
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+  function render() {
+    // wire panel
+    $('wire').innerHTML =
+      row('Visible state', esc(C2C.wireOf(state)), state.error ? 'off' : 'on') +
+      row('Chat', state.chatAlive ? 'alive' : 'lost (404)', state.chatAlive ? 'on' : 'off') +
+      row('Waiting for', state.waitingFor === 'none' ? '—' : state.waitingFor.replace('GPT_', 'ChatGPT '), state.waitingFor === 'none' ? 'off' : 'on');
+
+    // local panel
+    $('local').innerHTML =
+      row('Checkpoint', state.checkpoint || 'none (legacy)', state.checkpoint ? 'on' : 'off') +
+      row('Task ID', state.taskId || '—') +
+      row('Iteration', state.iteration + ' / ' + C2C.MAX_ITER, state.loopPaused ? 'off' : '') +
+      row('Loop', state.loopPaused ? 'PAUSED (cap)' : 'running', state.loopPaused ? 'off' : 'on') +
+      row('Handoff sent', state.handoffSent ? 'yes' : 'no', state.handoffSent ? 'on' : 'off') +
+      row('Infrastructure', state.error ? 'ERROR' : 'healthy', state.error ? 'off' : 'on');
+
+    // resume directive — always visible, this is the model under test
+    $('resume').innerHTML = '<strong>If the agent restarted right now:</strong> ' + esc(C2C.resumeOf(state));
+
+    // result
+    const res = $('result');
+    res.className = 'result ' + (last.accepted ? 'ok' : 'no');
+    res.innerHTML = '<span class="tag">' + (last.accepted ? '✓ ACCEPTED' : '✗ REJECTED') + '</span>' +
+      '<span class="why">' + esc(last.reason) + '</span>';
+
+    // free-play buttons keep their label; re-render scenarios
+    renderScenario();
+  }
+
+  function renderButtons(container, defs, extraClass) {
+    const el = $(container);
+    el.innerHTML = '';
+    defs.forEach(([id, label]) => {
+      const b = document.createElement('button');
+      b.className = 'btn' + (extraClass ? ' ' + extraClass : '');
+      b.textContent = label;
+      b.onclick = () => { scenario = null; scenarioStep = 0; renderTabs(); dispatch(id); };
+      el.appendChild(b);
+    });
+  }
+
+  function renderTabs() {
+    const el = $('tabs');
+    el.innerHTML = '';
+    SCENARIOS.forEach((sc) => {
+      const b = document.createElement('button');
+      b.className = 'tab' + (scenario === sc.id ? ' active' : '');
+      b.textContent = sc.name;
+      b.onclick = () => {
+        scenario = sc.id; scenarioStep = 0;
+        state = C2C.initial();
+        last = { accepted: true, reason: 'Scenario "' + sc.name + '" reset to a clean slate.' };
+        render();
+      };
+      el.appendChild(b);
+    });
+  }
+
+  function renderScenario() {
+    const sc = SCENARIOS.find((x) => x.id === scenario);
+    if (!sc) {
+      $('scenarioDesc').textContent = 'Pick a walkthrough tab above. Each step is a real action — the machine runs it, the state panel updates, and rejections show up as red with the reason.';
+      $('scenarioSteps').innerHTML = '';
+      return;
+    }
+    $('scenarioDesc').textContent = sc.desc;
+    const el = $('scenarioSteps');
+    el.innerHTML = '';
+    sc.steps.forEach((id, i) => {
+      const meta = [...AGENT, ...GPT, ...INTERRUPT, ...RESIST].find(([a]) => a === id);
+      const label = meta ? meta[1] : id;
+      if (i > 0) {
+        const arrow = document.createElement('span');
+        arrow.className = 'step-arrow';
+        arrow.textContent = '→';
+        el.appendChild(arrow);
+      }
+      const b = document.createElement('button');
+      b.className = 'step' + (i < scenarioStep ? ' done' : '');
+      b.disabled = i !== scenarioStep;
+      b.textContent = (i + 1) + '. ' + label;
+      b.onclick = () => {
+        // re-dispatch without clearing the active scenario
+        const fn = C2C.ACTIONS[id];
+        const r = fn(state);
+        state = r.state;
+        last = { accepted: r.accepted, reason: r.reason };
+        scenarioStep = i + 1;
+        render();
+      };
+      el.appendChild(b);
+    });
+    if (scenarioStep >= sc.steps.length) {
+      const done = document.createElement('span');
+      done.className = 'step-arrow';
+      done.textContent = '— walkthrough complete. Free-play above, or reset by re-clicking the tab.';
+      el.appendChild(done);
+    }
+  }
+
+  renderButtons('agentActions', AGENT);
+  renderButtons('gptActions', GPT);
+  renderButtons('interrupts', INTERRUPT);
+  renderButtons('resist', RESIST, 'danger');
+  renderTabs();
+  render();
+})();
+</script>
+</body>
+</html>

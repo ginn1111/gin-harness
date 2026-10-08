@@ -1,7 +1,22 @@
+import importlib.util
 import json
 import re
 import subprocess
 from pathlib import Path
+
+try:
+    from project_config import config_exists, context_error, resolve_board
+except ModuleNotFoundError:  # Loaded directly by test/plugin adapters.
+    _config_spec = importlib.util.spec_from_file_location(
+        "ginflow_project_config", Path(__file__).with_name("project_config.py")
+    )
+    if not _config_spec or not _config_spec.loader:
+        raise ImportError("unable to load project config")
+    _config_module = importlib.util.module_from_spec(_config_spec)
+    _config_spec.loader.exec_module(_config_module)
+    config_exists = _config_module.config_exists
+    context_error = _config_module.context_error
+    resolve_board = _config_module.resolve_board
 
 
 def check(name, tests, exercised=True):
@@ -96,10 +111,15 @@ def normalize_card(document):
     return card
 
 
-def load_kanban_card(task_id, board=None):
+def load_kanban_card(task_id, board=None, workspace=None):
     command = ["hermes", "kanban"]
-    if board:
-        command += ["--board", board]
+    project = Path(workspace or Path.cwd())
+    config_error = context_error(project)
+    if config_error:
+        return {}, f"Project-local Ginflow config is invalid: {config_error}"
+    resolved_board = resolve_board(project, board)
+    if resolved_board:
+        command += ["--board", resolved_board]
     command += ["show", task_id, "--json"]
     try:
         result = subprocess.run(command, text=True, capture_output=True)

@@ -61,7 +61,7 @@ The adapter reads Objective, Scope, Acceptance, and Links sections from the task
 
 ### Completed-card linked-artifact validation
 
-Ginflow permits this baseline commit without human review. The worker must commit every linked artifact and stage only exact linked artifacts plus card-scoped implementation files. Worker prepares truthful completion metadata: verification evidence plus `artifact_baseline` containing completion commit and exact linked target-local paths. Any assigned worker may call `kanban_complete`; no review handoff is required. `ginflow-gate` is enforcement authority and validates card fields, metadata, baseline commit, exact paths, and drift during the tool call. Invalid or unavailable evidence rejects completion.
+Ginflow permits this baseline commit without human review. The worker must commit every linked artifact and stage only exact linked artifacts plus card-scoped implementation files. Worker prepares truthful review-request metadata: verification evidence plus `artifact_baseline` containing completion commit and exact linked target-local paths. Assigned worker calls `kanban_request_review`; reviewer calls final `kanban_complete` after independent validation. `ginflow-gate` is enforcement authority and validates card fields, metadata, baseline commit, exact paths, and drift during both tool calls. Invalid or unavailable evidence rejects transition.
 
 ```json
 {
@@ -69,13 +69,13 @@ Ginflow permits this baseline commit without human review. The worker must commi
     "commit": "<git-commit>",
     "paths": [
 
-      "<target-spec-path>"
+      "docs/specs/GIN-123.md"
     ]
   }
 }
 ```
 
-`ginflow-gate` performs this validation during the native `kanban_complete` tool call. External harness checks remain optional manual/CI evidence.
+`ginflow-gate` performs this validation during native `kanban_request_review` and `kanban_complete` tool calls. External harness checks remain optional manual/CI evidence.
 
 The external harness compares only those paths against the completion commit when the completed card is selected for startup, resume, handoff, or derived work. Advancing repository `HEAD` with unrelated changes does not cause drift. Uncommitted linked-artifact edits, later committed edits, missing paths, unavailable commits, and a path list that differs from the card's local links are blockers. The comparison is actor-agnostic: it detects a human or agent edit but cannot decide whether that edit is material.
 
