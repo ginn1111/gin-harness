@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PLUGIN = ROOT / "plugins/ginflow-gate/routing.py"
+TEST_BOARD = "gin-harness-testing"
 
 spec = importlib.util.spec_from_file_location("ginflow_gate_routing", PLUGIN)
 assert spec and spec.loader
@@ -19,6 +20,7 @@ spec.loader.exec_module(module)
 _ginflow_loaded = module._ginflow_loaded
 _routing_context = module._routing_context
 _route = module._route
+_project_config_route = module._project_config_route
 format_work_guidance = module.format_work_guidance
 
 
@@ -36,7 +38,9 @@ def test_workspace_and_status_routes():
     assert ambiguous["action"] == "orchestrator"
     assert ambiguous["candidates"] == [{"id": "one", "title": "First"}, {"id": "two", "title": "Second"}]
     assert _route([{"id": "blocked", "workspace_path": workspace, "status": "blocked"}])["route"] == "blocked_card"
-    assert _route([{"id": "next", "workspace_path": "dir:" + workspace, "status": "next"}])["route"] == "validate_card_docs"
+    next_route = _route([{"id": "next", "workspace_path": "dir:" + workspace, "status": "next"}])
+    assert next_route["route"] == "validate_card_docs"
+    assert next_route["action"] == "validate"
     assert _route([{"id": "ready", "workspace_path": workspace, "status": "in_progress"}])["route"] == "ready_to_start"
     assert _route([{"id": "running", "workspace_path": workspace, "status": "running"}])["route"] == "ready_to_start"
     assert _route([{"id": "todo", "workspace_path": workspace, "status": "todo"}])["route"] == "validate_card_docs"
@@ -67,6 +71,49 @@ def test_no_ginflow_skill():
     print("PASS: no ginflow → routing not called")
 
 
+def test_project_config_routes_fail_closed():
+    with tempfile.TemporaryDirectory(prefix="ginflow-config-routing-") as directory:
+        target = Path(directory)
+        old_cwd = Path.cwd()
+        old_skills = os.environ.get("HERMES_TUI_SKILLS")
+        try:
+            os.chdir(target)
+            os.environ["HERMES_TUI_SKILLS"] = "ginflow"
+            missing = _routing_context()
+            assert "route=project_config_missing" in missing["context"]
+            assert "Run `/ginflow` to initialize" in missing["context"]
+            assert "mutation_allowed=False" in missing["context"]
+
+            (target / ".ginflow.yaml").write_text(
+                "version: 1\nginflow:\n  board: test\n  workspace: relative\n"
+            )
+            invalid = _routing_context()
+            assert "route=project_config_invalid" in invalid["context"]
+            assert "must be an absolute path" in invalid["context"]
+            assert "Repair `.ginflow.yaml`" in invalid["context"]
+            assert "mutation_allowed=False" in invalid["context"]
+
+            (target / ".ginflow.yaml").write_text(
+                "version: 1\nginflow:\n  board: test\n"
+                f"  workspace: {target.resolve()}\n"
+            )
+            assert _project_config_route(target) is None
+            old_loader = module._load_tasks
+            module._load_tasks = lambda: []
+            try:
+                no_cards = _routing_context()
+            finally:
+                module._load_tasks = old_loader
+            assert "route=no_cards_for_workspace" in no_cards["context"]
+        finally:
+            os.chdir(old_cwd)
+            if old_skills is None:
+                os.environ.pop("HERMES_TUI_SKILLS", None)
+            else:
+                os.environ["HERMES_TUI_SKILLS"] = old_skills
+    print("PASS: project config routing diagnostics")
+
+
 def test_ginflow_skill_active():
     """Routing injects context when ginflow skill active in session."""
     old_skills = os.environ.get("HERMES_TUI_SKILLS")
@@ -86,7 +133,8 @@ def test_ginflow_skill_active():
         assert "route=" in result["context"] and "mutation_allowed=" in result["context"], \
             "context should expose structured deterministic route"
         assert any(marker in result["context"] for marker in (
-            "Report", "Validate", "Resume", "Do not implement",
+            "Report", "Validate", "Resume", "Do not implement", "Choose work mode",
+            "Run `/ginflow` to initialize", "Repair `.ginflow.yaml`",
         )), "context should provide route action"
         if "no_cards_for_workspace" in result["context"]:
             assert "Choose work mode" in result["context"]
@@ -175,10 +223,16 @@ def test_live_tmp_project_card():
         target = Path(project)
         (target / "docs/specs").mkdir(parents=True)
         (target / "docs/specs/TMP-1.md").write_text("# Temporary brief\n")
-        env = os.environ | {"HERMES_HOME": home, "HERMES_TUI_SKILLS": "ginflow"}
+        profile_home = Path(home) / "profiles" / "test"
+        profile_home.mkdir(parents=True)
+        env = os.environ | {"HERMES_HOME": str(profile_home), "HERMES_TUI_SKILLS": "ginflow", "HERMES_KANBAN_BOARD": TEST_BOARD}
         subprocess.run(["hermes", "kanban", "init"], env=env, check=True, capture_output=True, text=True)
+        subprocess.run(
+            ["hermes", "kanban", "boards", "create", TEST_BOARD],
+            env=env, check=True, capture_output=True, text=True,
+        )
         created = subprocess.run(
-            ["hermes", "kanban", "create", "TMP-1 — temporary routing card", "--body", body,
+            ["hermes", "kanban", "--board", TEST_BOARD, "create", "TMP-1 — temporary routing card", "--body", body,
              "--assignee", "ginb", "--workspace", f"dir:{target}",
              "--initial-status", "blocked", "--json"],
             env=env, check=True, capture_output=True, text=True,
@@ -208,15 +262,25 @@ def test_live_tmp_next_card_docs():
         target = Path(project)
         (target / "docs/specs").mkdir(parents=True)
         (target / "docs/specs/TMP-2.md").write_text("# Temporary brief\n")
+        (target / ".ginflow.yaml").write_text(
+            "version: 1\nginflow:\n  board: " + TEST_BOARD + "\n"
+            f"  workspace: {target.resolve()}\n"
+        )
         subprocess.run(["git", "init", "-q"], cwd=target, check=True)
         subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
         subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
         subprocess.run(["git", "add", "docs/specs/TMP-2.md"], cwd=target, check=True)
         subprocess.run(["git", "commit", "-qm", "baseline"], cwd=target, check=True)
-        env = os.environ | {"HERMES_HOME": home}
+        profile_home = Path(home) / "profiles" / "test"
+        profile_home.mkdir(parents=True)
+        env = os.environ | {"HERMES_HOME": str(profile_home), "HERMES_KANBAN_BOARD": TEST_BOARD}
         subprocess.run(["hermes", "kanban", "init"], env=env, check=True, capture_output=True, text=True)
+        subprocess.run(
+            ["hermes", "kanban", "boards", "create", TEST_BOARD],
+            env=env, check=True, capture_output=True, text=True,
+        )
         created = subprocess.run(
-            ["hermes", "kanban", "create", "TMP-2 — temporary startup card", "--body", body,
+            ["hermes", "kanban", "--board", TEST_BOARD, "create", "TMP-2 — temporary startup card", "--body", body,
              "--assignee", "ginb", "--workspace", f"dir:{target}",
              "--initial-status", "blocked", "--json"],
             env=env, check=True, capture_output=True, text=True,
@@ -234,6 +298,14 @@ def test_live_tmp_next_card_docs():
             result = _routing_context()
             assert result and "route=ready_to_start" in result["context"], result
             assert "mutation_allowed=False" in result["context"], result
+            # startup validation reserves review for completed work only: no premature
+            # kanban_request_review call and no worker-direct kanban_complete guidance.
+            assert "kanban_request_review" in result["context"], result
+            assert "kanban_complete" in result["context"], result
+            # worker must not complete directly: review submission plus reviewer completion
+            assert "do not call kanban_complete directly" in result["context"], result
+            assert f"kanban_request_review(task_id='{task['id']}'" not in result["context"], result
+            assert "metadata={'route': 'validate_card_docs'" not in result["context"], result
             assert task["status"] == "next"
             assert (target / "docs/specs/TMP-2.md").read_text() == "# Temporary brief\n"
 
@@ -261,47 +333,57 @@ def test_live_tmp_next_card_docs():
 
 
 def test_blocked_route_context_reports_metadata_without_execution():
-    workspace = str(Path.cwd().resolve())
-    task = {
-        "id": "blocked-with-evidence",
-        "title": "Blocked with evidence",
-        "workspace_path": workspace,
-        "status": "blocked",
-        "blocker_metadata": {
-            "event_id": "evt-1",
-            "event_type": "blocked",
-            "blocker_kind": "transient",
-            "decision": "pending",
-        },
-    }
-    old_loader = module._load_tasks
-    old_skills = os.environ.get("HERMES_TUI_SKILLS")
-    old_task = os.environ.get("HERMES_KANBAN_TASK")
-    try:
-        setattr(module, "_load_tasks", lambda: [task])
-        os.environ["HERMES_TUI_SKILLS"] = "ginflow"
-        os.environ["HERMES_KANBAN_TASK"] = task["id"]
-        result = _routing_context()
-        assert result and "route=blocked_card" in result["context"], result
-        assert "Report blocker to orchestrator; do not implement." in result["context"]
-        assert '"event_id": "evt-1"' in result["context"]
-        assert "Resume implementation" not in result["context"]
-    finally:
-        setattr(module, "_load_tasks", old_loader)
-        if old_skills is None:
-            os.environ.pop("HERMES_TUI_SKILLS", None)
-        else:
-            os.environ["HERMES_TUI_SKILLS"] = old_skills
-        if old_task is None:
-            os.environ.pop("HERMES_KANBAN_TASK", None)
-        else:
-            os.environ["HERMES_KANBAN_TASK"] = old_task
+    with tempfile.TemporaryDirectory(prefix="ginflow-gate-blocked-") as project:
+        target = Path(project)
+        (target / ".ginflow.yaml").write_text(
+            "version: 1\nginflow:\n  board: test\n"
+            f"  workspace: {target.resolve()}\n"
+        )
+        workspace = str(target.resolve())
+        task = {
+            "id": "blocked-with-evidence",
+            "title": "Blocked with evidence",
+            "workspace_path": workspace,
+            "status": "blocked",
+            "blocker_metadata": {
+                "event_id": "evt-1",
+                "event_type": "blocked",
+                "blocker_kind": "transient",
+                "decision": "pending",
+            },
+        }
+        old_loader = module._load_tasks
+        old_skills = os.environ.get("HERMES_TUI_SKILLS")
+        old_task = os.environ.get("HERMES_KANBAN_TASK")
+        old_cwd = Path.cwd()
+        try:
+            os.chdir(target)
+            setattr(module, "_load_tasks", lambda: [task])
+            os.environ["HERMES_TUI_SKILLS"] = "ginflow"
+            os.environ["HERMES_KANBAN_TASK"] = task["id"]
+            result = _routing_context()
+            assert result and "route=blocked_card" in result["context"], result
+            assert "Report blocker to orchestrator; do not implement." in result["context"]
+            assert '"event_id": "evt-1"' in result["context"]
+            assert "Resume implementation" not in result["context"]
+        finally:
+            os.chdir(old_cwd)
+            setattr(module, "_load_tasks", old_loader)
+            if old_skills is None:
+                os.environ.pop("HERMES_TUI_SKILLS", None)
+            else:
+                os.environ["HERMES_TUI_SKILLS"] = old_skills
+            if old_task is None:
+                os.environ.pop("HERMES_KANBAN_TASK", None)
+            else:
+                os.environ["HERMES_KANBAN_TASK"] = old_task
     print("PASS: blocked route reports metadata without execution")
 
 
 if __name__ == "__main__":
     test_workspace_and_status_routes()
     test_no_ginflow_skill()
+    test_project_config_routes_fail_closed()
     test_ginflow_skill_active()
     test_work_guidance_maps_modes_to_bounded_skills()
     test_work_guidance_routes_known_failure_and_unknown_separately()
@@ -343,42 +425,43 @@ card = {
 }
 setattr(module, "load_card", lambda task_id, board=None: card)
 
-blocked = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": {}}, "", profile="worker")
-assert blocked["action"] == "block"
-assert "verification_result" in blocked["message"]
+for tool_name in ("kanban_request_review", "kanban_complete"):
+    blocked = module.pre_tool_call(tool_name, {"task_id": "GATE-1", "metadata": {}}, "", profile="worker")
+    assert blocked["action"] == "block"
+    assert blocked["message"].startswith("ginflow-gate: ")
 
-setattr(module, "validate_completion", lambda card, metadata: None)
-allowed = module.pre_tool_call(
-    "kanban_complete",
-    {
-        "task_id": "GATE-1",
-        "metadata": {
-            "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
-            "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
+    setattr(module, "validate_completion", lambda card, metadata: None)
+    allowed = module.pre_tool_call(
+        tool_name,
+        {
+            "task_id": "GATE-1",
+            "metadata": {
+                "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
+                "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
+            },
         },
-    },
-    "",
-    profile="worker",
-)
-assert allowed is None
+        "",
+        profile="worker",
+    )
+    assert allowed is None
 
-setattr(module, "validate_completion", lambda card, metadata: "linked artifact drift: docs/specs/GATE-1.md")
-blocked = module.pre_tool_call(
-    "kanban_complete",
-    {
-        "task_id": "GATE-1",
-        "metadata": {
-            "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
-            "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
+    setattr(module, "validate_completion", lambda card, metadata: "linked artifact drift: docs/specs/GATE-1.md")
+    blocked = module.pre_tool_call(
+        tool_name,
+        {
+            "task_id": "GATE-1",
+            "metadata": {
+                "verification_result": {"commit": "abc", "command": "make test", "result": "passed"},
+                "artifact_baseline": {"commit": "abc", "paths": ["docs/specs/GATE-1.md"]},
+            },
         },
-    },
-    "",
-)
-assert blocked["action"] == "block"
-assert "drift" in blocked["message"]
+        "",
+    )
+    assert blocked["action"] == "block"
+    assert "drift" in blocked["message"]
 
 setattr(module, "load_card", lambda task_id, board=None: (_ for _ in ()).throw(RuntimeError("DB unavailable")))
-failed_closed = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": {}}, "")
+failed_closed = module.pre_tool_call("kanban_request_review", {"task_id": "GATE-1", "metadata": {}}, "")
 assert failed_closed["action"] == "block"
 assert "validation failed closed" in failed_closed["message"]
 
@@ -386,7 +469,7 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
     target = Path(directory)
     brief = target / "docs/specs/GATE-1.md"
     brief.parent.mkdir(parents=True)
-    brief.write_text("# Gate\n\n---\n**Status: completed** — linked card GATE-1 is done.\n")
+    brief.write_text("---\nstatus: completed\n---\n# Gate\n")
     subprocess.run(["git", "init", "-q"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
     subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
@@ -401,19 +484,27 @@ with tempfile.TemporaryDirectory(prefix="ginflow-gate-") as directory:
         "artifact_baseline": {"commit": commit, "paths": ["docs/specs/GATE-1.md"]},
     }
     assert validate_completion(committed_card, metadata) is None
-    brief.write_text("# Gate\n")
+    brief.write_text("# Gate\n\n**Status: completed**\n")
     incomplete_error = validate_completion(committed_card, metadata)
-    assert "not marked completed" in incomplete_error
+    assert "status: completed" in incomplete_error
     setattr(module, "load_card", lambda task_id, board=None: committed_card)
     setattr(module, "validate_completion", validate_completion)
-    blocked = module.pre_tool_call("kanban_complete", {"task_id": "GATE-1", "metadata": metadata}, "")
+    blocked = module.pre_tool_call("kanban_request_review", {"task_id": "GATE-1", "metadata": metadata}, "")
     assert blocked["action"] == "block"
     assert "docs/specs/GATE-1.md" in blocked["message"]
-    assert "then retry kanban_complete" in blocked["message"]
-    assert brief.read_text() == "# Gate\n"
-    brief.write_text("# Gate\n\n---\n**Status: completed** — linked card GATE-1 is done.\n")
+    assert "retry" in blocked["message"]
+    assert brief.read_text() == "# Gate\n\n**Status: completed**\n"
+    brief.write_text("---\nstatus: completed\n---\n# Gate\n\n**Status: in_progress**\n")
+    assert module.linked_documents_missing_completion(committed_card, target) == []
     metadata["verification_result"]["commit"] = "mismatch"
     assert "must match" in validate_completion(committed_card, metadata)
+
+    for contents in ("---\nstatus: draft\n---\n# Gate\n", "---\nstatus: [\n---\n# Gate\n", "# Gate\n"):
+        brief.write_text(contents)
+        error = validate_completion(committed_card, metadata | {
+            "verification_result": {"commit": commit, "command": "make test", "result": "passed"}
+        })
+        assert "status: completed" in error
 
 class Hooks:
     def __init__(self):

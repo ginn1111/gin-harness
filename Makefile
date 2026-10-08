@@ -1,7 +1,4 @@
-.PHONY: verify doctor community-update clean lint test harness-test artifact-guidance-test kanban-harness-test harness-core-test plugin-test status-transition-test guidance-test
-
-status-transition-test:
-	bash skills/ginflow/scripts/test-status-transition.sh
+.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test lifecycle-test plugin-test trace-test c2c
 
 # === Pre-flight ===
 doctor:
@@ -9,9 +6,48 @@ doctor:
 	@echo "=== Python ==="; python3 --version
 	@echo "=== Git ==="; git --version
 
-# === Standalone validation ===
+doctor-deps:
+	python3 -m pip install pyyaml
+
+# === Setup ===
+## Preview profile setup
+setup:
+	./scripts/setup.sh $(PROFILES)
+
+## Apply integrations to existing Hermes-native profiles
+apply:
+	./scripts/setup.sh --apply $(PROFILES)
+
+## Install Ginflow skill into selected Hermes profiles
+install:
+	@test -n "$(PROFILES)" || (echo 'No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES="<name>"' >&2; exit 2)
+	bash scripts/install.sh install $(PROFILES)
+
+## Remove installer-owned Ginflow integrations
+uninstall:
+	bash scripts/install.sh uninstall
+
+## Verify integrations in existing profiles via ginflow harness
 verify:
 	python3 skills/ginflow/scripts/validate-harness.py --setup-repo . --json
+
+## Verify profiles and fail on canonical repo drift via ginflow harness
+verify-strict:
+	@test -n "$(PROFILES)" || (echo 'No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES="<name>"' >&2; exit 2)
+	python3 skills/ginflow/scripts/validate-harness.py --setup-repo . --json
+
+## Test verify default and strict drift behavior
+verify-test:
+	bash scripts/test-verify.sh
+
+## Test active-profile default selection
+setup-test:
+	bash scripts/test-setup.sh
+
+# === c2c ===
+## Run vendored c2c CLI; extra args via C2C_ARGS (e.g. `make c2c C2C_ARGS="doctor --json"`)
+c2c:
+	node ./core/c2c/bin/cc.js $(C2C_ARGS)
 
 # === Community assets ===
 ## Clone/pull community skill repos
@@ -33,28 +69,23 @@ lint:
 	@echo "lint ok"
 
 ## Run deterministic repository tests
-test: lint harness-core-test artifact-guidance-test kanban-harness-test plugin-test guidance-test
+test: lint setup-test lifecycle-test plugin-test install-test
 
-harness-core-test:
-	python3 skills/ginflow/scripts/test-harness-core.py
+## Canonical ginflow flat-flow integration test (single command, per-step PASS/FAIL)
+lifecycle-test:
+	python3 skills/ginflow/scripts/test-ginflow-lifecycle.py
+
+install-test:
+	bash scripts/test-install.sh
 
 plugin-test:
 	python3 plugins/ginflow-gate/test_ginflow_gate.py
 	python3 plugins/ginflow-gate/test_blocker_reporting.py
 	python3 plugins/ginflow-gate/test_recovery_policy.py
 	python3 plugins/ginflow-gate/test_recovery.py
+	python3 plugins/ginflow-gate/test_native_review_transition.py
+	$(MAKE) trace-test
 
-guidance-test:
-	bash skills/ginflow/scripts/test-guidance.sh
-
-## Check ginflow docs layout and artifact content guidance
-artifact-guidance-test:
-	python3 skills/ginflow/scripts/test-artifact-guidance.py
-
-## Check ginflow Kanban gate and external harness statuses
-kanban-harness-test:
-	python3 skills/ginflow/scripts/test-kanban-harness.py
-
-## Run model-backed ginflow blank-project integration test
-harness-test: artifact-guidance-test kanban-harness-test
-	bash skills/ginflow/scripts/test-blank-project.sh
+trace-test:
+	python3 plugins/ginflow-trace/test_ginflow_trace.py
+	python3 plugins/ginflow-trace/test_ginflow_trace_integration.py

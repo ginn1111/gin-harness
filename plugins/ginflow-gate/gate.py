@@ -2,13 +2,41 @@
 
 from __future__ import annotations
 
-import json
 import importlib.util
+import json
 import os
 import subprocess
 from pathlib import Path
 
-CORE = Path(__file__).resolve().parents[2] / "core/ginflow-core/harness_core.py"
+import yaml
+
+try:
+    from .trace_adapter import trace
+except ImportError:
+    _trace_spec = importlib.util.spec_from_file_location(
+        "ginflow_gate_trace_adapter", Path(__file__).with_name("trace_adapter.py")
+    )
+    if not _trace_spec or not _trace_spec.loader:
+        raise ImportError("unable to load trace adapter")
+    _trace_module = importlib.util.module_from_spec(_trace_spec)
+    _trace_spec.loader.exec_module(_trace_module)
+    trace = _trace_module.trace
+
+
+def _harness_core_path() -> Path:
+    plugin = Path(__file__).resolve()
+    real_home = Path(os.environ.get("HERMES_REAL_HOME", str(Path.home()))).expanduser().resolve()
+    candidates = (
+        plugin.parents[2] / "skills/ginflow/lib/harness_core.py",
+        real_home / ".agents/skills/ginflow/lib/harness_core.py",
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise ImportError("unable to locate Ginflow skill harness core; checked: " + ", ".join(map(str, candidates)))
+
+
+CORE = _harness_core_path()
 _spec = importlib.util.spec_from_file_location("ginflow_harness_core", CORE)
 if not _spec or not _spec.loader:
     raise ImportError(f"unable to load Ginflow harness core: {CORE}")
@@ -22,6 +50,7 @@ def _block(message: str) -> dict[str, str]:
     return {"action": "block", "message": f"ginflow-gate: {message}"}
 
 
+@trace
 def load_card(task_id: str, board: str | None = None) -> dict:
     command = ["hermes", "kanban"]
     if board:
@@ -33,8 +62,9 @@ def load_card(task_id: str, board: str | None = None) -> dict:
     return normalize_card(json.loads(result.stdout))
 
 
+@trace
 def linked_documents_missing_completion(card: dict, target: Path) -> list[str]:
-    """Return local linked spec/plan paths without completion footer."""
+    """Return linked local brief/spec/plan paths without completed frontmatter."""
     missing = []
     for link in card.get("links", []):
         path_str = link if isinstance(link, str) else link.get("path") if isinstance(link, dict) else None
@@ -47,12 +77,24 @@ def linked_documents_missing_completion(card: dict, target: Path) -> list[str]:
             continue
         relative = artifact.relative_to(target)
         if artifact.is_file() and artifact.suffix.lower() == ".md" and any(
-            part in {"specs", "plans"} for part in relative.parts
-        ) and "**Status: completed**" not in artifact.read_text(encoding="utf-8"):
-            missing.append(path_str)
+            part in {"briefs", "specs", "plans"} for part in relative.parts
+        ):
+            text = artifact.read_text(encoding="utf-8")
+            if not text.startswith("---\n"):
+                missing.append(path_str)
+                continue
+            lines = text.splitlines()
+            try:
+                end = lines.index("---", 1)
+                frontmatter = yaml.safe_load("\n".join(lines[1:end]))
+            except (ValueError, yaml.YAMLError):
+                frontmatter = None
+            if not isinstance(frontmatter, dict) or frontmatter.get("status") != "completed":
+                missing.append(path_str)
     return sorted(missing)
 
 
+@trace
 def validate_completion(card: dict, metadata: dict) -> str | None:
     required = ("id", "title", "objective", "scope", "acceptance", "workspace", "assignee", "links")
     missing = [name for name in required if not card.get(name)]
@@ -76,9 +118,10 @@ def validate_completion(card: dict, metadata: dict) -> str | None:
     incomplete = linked_documents_missing_completion(card, target)
     if incomplete:
         return (
-            "linked target-local documents are not marked completed: " + ", ".join(incomplete)
-            + ". Finalize each document with '**Status: completed**', commit those changes, "
-              "update verification_result.commit and artifact_baseline.commit, then retry kanban_complete."
+            "linked target-local documents require valid YAML frontmatter with status: completed: "
+            + ", ".join(incomplete)
+            + ". Add the frontmatter at byte 0, commit those changes, "
+              "update verification_result.commit and artifact_baseline.commit, then retry review request or completion."
         )
 
     candidate = card | {"artifact_baseline": baseline}
@@ -90,13 +133,17 @@ def validate_completion(card: dict, metadata: dict) -> str | None:
     return None
 
 
+VALIDATED_TOOLS = {"kanban_request_review", "kanban_complete"}
+
+
+@trace
 def pre_tool_call(tool_name: str, args: dict, task_id: str = "", **kwargs):
-    if tool_name != "kanban_complete":
+    if tool_name not in VALIDATED_TOOLS:
         return None
     try:
         selected = str(args.get("task_id") or task_id or os.environ.get("HERMES_KANBAN_TASK") or "").strip()
         if not selected:
-            return _block("kanban_complete requires task_id")
+            return _block(f"{tool_name} requires task_id")
         metadata = args.get("metadata")
         if not isinstance(metadata, dict):
             return _block("metadata object is required")
@@ -107,6 +154,7 @@ def pre_tool_call(tool_name: str, args: dict, task_id: str = "", **kwargs):
         return _block(f"validation failed closed: {error}")
 
 
+@trace
 def post_tool_call(tool_name: str, result: dict, args: dict, task_id: str = "", **kwargs):
     """Retained compatibility hook; linked documents are finalized before completion."""
     return None

@@ -22,15 +22,15 @@ Scope:
 Acceptance:
 - <observable completion check>
 Links:
-- <target-spec-path>
+- docs/specs/<CARD-ID>.md
 ```
 
 Pass workspace and assignee through Kanban task fields, not duplicate body prose. The harness maps `workspace_kind` + `workspace_path`, status, assignee, and ID from the task row. On completed cards it reads `artifact_baseline` from the latest run metadata.
 
 Use a stable human-facing card key chosen before creation for linked artifacts; use the separate Hermes-generated task ID (`t_...`) for Kanban commands:
 
-- `<target-spec-path>`
-- `<target-plan-path>`
+- `docs/specs/<CARD-ID>.md`
+- `docs/plans/<CARD-ID>.md`
 
 Put the key in the task title and explicit `Links:` paths. The harness follows those links rather than deriving filenames from the generated task ID.
 
@@ -42,7 +42,7 @@ Before closing unfinished or blocked work, record outcome, changed files, verifi
 
 Before completion, re-run canonical verification in target repo and derive changed-file evidence from target-repo `git status --short`. Temporary checks outside card workspace do not prove completion.
 
-Before `kanban_complete`, worker prepares truthful verification evidence and exact linked target-local paths in `artifact_baseline`. Human review is not required for this baseline commit; never include unrelated work. The worker must commit every linked artifact and stage only exact linked artifacts plus intended card work. `ginflow-gate` validates card fields, verification metadata, baseline commit, exact paths, and drift during the tool call. Invalid or unavailable evidence rejects completion. Before startup, resume, handoff, or derived work involving that card, compare only those paths against commit. Unrelated paths and cards remain unblocked. Propose:
+Before `kanban_request_review`, worker prepares truthful verification evidence and exact linked target-local paths in `artifact_baseline`. Human review is not required for this baseline commit; never include unrelated work. The worker must commit every linked artifact and stage only exact linked artifacts plus intended card work. `ginflow-gate` validates card fields, verification metadata, baseline commit, exact paths, and drift during both `kanban_request_review` and final reviewer `kanban_complete`. Invalid or unavailable evidence rejects transition. Before startup, resume, handoff, or derived work involving that card, compare only those paths against commit. Unrelated paths and cards remain unblocked. Propose:
 
 - restore the completed docs, create new versioned docs and a follow-up card, and link back to the completed card;
 - reopen the card, reconcile docs with implementation and evidence, commit, record a new completion commit, rerun verification and the harness, and complete again; or
@@ -56,10 +56,12 @@ Optional manual/CI candidate check:
 python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --setup-repo <setup-repo> --target <target-repo> \
   --kanban-task-id "$TASK_ID" --baseline-commit "$COMMIT" \
-  --baseline-path <target-spec-path> --json
+  --baseline-path docs/specs/<CARD-ID>.md --json
 ```
 
-Any worker assigned to card makes `kanban_complete` call with verification evidence plus same commit and paths in `metadata={"artifact_baseline": ...}`. Do not route completion through `gintary` or a review handoff. `ginflow-gate` revalidates synchronously before mutation and rejects invalid output. External harness rerun is optional manual/CI evidence.
+Assigned worker requests review with `kanban_request_review(summary=..., metadata={"verification_result": ..., "artifact_baseline": ...})`. Reviewer makes final `kanban_complete` call after independent validation. `ginflow-gate` revalidates synchronously before each mutation and rejects invalid output. External harness rerun is optional manual/CI evidence.
+
+Invalid review: reviewer calls `kanban_request_changes` with a minimal handoff (`reason`, `evidence`, `next_action`) so the worker can fix and re-request review. This is a normal rework loop, not a blocker; `kanban_block` stays reserved for external blockers.
 
 Workspace rule:
 - use real target repo
@@ -72,9 +74,9 @@ Do not leave project work in scratch workspace if files must be read from repo.
 
 Feedback v1 is a pure normalized contract for Governed Work lifecycle signals. It requires a stable `event_id` and Kanban `task_id`; Direct Work is excluded in v1 because it has no card identity. The builder does not persist events, notify, mutate Kanban, or infer work. Supported signals and next actions are defined in `CONTEXT.md`.
 
-## Read-only background watcher
+## Task notifications
 
-When an interactive agent starts a selected `running` card, launch one `/background` watcher pinned to that task ID and board. The watcher records its initial event boundary, reads/polls only that card, and never claims, edits, dispatches, blocks, completes, or mutates workspace/repository state. Suppress historical events, routine heartbeats, and unchanged status. Report only completed/terminal, blocked, failed, reclaimed/retried, or materially stalled transitions with evidence, then stop at terminal state. Do not start duplicate watchers. Non-interactive surfaces use an equivalent read-only process watcher or no watcher; they must not pretend to invoke `/background`.
+Do not launch a `/background` watcher for a selected `running` card. Card creation from a persistent TUI or gateway session auto-subscribes the originating session when `kanban.auto_subscribe_on_create` is enabled; `subscribed: true` confirms registration. Let the dispatcher deliver terminal events and remove the subscription after `done` or `archived`. When creation does not confirm a subscription, use the normal Kanban notification subscription surface or explicit board reads instead of hidden polling.
 
 Run target-declared project verification first. Run ginflow harness externally against target and selected card; never copy harness into target repo. Report project verification and harness result separately.
 After artifact-repository updates, run `make verify` for standalone repository health. Runtime integration checks are optional and external.

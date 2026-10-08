@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C2C Core Module Architecture Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      min-height: 100vh;
+      padding: 2rem;
+      color: white;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    .header { margin-bottom: 2rem; }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pulse-dot {
+      width: 12px;
+      height: 12px;
+      background: #22d3ee;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      margin-left: 1.75rem;
+    }
+
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 1rem;
+      border: 1px solid #1e293b;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    svg {
+      width: 100%;
+      min-width: 900px;
+      display: block;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+      padding: 1.25rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+
+    .card h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .card ul {
+      list-style: none;
+      color: #94a3b8;
+      font-size: 0.75rem;
+    }
+
+    .card li { margin-bottom: 0.375rem; }
+
+    .footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: #475569;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>C2C Core Module Architecture</h1>
+      </div>
+      <p class="subtitle">core/c2c — ChatGPT plans, the local executor works. Read-only MCP data plane + tiny [C2C] control plane.</p>
+    </div>
+
+    <!-- Main Diagram -->
+    <div class="diagram-container">
+      <svg viewBox="0 0 1000 800">
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+          </marker>
+          <marker id="arr-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
+          </marker>
+          <marker id="arr-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399" />
+          </marker>
+          <marker id="arr-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24" />
+          </marker>
+          <marker id="arr-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa" />
+          </marker>
+          <marker id="arr-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb923c" />
+          </marker>
+          <marker id="arr-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- ===================== ARROWS (behind boxes) ===================== -->
+
+        <!-- Data plane: ChatGPT -> tunnel -> bridge /mcp -->
+        <line x1="500" y1="100" x2="500" y2="128" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+        <text x="510" y="119" fill="#22d3ee" font-size="8">MCP HTTPS</text>
+
+        <line x1="500" y1="180" x2="500" y2="238" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+        <text x="510" y="214" fill="#94a3b8" font-size="8">public /mcp</text>
+
+        <!-- Bridge -> workspace: read-only -->
+        <line x1="500" y1="450" x2="500" y2="498" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr-emerald)"/>
+        <text x="510" y="478" fill="#34d399" font-size="8">read-only</text>
+
+        <!-- Executor -> workspace -->
+        <line x1="262" y1="550" x2="328" y2="550" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr-emerald)"/>
+        <text x="295" y="542" fill="#94a3b8" font-size="7" text-anchor="middle">edit·shell·git</text>
+
+        <!-- Executor -> bridge: c2c CLI -->
+        <path d="M 260 520 L 300 520 L 300 360 L 328 360" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+        <text transform="rotate(-90 296 452)" x="296" y="452" fill="#fbbf24" font-size="7" text-anchor="middle">c2c CLI --json</text>
+
+        <!-- Bridge -> state dir -->
+        <path d="M 670 360 L 700 360 L 700 550 L 718 550" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-violet)"/>
+        <text transform="rotate(-90 696 470)" x="696" y="470" fill="#a78bfa" font-size="7" text-anchor="middle">tokens · tunnels/</text>
+
+        <!-- Executor -> state dir: execution records -->
+        <path d="M 150 600 L 150 640 L 830 640 L 830 602" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-violet)"/>
+        <text x="490" y="634" fill="#a78bfa" font-size="7" text-anchor="middle">execution JSONL · command output</text>
+
+        <!-- Control plane: executor -> ChatGPT -->
+        <path d="M 150 498 L 150 55 L 376 55" fill="none" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arr-orange)"/>
+        <text x="40" y="130" fill="#fb923c" font-size="8">[C2C] INIT / EXECUTED</text>
+        <text x="40" y="144" fill="#fb923c" font-size="7">control plane · &lt; 1 KB</text>
+
+        <!-- Control plane: ChatGPT -> executor -->
+        <path d="M 376 85 L 170 85 L 170 496" fill="none" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr-orange)"/>
+        <text x="40" y="164" fill="#fb923c" font-size="8">PLAN / DONE / BLOCKED</text>
+        <text x="40" y="178" fill="#fb923c" font-size="7">review loop</text>
+
+        <!-- OAuth + pairing flow: ChatGPT -> bridge -->
+        <path d="M 620 70 L 880 70 L 880 310 L 674 310" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arr-rose)"/>
+        <text x="740" y="62" fill="#fb7185" font-size="8" text-anchor="middle">OAuth 2.1 + PKCE · pairing code</text>
+
+        <!-- ===================== BOUNDARIES ===================== -->
+
+        <!-- Local machine region -->
+        <rect x="40" y="200" width="920" height="470" rx="12" fill="rgba(251, 191, 36, 0.05)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="8,4"/>
+        <text x="52" y="218" fill="#fbbf24" font-size="10" font-weight="600">Local Machine — workspace security boundary (one bridge = one workspace = one token audience)</text>
+
+        <!-- ===================== COMPONENTS ===================== -->
+
+        <!-- ChatGPT Web (external) -->
+        <rect x="380" y="40" width="240" height="60" rx="6" fill="#0f172a"/>
+        <rect x="380" y="40" width="240" height="60" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="500" y="65" fill="white" font-size="12" font-weight="600" text-anchor="middle">ChatGPT Web</text>
+        <text x="500" y="85" fill="#94a3b8" font-size="9" text-anchor="middle">Reason · Plan · Review (connector)</text>
+
+        <!-- Cloudflare Tunnel edge -->
+        <rect x="400" y="130" width="200" height="50" rx="6" fill="#0f172a"/>
+        <rect x="400" y="130" width="200" height="50" rx="6" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="500" y="151" fill="white" font-size="11" font-weight="600" text-anchor="middle">Tunnel (cloudflared)</text>
+        <text x="500" y="167" fill="#94a3b8" font-size="8" text-anchor="middle">Quick (URL rotates) / Named (fixed)</text>
+
+        <!-- C2C Bridge -->
+        <rect x="330" y="240" width="340" height="210" rx="6" fill="#0f172a"/>
+        <rect x="330" y="240" width="340" height="210" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="500" y="262" fill="white" font-size="12" font-weight="600" text-anchor="middle">C2C Bridge</text>
+        <text x="500" y="277" fill="#94a3b8" font-size="8" text-anchor="middle">Express · loopback 127.0.0.1 :48765</text>
+
+        <!-- child: MCP server -->
+        <rect x="350" y="290" width="140" height="45" rx="6" fill="#0f172a"/>
+        <rect x="350" y="290" width="140" height="45" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="420" y="309" fill="white" font-size="10" font-weight="600" text-anchor="middle">MCP Server</text>
+        <text x="420" y="325" fill="#94a3b8" font-size="8" text-anchor="middle">10 read-only tools</text>
+
+        <!-- child: Admin API -->
+        <rect x="510" y="290" width="140" height="45" rx="6" fill="#0f172a"/>
+        <rect x="510" y="290" width="140" height="45" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="580" y="309" fill="white" font-size="10" font-weight="600" text-anchor="middle">Admin API</text>
+        <text x="580" y="325" fill="#94a3b8" font-size="8" text-anchor="middle">local only · health</text>
+
+        <!-- child: OAuth AS -->
+        <rect x="350" y="350" width="140" height="45" rx="6" fill="#0f172a"/>
+        <rect x="350" y="350" width="140" height="45" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="420" y="369" fill="white" font-size="10" font-weight="600" text-anchor="middle">OAuth 2.1 AS</text>
+        <text x="420" y="385" fill="#94a3b8" font-size="8" text-anchor="middle">DCR · PKCE S256 · RFC 7009</text>
+
+        <!-- child: Pairing manager -->
+        <rect x="510" y="350" width="140" height="45" rx="6" fill="#0f172a"/>
+        <rect x="510" y="350" width="140" height="45" rx="6" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1.5"/>
+        <text x="580" y="369" fill="white" font-size="10" font-weight="600" text-anchor="middle">Pairing Manager</text>
+        <text x="580" y="385" fill="#94a3b8" font-size="8" text-anchor="middle">CSPRNG · TTL · one-time use</text>
+
+        <text x="500" y="420" fill="#94a3b8" font-size="8" text-anchor="middle">stateless Streamable HTTP · bearer 401/403</text>
+        <text x="500" y="434" fill="#94a3b8" font-size="8" text-anchor="middle">tokens stored as SHA-256 hashes</text>
+
+        <!-- Executor harness -->
+        <rect x="40" y="500" width="220" height="100" rx="6" fill="#0f172a"/>
+        <rect x="40" y="500" width="220" height="100" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="150" y="525" fill="white" font-size="12" font-weight="600" text-anchor="middle">Executor Harness</text>
+        <text x="150" y="545" fill="#94a3b8" font-size="9" text-anchor="middle">Codex / Hermes / Claude</text>
+        <text x="150" y="561" fill="#94a3b8" font-size="9" text-anchor="middle">edit · shell · git · test</text>
+        <text x="150" y="583" fill="#22d3ee" font-size="8" text-anchor="middle">owns execution &amp; recovery</text>
+
+        <!-- Local workspace -->
+        <rect x="330" y="500" width="340" height="100" rx="6" fill="#0f172a"/>
+        <rect x="330" y="500" width="340" height="100" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="500" y="525" fill="white" font-size="12" font-weight="600" text-anchor="middle">Local Workspace</text>
+        <text x="500" y="545" fill="#94a3b8" font-size="9" text-anchor="middle">path containment · .c2cignore · sensitive-file policy</text>
+        <text x="500" y="561" fill="#94a3b8" font-size="9" text-anchor="middle">paginated read/list · ripgrep search · git status/diff</text>
+        <text x="500" y="583" fill="#a78bfa" font-size="8" text-anchor="middle">no write / exec tools in V1</text>
+
+        <!-- OS state dir -->
+        <rect x="720" y="500" width="220" height="100" rx="6" fill="#0f172a"/>
+        <rect x="720" y="500" width="220" height="100" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="830" y="525" fill="white" font-size="12" font-weight="600" text-anchor="middle">OS State Dir</text>
+        <text x="830" y="545" fill="#94a3b8" font-size="9" text-anchor="middle">tokens (SHA-256) · prefs</text>
+        <text x="830" y="561" fill="#94a3b8" font-size="9" text-anchor="middle">tunnels/&lt;workspaceId&gt;.json · sessions</text>
+        <text x="830" y="583" fill="#a78bfa" font-size="8" text-anchor="middle">never inside the project</text>
+
+        <!-- ===================== LEGEND (outside all boundaries) ===================== -->
+        <text x="40" y="700" fill="white" font-size="10" font-weight="600">Legend</text>
+
+        <rect x="40" y="710" width="16" height="10" rx="2" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="62" y="718" fill="#94a3b8" font-size="8">Executor / frontend</text>
+
+        <rect x="40" y="726" width="16" height="10" rx="2" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="62" y="734" fill="#94a3b8" font-size="8">Bridge / backend</text>
+
+        <rect x="40" y="742" width="16" height="10" rx="2" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="62" y="750" fill="#94a3b8" font-size="8">Workspace / storage</text>
+
+        <rect x="40" y="758" width="16" height="10" rx="2" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" stroke-width="1"/>
+        <text x="62" y="766" fill="#94a3b8" font-size="8">Security (OAuth / pairing)</text>
+
+        <rect x="260" y="710" width="16" height="10" rx="2" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="282" y="718" fill="#94a3b8" font-size="8">Cloud edge (tunnel)</text>
+
+        <rect x="260" y="726" width="16" height="10" rx="2" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="282" y="734" fill="#94a3b8" font-size="8">External service</text>
+
+        <line x1="260" y1="747" x2="276" y2="747" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="282" y="750" fill="#94a3b8" font-size="8">Control plane ([C2C] messages)</text>
+
+        <line x1="260" y1="763" x2="276" y2="763" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <text x="282" y="766" fill="#94a3b8" font-size="8">OAuth / pairing flow</text>
+
+        <rect x="560" y="710" width="16" height="10" rx="2" fill="transparent" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="582" y="718" fill="#94a3b8" font-size="8">Local machine boundary</text>
+
+        <line x1="560" y1="731" x2="576" y2="731" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="582" y="734" fill="#94a3b8" font-size="8">MCP data plane (read-only)</text>
+
+        <line x1="560" y1="747" x2="576" y2="747" stroke="#34d399" stroke-width="1.5"/>
+        <text x="582" y="750" fill="#94a3b8" font-size="8">Filesystem access</text>
+
+        <line x1="560" y1="763" x2="576" y2="763" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="582" y="766" fill="#94a3b8" font-size="8">State persistence</text>
+      </svg>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot cyan"></div>
+          <h3>Data plane vs control plane</h3>
+        </div>
+        <ul>
+          <li>• MCP = data plane: ChatGPT pulls files/diffs/search itself</li>
+          <li>• [C2C] messages = control plane, always &lt; 1 KB</li>
+          <li>• Never paste file bodies, diffs, or logs into chat</li>
+          <li>• No write/exec MCP tools exist in V1</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot rose"></div>
+          <h3>Security model</h3>
+        </div>
+        <ul>
+          <li>• Loopback-only listener, port fallback via /health probe</li>
+          <li>• OAuth 2.1: DCR + authorization code + PKCE S256</li>
+          <li>• Pairing code: CSPRNG, TTL, attempt + IP rate limits</li>
+          <li>• Workspace path containment + .c2cignore + sensitive-file policy</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>src/ modules</h3>
+        </div>
+        <ul>
+          <li>• bridge/ mcp/ auth/ pairing/ — server, tools, OAuth, codes</li>
+          <li>• workspace/ — containment, ignore rules, search, git views</li>
+          <li>• tunnel/ process/ execution/ — edge, daemon, JSONL records</li>
+          <li>• cli/ config/ logger/ — c2c commands, state dir, redaction</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <p class="footer">
+      c2c core module • ChatGPT thinks, you work • vendored at core/c2c
+    </p>
+  </div>
+</body>
+</html>
