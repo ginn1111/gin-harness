@@ -11,6 +11,7 @@ plugins/ginflow-trace/errors/
 .obsidian
 .codegraph/
 docs/architecture/.$*.drawio.bkp
+/core/c2c/c2c
 
 # Per-task Kanban worktrees
 .worktrees/
