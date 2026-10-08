@@ -27,20 +27,25 @@ def _base_errors(record: Mapping[str, Any]) -> list[str]:
     actor = record.get("actor")
     if not isinstance(actor, Mapping) or actor.get("claim") != "review:decide" or not all(_text(actor.get(key)) for key in ("id", "profile")):
         errors.append("actor claim is unauthorized")
-    if not isinstance(record.get("commits"), Mapping) or not all(_text(record["commits"].get(key)) for key in ("baseline", "result", "target")):
+    commits = record.get("commits")
+    if not isinstance(commits, Mapping) or not all(_text(commits.get(key)) for key in ("baseline", "result", "target")):
         errors.append("exact commits are required")
     if record.get("aggregate_decision") not in OUTCOMES:
         errors.append("aggregate_decision is unsupported")
+    revision = record.get("revision")
+    if not isinstance(revision, int) or revision < 1:
+        errors.append("revision must be a positive integer")
     return errors
 
 
 def validate_review(record: Mapping[str, Any]) -> dict[str, Any]:
-    """Validate review data and raise on unsafe decision inputs."""
+    """Return stable validation result for one review revision."""
     if not isinstance(record, Mapping):
         return {"valid": False, "errors": ["review must be a mapping"]}
     errors = _base_errors(record)
-    evidence_ids = {item.get("id") for item in record.get("evidence", []) if isinstance(item, Mapping)}
-    if not record.get("evidence"):
+    evidence = record.get("evidence")
+    evidence_ids = {item.get("id") for item in evidence if isinstance(item, Mapping)} if isinstance(evidence, Sequence) else set()
+    if not evidence:
         errors.append("evidence is required")
     for finding in record.get("findings", []):
         if not isinstance(finding, Mapping) or finding.get("severity") not in SEVERITIES or finding.get("state") not in STATES:
@@ -52,28 +57,50 @@ def validate_review(record: Mapping[str, Any]) -> dict[str, Any]:
             errors.append("finding blocks approved_for_mr")
         if not set(finding.get("evidence_ids", [])) <= evidence_ids:
             errors.append("finding references unsupported evidence")
+    groups = {item.get("key") for item in record.get("change_groups", []) if isinstance(item, Mapping)}
     for disposition in record.get("dispositions", []):
-        if not isinstance(disposition, Mapping) or disposition.get("disposition") not in DISPOSITIONS or not _text(disposition.get("change_group")):
+        if not isinstance(disposition, Mapping) or disposition.get("disposition") not in DISPOSITIONS or disposition.get("change_group") not in groups:
             errors.append("disposition is malformed")
     if record.get("aggregate_decision") == "approved_for_mr" and record.get("deviations"):
         errors.append("deviations block approved_for_mr")
     return {"valid": not errors, "errors": errors}
 
 
-def append_revision(record: Mapping[str, Any], *, actor: Mapping[str, Any]) -> dict[str, Any]:
-    """Create one immutable review revision; existing revision cannot be overwritten."""
+def _digest(record: Mapping[str, Any]) -> str:
+    canonical = json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+    return sha256(canonical).hexdigest()
+
+
+def append_revision(record: Mapping[str, Any], *, actor: Mapping[str, Any], revision: int | None = None, previous_digest: str | None = None) -> dict[str, Any]:
+    """Create one immutable review revision; caller supplies prior binding for later revisions."""
     candidate = deepcopy(dict(record))
-    if candidate.get("immutable") or candidate.get("revision_digest") or candidate.get("revision") != 1:
-        raise ValueError("append requires a new review revision")
+    if candidate.get("immutable") or candidate.get("revision_digest"):
+        raise ValueError("append requires an uncommitted review revision")
+    expected_revision = revision or candidate.get("revision")
+    if not isinstance(expected_revision, int) or expected_revision < 1:
+        raise ValueError("revision must be a positive integer")
+    if previous_digest is not None and not _text(previous_digest):
+        raise ValueError("previous_digest is required for appended revisions")
+    candidate["revision"] = expected_revision
     if dict(actor) != dict(candidate.get("actor", {})):
         raise ValueError("review actor mismatch")
     result = validate_review(candidate)
     if not result["valid"]:
         raise ValueError("invalid review: " + "; ".join(result["errors"]))
-    canonical = json.dumps(candidate, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
-    candidate["revision_digest"] = sha256(canonical).hexdigest()
+    if previous_digest is not None:
+        candidate["previous_revision_digest"] = previous_digest
+    candidate["revision_digest"] = _digest(candidate)
     candidate["immutable"] = True
     return candidate
 
 
-__all__ = ["append_revision", "validate_review"]
+def append_review_revision(previous: Mapping[str, Any], revision: Mapping[str, Any], *, actor: Mapping[str, Any]) -> dict[str, Any]:
+    """Append a new revision while retaining a digest link to the prior revision."""
+    if not previous.get("immutable") or not _text(previous.get("revision_digest")):
+        raise ValueError("previous review must be immutable")
+    candidate = deepcopy(dict(revision))
+    next_revision = previous.get("revision", 0) + 1
+    return append_revision(candidate, actor=actor, revision=next_revision, previous_digest=previous["revision_digest"])
+
+
+__all__ = ["append_revision", "append_review_revision", "validate_review"]

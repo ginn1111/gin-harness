@@ -69,7 +69,19 @@ lint:
 	@echo "lint ok"
 
 ## Run deterministic repository tests
-test: lint setup-test lifecycle-test plugin-test install-test
+test: lint core-test setup-test lifecycle-test plugin-test install-test
+
+core-test:
+	python3 core/ginflow-core/test_execution_package.py
+	python3 core/ginflow-core/test_card_creation.py
+	python3 core/ginflow-core/test_initiative.py
+	python3 core/ginflow-core/test_execution_batch.py
+	python3 core/ginflow-core/test_decision.py
+	python3 core/ginflow-core/test_review_cycle.py
+	python3 core/ginflow-core/test_followup.py
+	python3 core/ginflow-core/test_merge_request.py
+
+# ponytail: keep core tests as direct scripts until shared repository test runner exists.
 
 ## Canonical ginflow flat-flow integration test (single command, per-step PASS/FAIL)
 lifecycle-test:
