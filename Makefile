@@ -1,4 +1,4 @@
-.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test lifecycle-test plugin-test trace-test
+.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test lifecycle-test plugin-test trace-test c2c
 
 ACTIVE_PROFILE := $(shell hermes profile list 2>/dev/null | python3 -c 'import re,sys; m=re.search(r"^\s*[◆*]\s*([A-Za-z0-9._-]+)", sys.stdin.read(), re.M); print(m.group(1) if m else "")')
 PROFILES ?= $(ACTIVE_PROFILE)
@@ -49,6 +49,11 @@ verify-test:
 ## Test active-profile default selection
 setup-test:
 	bash scripts/test-setup.sh
+
+# === c2c ===
+## Run vendored c2c CLI; extra args via C2C_ARGS (e.g. `make c2c C2C_ARGS="doctor --json"`)
+c2c:
+	node ./core/c2c/bin/cc.js $(C2C_ARGS)
 
 # === Community assets ===
 ## Clone/pull community skill repos
