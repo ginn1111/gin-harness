@@ -7,9 +7,13 @@
 
 Large autonomous execution can leave humans without reliable context. Ginflow separates Discovery, Shaping, Execution, and Decision so intent, immutable execution evidence, review findings, and final human authorization remain reconstructable.
 
-## Hermes-heavy foundation
+- Hermes owns profiles, runtime, tools, Kanban state, skill loading, and lifecycle.
+- Ginflow core owns package vocabulary and validation model.
+- `ginflow-gate` injects bounded guidance and validates evidence at native transitions.
+- Target project owns product code, local rules, tests, and canonical verification.
+- User approves the complete package and resolves decisions that artifacts cannot settle.
 
-Gin-harness composes Hermes primitives rather than replacing them:
+## Artifact-first flow
 
 - Hermes owns profile/runtime identity, Kanban state and tools, assignment, dispatch, persistence, and lifecycle authority.
 - Ginflow core validates versioned pure records and derives readiness, projections, and provider-neutral intent.
