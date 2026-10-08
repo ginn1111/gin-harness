@@ -1,15 +1,10 @@
 .PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test lifecycle-test plugin-test trace-test c2c
 
-ACTIVE_PROFILE := $(shell hermes profile list 2>/dev/null | python3 -c 'import re,sys; m=re.search(r"^\s*[◆*]\s*([A-Za-z0-9._-]+)", sys.stdin.read(), re.M); print(m.group(1) if m else "")')
-PROFILES ?= $(ACTIVE_PROFILE)
-
 # === Pre-flight ===
 doctor:
-	@echo "=== Hermes ==="; command -v hermes && hermes --version || echo "MISSING"
 	@echo "=== CodeGraph ==="; command -v codegraph && codegraph --version || echo "MISSING"
 	@echo "=== Python ==="; python3 --version
 	@echo "=== Git ==="; git --version
-	@echo "=== PyYAML ==="; python3 -c "import yaml; print('ok')" 2>/dev/null || echo "MISSING (pip install pyyaml)"
 
 doctor-deps:
 	python3 -m pip install pyyaml
@@ -34,7 +29,6 @@ uninstall:
 
 ## Verify integrations in existing profiles via ginflow harness
 verify:
-	@test -n "$(PROFILES)" || (echo 'No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES="<name>"' >&2; exit 2)
 	python3 skills/ginflow/scripts/validate-harness.py --setup-repo . --json
 
 ## Verify profiles and fail on canonical repo drift via ginflow harness
@@ -69,7 +63,7 @@ clean:
 
 lint:
 	bash -n scripts/*.sh
-	python3 -m py_compile scripts/*.py
+	@if compgen -G 'scripts/*.py' >/dev/null; then python3 -m py_compile scripts/*.py; fi
 	bash -n skills/ginflow/scripts/*.sh
 	python3 -m py_compile skills/ginflow/scripts/*.py
 	@echo "lint ok"

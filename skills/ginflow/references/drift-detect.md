@@ -87,32 +87,28 @@ When blocked, do not use that card as authority. Unrelated work may continue. Pr
 
 Never silently replace the completion commit. Do not fall back to per-file hashes. The human must choose a resolution first.
 
-## 3. Global setup verification
+## 3. Repository artifact verification
 
-Run from setup repo:
+Run from the Ginflow artifact repository:
 
 ```bash
-bash scripts/verify.sh
+make verify
 ```
 
 Checks:
-- profiles exist
-- `SOUL.md` symlinks correct
-- generated config uses repo-local paths
-- expected memory/provider fields present
-- skills available
-- `.no-bundled-skills` present
-- canonical setup files committed
+- standalone harness validation passes
+- optional workspace tooling reports health or advisory warnings
+- canonical artifact files are committed
 
 Purpose:
-- prove installed profiles still inherit setup repo correctly
+- prove the repository artifacts and harness remain internally consistent
 
 ## Report shape
 
 ```text
 Project verification: pass|fail|blocked
 Ginflow harness: pass|warning|blocker|unavailable
-Profile installation: pass|fail|not-run
+Optional runtime integration: pass|warning|not-run
 ```
 
-Project verification comes first during real work. Ginflow harness remains external. Setup verification only checks profile installation health.
+Project verification comes first during real work. Ginflow harness remains external. Repository verification checks artifact and harness health; runtime integrations are optional and out of scope.

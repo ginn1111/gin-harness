@@ -79,4 +79,4 @@ Feedback v1 is a pure normalized contract for Governed Work lifecycle signals. I
 Do not launch a `/background` watcher for a selected `running` card. Card creation from a persistent TUI or gateway session auto-subscribes the originating session when `kanban.auto_subscribe_on_create` is enabled; `subscribed: true` confirms registration. Let the dispatcher deliver terminal events and remove the subscription after `done` or `archived`. When creation does not confirm a subscription, use the normal Kanban notification subscription surface or explicit board reads instead of hidden polling.
 
 Run target-declared project verification first. Run ginflow harness externally against target and selected card; never copy harness into target repo. Report project verification and harness result separately.
-After setup-repo updates, use setup repo `scripts/verify.sh` only for profile drift.
+After artifact-repository updates, run `make verify` for standalone repository health. Runtime integration checks are optional and external.

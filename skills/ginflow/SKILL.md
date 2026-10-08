@@ -317,7 +317,7 @@ Flow:
 4. In target repo, read `git config user.name` and `git config user.email`.
 5. Render `templates/session-handoff.md` preview.
 6. Use `Not recorded on Kanban card.` for missing card data and `Not linked from selected Kanban card.` for missing artifact links. Use `Not configured in Git.` for missing Git identity.
-7. Ask Gin to approve content and output path. Default: `docs/handoffs/<CARD-ID>.md`; local project convention wins.
+7. Ask Gin to approve content and output path. Use the target project's local convention.
 8. Write only after approval.
 
 Never infer missing facts from status, chat, OS identity, commit history, or unrelated cards. Never mutate card status, assignee, links, or content during export.
@@ -329,14 +329,14 @@ Use drift detection in 2 layers, in this order:
 1. **Project verification first** — target repo declares its own canonical command
    - examples: `./verify.sh`, `make verify`, or project-native command
    - proves project behavior; ginflow does not force script location
-2. **Global setup drift second** — setup repo `scripts/verify.sh`
-   - checks requested profiles retain native identity while setup integrations are present
-   - checks skill/plugin links, MCP/tool wiring, and shared harness health
+- **Repository artifact drift second** — standalone `make verify`
+   - checks standalone artifact and harness consistency
+   - reports optional runtime integration separately when a consumer provides it
 
 Rule:
 
 - target repo drift check comes first during real work
-- setup repo `verify.sh` is only for profile installation health
+- standalone `make verify` checks repository artifact and harness health
 - do not mix them
 - ginflow harness remains in setup/deployed skill and runs externally against target repo; never copy it into target repo
 
