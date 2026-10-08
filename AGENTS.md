@@ -1,46 +1,72 @@
 # Setup-repo rules
 
-## Ginflow
-- Load and follow `ginflow` for target-project startup, task shaping, execution, completion, and handoff. `ginflow` is an external skill: discover it through normal skill-discovery (scan available skills, read its SKILL.md) rather than expecting its instructions to be duplicated here.
-- If the `ginflow` skill cannot be located in the current environment, stop before any mutable target-project work and report this as a blocker. Do not proceed ungated.
-- Do not use this setup repo as target-project workspace.
-- Before mutable target-project work, require a selected Kanban card (Hermes Kanban) with objective, scope, acceptance, workspace, status, assignee, and links. Stop when missing or incomplete.
+Gin-harness is a setup and integration repository for Hermes Agent. It owns Ginflow workflow assets, reusable routing code, Hermes plugins, profile setup scripts, target-project templates, and deterministic integration tests. It is not a product application; target repositories own product code, tests, local rules, and product verification.
 
-## Boundaries
-- This repo owns shared integrations, Ginflow, harnesses, plugins, setup scripts, and target-project starter docs.
-- Target repos own product code, tests, local `AGENTS.md` / `.hermes.md`, and task artifacts.
-- Shared workflow and Kanban lifecycle come from `ginflow`.
+## Ginflow
+- Load and follow `ginflow` for target-project startup, task shaping, execution, completion, and handoff. The repo copy is `skills/ginflow/SKILL.md`; discover/load it through normal skill discovery.
+- If `ginflow` cannot be located, stop before mutable target-project work and report a blocker.
+- Do not use this setup repo as target-project workspace.
+- Before mutable target-project work, require a selected Kanban card with objective, scope, acceptance, workspace, status, assignee, and links. Direct Work is the explicit Ginflow exception only when every eligibility condition is affirmative.
+
+## Boundaries and layout
+- `skills/ginflow/` — workflow contract, templates, references, validator, tests
+- `core/ginflow-core/` — reusable routing primitives
+- `plugins/ginflow-gate/` — completion policy plugin and tests
+- `plugins/ginflow-trace/` — optional trace plugin and tests
+- `scripts/` — setup, installation, verification, and test helpers
+- `templates/` — target-project starter context
+- `docs/` — architecture, specs, plans, and reports
+- `.hermes/`, `.codegraph/`, `__pycache__/`, `.ginflow/`, and trace logs are generated/local state
 - Do not edit profile distribution identity, secrets, runtime state, or generated `__pycache__/` files.
 
-## Key directories
-- `skills/ginflow/` — shared workflow, templates, validator, tests
-- `core/ginflow-core/` — reusable Ginflow core library
-- `plugins/ginflow-gate/` — blocking Kanban completion policy plugin (part of the ginflow ecosystem; validates required fields, evidence, baseline commit, and artifact drift at completion)
-- `templates/` — target-project starter docs
-- `scripts/` — setup integration scripts
-- `.hermes/` — session-scratch artifacts (untracked, auto-generated)
+## Dev environment
+- Run commands from repository root.
+- Implementation uses Python standard library, POSIX shell tools, Make, Git, and Draw.io XML. No committed `pyproject.toml`, `package.json`, `go.mod`, `Cargo.toml`, or requirements file exists.
+- `doctor` checks `hermes`, `codegraph`, Python, Git, and PyYAML. Install the only checked Python dependency with `make doctor-deps` (`python3 -m pip install pyyaml`). CodeGraph is advisory for core repository checks.
+- Read `INSTALL.md` before profile installation. Setup requires existing Hermes profiles and preserves profile-owned identity, secrets, auth, memories, sessions, and runtime data.
 
-## Verification
-- Canonical command: `make test`. This is the single authoritative verify command for this repo.
-- `make test` runs `lint`, `setup-test`, `lifecycle-test`, `plugin-test`, `install-test`. `lifecycle-test` is the canonical ginflow full-flow integration test and runs the entire suite in one flat sequence with per-step PASS/FAIL reporting.
-- Run `make lint` before declaring docs or script changes done.
-- Run target-project verification from target repo; do not substitute setup verification or Ginflow harness for it, and vice versa.
+## Build, test, lint
+- `make lint` — `bash -n` all shell scripts and `python3 -m py_compile` project Python scripts.
+- `make test` — canonical repository verification: `lint`, `setup-test`, `lifecycle-test`, `plugin-test`, and `install-test`.
+- `make lifecycle-test` — canonical Ginflow flat-flow integration test.
+- `make plugin-test` — Ginflow gate tests plus trace tests.
+- `make install-test` — installer test.
+- `make verify PROFILES="<profile>"` — validate installed integrations; profile is required.
+- `make verify-strict PROFILES="<profile>"` — same validation with canonical source-drift failure.
+- `make lint && make test` before declaring setup-repo changes done.
+- Run target-project verification from target repo; never substitute setup verification for product checks.
 
-## Drift detection
-- **Local authorities**: `AGENTS.md` (this file), `Makefile` targets, `README.md`, `INSTALL.md`.
-- **Generated-file relationships**: `__pycache__/` is always derived and excludable. `.bin/` holds session-scratch artifacts; never commit or restore.
-- **Remediation order**: run `make lint` → `make test` → confirm all targets pass before declaring drift resolved. If `make test` fails on non-own code, report blocker; do not fix silently.
+## Setup commands
+- `make doctor`
+- `make setup` or `make setup PROFILES="<profile>"` — preview setup.
+- `make apply PROFILES="<profile>"` — apply integrations.
+- `make install` / `make uninstall` — install or remove installer-owned Ginflow integrations.
+- `make clean` removes Python caches and `.codegraph`; do not use it to discard source changes.
+
+## Conventions and completion
+- Preserve setup-repo versus target-repo ownership. Target-project artifacts belong in target repos, not here, unless changing the global profile system.
+- Use project-native scripts and existing Make targets. Keep changes narrow; preserve unrelated worktree changes.
+- Local authorities: `AGENTS.md`, `Makefile`, `README.md`, `INSTALL.md`, and `skills/ginflow/SKILL.md`.
+- For Ginflow Kanban work, record verification evidence, changed files, commit/baseline metadata, linked artifacts, and blockers on the selected card. `ginflow-gate` validates required fields, evidence, baseline commit, and artifact drift at native completion transitions.
+- Do not commit credentials, `.env`, profile identity, or runtime state. Do not push without explicit approval.
+- If verification fails on non-owned code or required context is missing, report a blocker; do not fix silently or invent requirements.
 
 ## Git conventions
-- `make test` must pass before push.
 - `make lint` must pass before commit.
-- Keep `__pycache__/` and `.bin/` in `.gitignore`; update `.gitignore` when new generated paths appear.
-- Do not commit credentials, `.env`, profile identity, or runtime state.
+- `make test` must pass before push.
+- Keep generated paths in `.gitignore`; current generated paths include `__pycache__/`, `.ginflow/`, `.codegraph/`, `.hermes/`, trace logs, and `.ginflow-install.json`.
+- Completion status must be truthful: report exact commands/results, changed files, known limitations, and clear `done` or `blocked` status.
 
-## Completion
-- For Ginflow Kanban work: the selected Hermes Kanban card is the single source of truth for status, evidence, and blockers — there is no separate escalation channel.
-  - Record on the card: verification evidence, changed files, commit, and any blockers.
-  - Blocker entries must include enough detail to act on: what failed, where, why it's out of scope to fix directly, and what's needed to unblock.
-  - Run `make test` from the setup repo as the system check; run the target project's canonical command from the target repo for the product check.
-  - The `ginflow-gate` plugin validates required fields, evidence, baseline commit, and artifact drift before allowing completion.
-- For setup-repo changes (this repo): run `make lint && make test` and confirm all targets pass.
+## Agent skills
+
+### Issue tracker
+
+Issues live as local markdown files under `.scratch/<feature>/` in this repo. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix` — recorded as `Status:` lines in issue files. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout — `CONTEXT.md` + `docs/adr/` at the repo root, created lazily. See `docs/agents/domain.md`.

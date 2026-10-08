@@ -1,5 +1,9 @@
 version: 1
 ginflow:
   board: harness
-  workspace: /Users/gin/dev/gin-harness
+  workspace: /home/aioz/personal/gin-harness
+  worker:
+    profile: ginb
+    provider: custom
+    model: coding
   trace: true
