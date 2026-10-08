@@ -28,6 +28,14 @@ Use when any of these apply:
 
 Never use setup repo as default code workspace.
 
+## Four-phase Initiative lifecycle
+
+For large autonomous work, use one stable Initiative across Discovery, Shaping, Execution, and Decision. Discovery captures problem framing, boundaries, vocabulary, prototype evidence, and open questions, then records approved Shaping handoff. Shaping retains artifact-first Execution Package v2. Execution binds one immutable `execution_batch/v1` attempt to package digest, artifact baseline, Tickets, isolated workspaces, budget, stop conditions, and actor authorization. Integration success opens read-only Decision; it does not complete Initiative.
+
+Decision consumes deterministic evidence and append-only `review_cycle/v1` revisions. Every changed path maps to a Change Group or justified generated/excluded bucket; every nontrivial claim references evidence. `decision_projection/v1` is bounded/redacted and excludes raw logs, secrets, personal data, prompts, and transcripts. Material outcomes use `notification/v1`; transport remains adapter-owned. Human dispositions are `approved_for_mr`, `enhancement_requested`, `rejected`, `resume_execution`, `reshape_required`, or `stopped`. Only `approved_for_mr` completes Ginflow lifecycle and yields provider-neutral `merge_request_intent/v1`; publication/merge remain separate.
+
+Hermes remains identity, Kanban, assignment, dispatch, persistence, and lifecycle authority. Target repositories remain product/canonical-verification authority. Legacy v2 packages and cards without explicit Initiative linkage retain current behavior. TUI, direct Hermes DB access, gateway transport/subscriptions, and provider-specific publication remain deferred.
+
 ## Doc layout
 
 Put these in target repo when project needs them:

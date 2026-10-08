@@ -4,8 +4,16 @@ Gin-harness is a standalone artifact repository for safer agent work. It provide
 
 It is not a product application. Target repositories own product code, local rules, tests, and canonical product verification. Runtime-specific integrations, including Hermes skill/plugin loading, remain optional consumers of these artifacts.
 
-## Why Gin-harness exists
+## Four-phase Initiative lifecycle
 
+Ginflow organizes large autonomous work around one stable Initiative: Discovery frames problem and boundaries; Shaping approves one artifact-first Execution Package v2; Execution authorizes immutable AFK Batches and isolated Work Units; Decision reconstructs context from exact evidence for human disposition. Integration success opens Decision, not completion. `approved_for_mr` completes Ginflow lifecycle; provider publication and merge remain separate.
+
+Pure core contracts are versioned independently as `initiative/v1`, `execution_batch/v1`, `review_cycle/v1`, `decision_projection/v1`, `notification/v1`, and `merge_request_intent/v1`. Legacy v2 packages/cards without explicit Initiative linkage remain compatible. Hermes owns identity/Kanban/lifecycle/persistence; target repos own product behavior/canonical verification; adapters own Git/check collection and future gateway/provider transport. Projections are bounded and redacted; raw logs, secrets, personal data, prompts, and transcripts are excluded. See [`GLOSSARY.md`](GLOSSARY.md).
+
+TUI, direct Hermes DB access, gateway transport/subscription setup, and provider-specific MR publication remain deferred.
+
+## Why Gin-harness exists
+ை
 Gin-harness is a wrapper around Hermes Kanban. It gives Hermes Kanban a practical blueprint for effective work: documents that define scope and evidence, routing that shapes work before execution, state-transition guidance, gates that prevent unsupported completion, and document extensions for project-specific context.
 
 For each work size, Ginflow guides the agent to use Hermes Kanban with the right level of structure:
