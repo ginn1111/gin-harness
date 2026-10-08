@@ -6,7 +6,7 @@ import { cleanup, isolateStateDir } from "./helpers.js";
 describe("sanitizeExecutionOutput", () => {
   it("redacts bearer tokens and pairing-code shaped strings", () => {
     const result = sanitizeExecutionOutput(
-      "Authorization: Bearer c2c_at_abcdefghijklmnopqrstuv\ncode ABCD-EFGH failed"
+      "Authorization: Bearer test-placeholder-value\ncode ABCD-EFGH failed"
     );
     expect(result.allowed).toBe(true);
     if (result.allowed) {
