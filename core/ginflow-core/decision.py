@@ -10,9 +10,11 @@ from typing import Any
 
 _SECRET = re.compile(r"(secret|token|cookie|prompt|transcript|raw_log|session_storage)", re.I)
 _SENSITIVE_VALUE = re.compile(
-    r"\b(secret|token|cookie|password|passwd|api[_-]?key|session_storage)\s*[=:]\s*\S"
-    r"|bearer\s+[A-Za-z0-9._~+/=-]{8,}"
-    r"|(?:sk|pk)[_-][A-Za-z0-9_-]{12,}",
+    r"(secret|token|cookie|password|passwd|api[_-]?key|session_storage)\s*[=:]\s*\S"
+    r"|(?:bearer|basic)\s+[A-Za-z0-9._~+/=-]{8,}"
+    r"|(?:sk|pk)[_-][A-Za-z0-9_-]{12,}"
+    r"|\bgh[pousr]_[A-Za-z0-9]{20,}"
+    r"|\bAKIA[0-9A-Z]{16}\b",
     re.I,
 )
 _REDACTED = "[REDACTED]"

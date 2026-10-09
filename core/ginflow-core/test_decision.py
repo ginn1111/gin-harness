@@ -37,6 +37,15 @@ def test_projection_keeps_benign_text_mentioning_sensitive_words():
     record = base(changed_paths=[{"path": "core/a.py", "change_group": "CORE", "note": "Token expiry check uses < not <="}])
     assert build_projection(record, summary="safe summary")["behavior_delta"][0]["note"] == "Token expiry check uses < not <="
 
+def test_projection_redacts_prefixed_keys_and_token_shapes():
+    secrets = [
+        "access_" + "token=abc123", "GITHUB_" + "TOKEN=abc123", "db_" + "password: abc123", "client_" + "secret=abc123",
+        "gh" + "p_" + "a" * 24, "Authorization: Ba" + "sic " + "dXNlcjpwYXNz", "AK" + "IA" + "A" * 16,
+    ]
+    record = base(changed_paths=[{"path": "core/a.py", "change_group": "CORE", "note": text} for text in secrets])
+    notes = [item["note"] for item in build_projection(record, summary="safe summary")["behavior_delta"]]
+    assert notes == ["[REDACTED]"] * len(secrets), notes
+
 def test_readiness_rejects_running_or_unassigned_paths():
     for changes, expected in [({"tickets": [{"key": "U", "state": "running", "change_group": "CORE", "acceptance": [], "paths": []}]}, "running"), ({"changed_paths": [{"path": "x", "change_group": None}]}, "unassigned")]:
         try:
@@ -144,6 +153,7 @@ if __name__ == "__main__":
     test_successful_integration_opens_redacted_decision()
     test_projection_redacts_sensitive_scalar_values_recursively()
     test_projection_keeps_benign_text_mentioning_sensitive_words()
+    test_projection_redacts_prefixed_keys_and_token_shapes()
     test_readiness_rejects_running_or_unassigned_paths()
     test_notification_has_idempotency_and_delivery_state()
     test_blocked_integration_opens_recovery_decision()
