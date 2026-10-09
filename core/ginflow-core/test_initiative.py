@@ -47,8 +47,20 @@ def test_prototype_requires_explicit_promotion_contract():
     assert any("promotion" in error for error in result["errors"])
 
 
+def test_transition_validates_record_before_moving_phase():
+    candidate = discovery()
+    del candidate["shaping_handoff"]
+    try:
+        transition(candidate, "Shaping")
+    except ValueError as error:
+        assert "invalid initiative" in str(error)
+    else:
+        raise AssertionError("invalid Initiative transitioned")
+
+
 if __name__ == "__main__":
     test_discovery_approval_records_handoff_and_identity()
     test_invalid_transition_fails_without_mutating_input()
     test_prototype_requires_explicit_promotion_contract()
+    test_transition_validates_record_before_moving_phase()
     print("initiative tests passed")

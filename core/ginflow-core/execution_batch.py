@@ -5,6 +5,7 @@ from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from hashlib import sha256
 import json
+from pathlib import Path
 from typing import Any
 
 from card_creation import create_execution_cards
@@ -28,21 +29,67 @@ def _actor(actor: Any) -> None:
         raise ValueError("actor claim is unauthorized")
 
 
-def _boundaries(package: Mapping[str, Any], workspaces: Sequence[str]) -> None:
+def _collection(value: Any) -> bool:
+    return isinstance(value, Sequence) and not isinstance(value, (str, bytes))
+
+
+def _boundaries(package: Mapping[str, Any], workspaces: Sequence[str], stop_conditions: Sequence[str]) -> None:
     units = package.get("units", [])
-    if not isinstance(units, Sequence) or isinstance(units, (str, bytes)) or not units:
+    if not _collection(units) or not units:
         raise ValueError("Ticket set is required")
-    allowed = set(workspaces)
-    if not allowed:
+    if not _collection(workspaces) or any(not _text(workspace) for workspace in workspaces):
         raise ValueError("workspaces are required")
+    if len(set(workspaces)) != len(workspaces):
+        raise ValueError("workspaces must be unique")
+    allowed = set(workspaces)
+    text_fields = {"objective", "workspace", "owner", "change_group", "risk", "escalation"}
+    collection_fields = {"scope", "exclusions", "acceptance", "dependencies", "verification"}
+    units_by_workspace: dict[str, list[Mapping[str, Any]]] = {}
     for unit in units:
         if not isinstance(unit, Mapping):
             raise ValueError("each Ticket must be a mapping")
-        for field in ("objective", "scope", "exclusions", "acceptance", "dependencies", "workspace", "owner", "verification", "change_group", "risk", "escalation"):
-            if field not in unit or (field in {"objective", "workspace", "owner", "change_group", "risk", "escalation"} and not _text(unit[field])) or (field not in {"objective", "workspace", "owner", "change_group", "risk", "escalation"} and not isinstance(unit[field], Sequence)):
+        for field in text_fields | collection_fields:
+            value = unit.get(field)
+            valid = _text(value) if field in text_fields else _collection(value)
+            if not valid:
                 raise ValueError(f"Ticket {unit.get('key', '?')}.{field} is required")
         if unit["workspace"] not in allowed:
             raise ValueError(f"Ticket workspace is not authorized: {unit['workspace']}")
+        units_by_workspace.setdefault(unit["workspace"], []).append(unit)
+
+    for workspace, grouped_units in units_by_workspace.items():
+        if len(grouped_units) < 2:
+            continue
+        if not all(_isolated_workspace(unit, workspace) for unit in grouped_units):
+            raise ValueError("shared mutable workspace requires explicit isolation proof")
+
+    if any(not _text(condition) for condition in stop_conditions):
+        raise ValueError("stop_conditions must contain text")
+
+
+def _isolated_workspace(unit: Mapping[str, Any], workspace: str) -> bool:
+    """Accept explicit per-Ticket proof before allowing concurrent shared paths."""
+    proof = unit.get("workspace_isolation")
+    if not isinstance(proof, Mapping):
+        return False
+    kind = proof.get("kind")
+    path = proof.get("path")
+    if kind not in {"worktree", "isolated_workspace"} or not _text(path):
+        return False
+    try:
+        isolated = Path(path).expanduser().resolve()
+        shared = Path(workspace).expanduser().resolve()
+    except (OSError, RuntimeError, TypeError, ValueError):
+        return False
+    if isolated == shared:
+        return False
+    try:
+        isolated.relative_to(shared)
+    except ValueError:
+        pass
+    else:
+        return False
+    return True
 
 
 def authorize_batch(package: Mapping[str, Any], *, actor: Mapping[str, Any], budget: Mapping[str, Any], stop_conditions: Sequence[str], workspaces: Sequence[str], baseline_commit: str, batch_number: int = 1) -> dict[str, Any]:
@@ -59,7 +106,7 @@ def authorize_batch(package: Mapping[str, Any], *, actor: Mapping[str, Any], bud
         raise ValueError("stop_conditions are required")
     if not _text(baseline_commit) or baseline_commit != package.get("baseline", {}).get("commit"):
         raise ValueError("baseline commit must match package baseline")
-    _boundaries(package, workspaces)
+    _boundaries(package, workspaces, stop_conditions)
     initiative = package.get("initiative_key")
     if not _text(initiative):
         raise ValueError("initiative_key is required")

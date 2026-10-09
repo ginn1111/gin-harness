@@ -21,9 +21,27 @@ def test_review_revision_is_append_only_and_digest_bound():
 
 
 def test_blocking_finding_and_accepted_risk_need_resolution_or_reason():
-    for finding, expected in [({"severity": "high", "confidence": "verified", "state": "open", "paths": ["x"], "evidence_ids": ["ev"]}, "finding"), ({"severity": "medium", "confidence": "verified", "state": "accepted_risk", "paths": [], "evidence_ids": ["ev"]}, "reason")]:
+    for finding, expected in [({"producer": "scanner", "title": "issue", "severity": "high", "confidence": "verified", "state": "open", "paths": ["x"], "evidence_ids": ["ev"]}, "finding"), ({"producer": "scanner", "title": "issue", "severity": "medium", "confidence": "verified", "state": "accepted_risk", "paths": [], "evidence_ids": ["ev"]}, "reason")]:
         candidate = review(findings=[finding])
         result = validate_review(candidate)
+        assert result["valid"] is False
+        assert any(expected in error for error in result["errors"])
+
+
+def test_finding_requires_producer_title_confidence_and_paths():
+    result = validate_review(review(findings=[{"severity": "low", "state": "open", "evidence_ids": ["ev"]}]))
+    assert result["valid"] is False
+    assert any("finding" in error for error in result["errors"])
+
+
+def test_verified_high_finding_with_resolution_can_approve():
+    finding = {"producer": "scanner", "title": "issue", "severity": "high", "confidence": "verified", "state": "resolved", "paths": ["x"], "evidence_ids": ["ev"]}
+    assert validate_review(review(findings=[finding]))["valid"] is True
+
+
+def test_evidence_and_finding_references_are_structured():
+    for changes, expected in [({"evidence": "ev"}, "evidence"), ({"findings": [{"severity": "low", "state": "open", "evidence_ids": "ev"}]}, "finding")]:
+        result = validate_review(review(**changes))
         assert result["valid"] is False
         assert any(expected in error for error in result["errors"])
 
@@ -31,4 +49,6 @@ def test_blocking_finding_and_accepted_risk_need_resolution_or_reason():
 if __name__ == "__main__":
     test_review_revision_is_append_only_and_digest_bound()
     test_blocking_finding_and_accepted_risk_need_resolution_or_reason()
+    test_finding_requires_producer_title_confidence_and_paths()
+    test_verified_high_finding_with_resolution_can_approve()
     print("review cycle tests passed")
