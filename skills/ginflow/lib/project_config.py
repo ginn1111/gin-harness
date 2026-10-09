@@ -1,6 +1,7 @@
 """Project-local canonical Ginflow Kanban context."""
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -9,12 +10,66 @@ from typing import Any, Mapping
 
 try:
     import yaml
-except ImportError:  # pragma: no cover - the setup requires PyYAML
+except ImportError:  # pragma: no cover - exercised when PyYAML is absent
     yaml = None
+
+_PARSE_ERRORS = (OSError, ValueError) + ((yaml.YAMLError,) if yaml else ())
 
 CONFIG_RELATIVE_PATH = Path(".ginflow.yaml")
 CONFIG_VERSION = 1
 WORKER_FIELDS = ("profile", "provider", "model")
+
+
+def _scalar(text: str) -> Any:
+    if text.startswith('"'):
+        return json.loads(text)
+    text = text.strip("'")
+    if text in {"true", "false"}:
+        return text == "true"
+    return int(text) if re.fullmatch(r"-?\d+", text) else text
+
+
+def _simple_loads(text: str) -> dict[str, Any]:
+    """Parse the nested key/value subset used by `.ginflow.yaml` without PyYAML."""
+    root: dict[str, Any] = {}
+    stack: list[tuple[int, dict[str, Any]]] = [(-1, root)]
+    for raw in text.splitlines():
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        indent = len(raw) - len(raw.lstrip(" "))
+        key, separator, value = raw.strip().partition(":")
+        if not separator or not key:
+            raise ValueError(f"unsupported config line: {raw.strip()}")
+        while stack[-1][0] >= indent:
+            stack.pop()
+        value = value.strip()
+        if value:
+            stack[-1][1][key] = _scalar(value)
+        else:
+            child: dict[str, Any] = {}
+            stack[-1][1][key] = child
+            stack.append((indent, child))
+    return root
+
+
+def _loads(text: str) -> Any:
+    return yaml.safe_load(text) if yaml is not None else _simple_loads(text)
+
+
+def _simple_dumps(data: Mapping[str, Any], indent: int = 0) -> str:
+    lines = []
+    for key, value in data.items():
+        if isinstance(value, Mapping):
+            lines.append(f"{' ' * indent}{key}:")
+            lines.append(_simple_dumps(value, indent + 2))
+        else:
+            rendered = value if isinstance(value, (bool, int)) and not isinstance(value, str) else json.dumps(str(value))
+            lines.append(f"{' ' * indent}{key}: {str(rendered).lower() if isinstance(value, bool) else rendered}")
+    return "\n".join(lines)
+
+
+def _dumps(data: Mapping[str, Any]) -> str:
+    return yaml.safe_dump(dict(data), sort_keys=False) if yaml is not None else _simple_dumps(data) + "\n"
 
 
 class ContextInitializationError(ValueError):
@@ -32,11 +87,11 @@ def config_exists(workspace: Path) -> bool:
 
 def load_config(workspace: Path) -> dict[str, Any]:
     path = config_path(workspace)
-    if not path.is_file() or yaml is None:
+    if not path.is_file():
         return {}
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except (OSError, yaml.YAMLError):
+        data = _loads(path.read_text(encoding="utf-8"))
+    except _PARSE_ERRORS:
         return {}
     return data if isinstance(data, dict) else {}
 
@@ -46,11 +101,9 @@ def context_error(workspace: Path) -> str | None:
     path = config_path(workspace)
     if not path.exists():
         return None
-    if yaml is None:
-        return "project config requires PyYAML"
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except (OSError, yaml.YAMLError) as exc:
+        data = _loads(path.read_text(encoding="utf-8"))
+    except _PARSE_ERRORS as exc:
         return f"project config is malformed: {exc}"
     if not isinstance(data, dict) or data.get("version") != CONFIG_VERSION:
         return f"project config must declare version: {CONFIG_VERSION}"
@@ -101,11 +154,11 @@ def worker_error(workspace: Path) -> str | None:
     ``profile``/``provider``/``model`` remain optional dispatch defaults.
     """
     path = config_path(workspace)
-    if not path.exists() or yaml is None:
+    if not path.exists():
         return None
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except (OSError, yaml.YAMLError):
+        data = _loads(path.read_text(encoding="utf-8"))
+    except _PARSE_ERRORS:
         return None
     if not isinstance(data, dict):
         return None
@@ -222,7 +275,7 @@ def resolve_board(workspace: Path, explicit: str | None = None, env: Mapping[str
 def persist_context(workspace: Path, *, board: str | None) -> Path | None:
     """Persist only complete, resolved context; never create a partial config."""
     workspace = Path(workspace).expanduser().resolve()
-    if not board or not workspace.is_dir() or yaml is None:
+    if not board or not workspace.is_dir():
         return None
     path = config_path(workspace)
     if path.exists():
@@ -231,7 +284,7 @@ def persist_context(workspace: Path, *, board: str | None) -> Path | None:
     payload = {"version": CONFIG_VERSION, "ginflow": {"board": board, "workspace": str(workspace)}}
     temporary = path.with_name(path.name + ".tmp")
     try:
-        temporary.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+        temporary.write_text(_dumps(payload), encoding="utf-8")
         os.replace(temporary, path)
     except OSError:
         return None
@@ -259,7 +312,7 @@ def persist_worker_defaults(
     """
     workspace = Path(workspace).expanduser().resolve()
     path = config_path(workspace)
-    if not workspace.is_dir() or yaml is None or context_error(workspace):
+    if not workspace.is_dir() or context_error(workspace):
         return None
     values = {"profile": profile, "provider": provider, "model": model}
     cleaned = {}
@@ -278,7 +331,7 @@ def persist_worker_defaults(
     data["ginflow"] = merged
     temporary = path.with_name(path.name + ".tmp")
     try:
-        temporary.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+        temporary.write_text(_dumps(data), encoding="utf-8")
         os.replace(temporary, path)
     except OSError:
         return None
