@@ -22,11 +22,18 @@ def route_followup(request: Mapping[str, Any]) -> dict[str, Any]:
     if missing:
         raise ValueError("follow-up packet missing: " + ", ".join(missing))
     route = _ROUTES.get(request["delta_class"])
+    needs_mapping = route == "Execution"
+    empty = [field for field in ("scope", "exclusions", "acceptance") + (("ticket_mapping",) if needs_mapping else ()) if not request[field]]
+    if empty:
+        raise ValueError("follow-up packet empty: " + ", ".join(empty))
+    prior = request.get("prior_batch_attempt", 1)
+    if not isinstance(prior, int) or isinstance(prior, bool) or prior < 1:
+        raise ValueError("prior_batch_attempt must be a positive integer")
     if not route:
         raise ValueError("unsupported follow-up delta class")
     packet = deepcopy(dict(request))
     packet["schema"] = "execution_packet/v1"
-    packet["batch_attempt"] = 2 if route == "Execution" else None
+    packet["batch_attempt"] = prior + 1 if route == "Execution" else None
     packet["immutable"] = True
     return {"route": route, "packet": packet, "policy_proposals": []}
 
