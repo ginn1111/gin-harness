@@ -24,7 +24,17 @@ def test_stale_or_unsafe_review_cannot_prepare_intent():
             raise AssertionError("unsafe MR intent prepared")
 
 
+def test_findings_and_metadata_are_copied_into_intent():
+    candidate = review(change_groups=[{"key": "CORE"}], risks=["migration"])
+    intent = build_mr_intent(candidate, title="T", body="B", reviewers=["gin"], labels=["safe"], draft=False)
+    assert intent["change_groups"] == [{"key": "CORE"}]
+    assert intent["risks"] == ["migration"]
+    assert intent["reviewers"] == ["gin"]
+    assert intent["draft"] is False
+
+
 if __name__ == "__main__":
     test_approved_review_creates_provider_neutral_intent()
     test_stale_or_unsafe_review_cannot_prepare_intent()
+    test_findings_and_metadata_are_copied_into_intent()
     print("merge request tests passed")

@@ -14,8 +14,11 @@ def _text(value: Any) -> bool:
 
 def route_followup(request: Mapping[str, Any]) -> dict[str, Any]:
     """Route one bounded follow-up without reopening prior records."""
+    if not isinstance(request, Mapping):
+        raise ValueError("follow-up request must be a mapping")
     required = ("delta_class", "initiative_key", "review_key", "delta", "scope", "exclusions", "acceptance", "verification", "risk", "ticket_mapping")
-    missing = [field for field in required if field not in request or (field in {"delta_class", "initiative_key", "review_key", "delta", "risk"} and not _text(request[field])) or (field not in {"delta_class", "initiative_key", "review_key", "delta", "risk"} and not isinstance(request[field], Sequence))]
+    text_fields = {"delta_class", "initiative_key", "review_key", "delta", "risk"}
+    missing = [field for field in required if field not in request or (field in text_fields and not _text(request[field])) or (field not in text_fields and (not isinstance(request[field], Sequence) or isinstance(request[field], (str, bytes))))]
     if missing:
         raise ValueError("follow-up packet missing: " + ", ".join(missing))
     route = _ROUTES.get(request["delta_class"])

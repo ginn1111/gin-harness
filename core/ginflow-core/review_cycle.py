@@ -44,21 +44,49 @@ def validate_review(record: Mapping[str, Any]) -> dict[str, Any]:
         return {"valid": False, "errors": ["review must be a mapping"]}
     errors = _base_errors(record)
     evidence = record.get("evidence")
-    evidence_ids = {item.get("id") for item in evidence if isinstance(item, Mapping)} if isinstance(evidence, Sequence) else set()
-    if not evidence:
+    if not isinstance(evidence, Sequence) or isinstance(evidence, (str, bytes)) or not evidence:
         errors.append("evidence is required")
-    for finding in record.get("findings", []):
-        if not isinstance(finding, Mapping) or finding.get("severity") not in SEVERITIES or finding.get("state") not in STATES:
+        evidence = []
+    evidence_ids = {item.get("id") for item in evidence if isinstance(item, Mapping) and _text(item.get("id"))}
+    for item in evidence:
+        if not isinstance(item, Mapping) or not all(_text(item.get(field)) for field in ("id", "kind")):
+            errors.append("evidence is malformed")
+    findings = record.get("findings", [])
+    if not isinstance(findings, Sequence) or isinstance(findings, (str, bytes)):
+        errors.append("findings must be a list")
+        findings = []
+    for finding in findings:
+        refs = finding.get("evidence_ids") if isinstance(finding, Mapping) else None
+        paths = finding.get("paths") if isinstance(finding, Mapping) else None
+        confidence = finding.get("confidence") if isinstance(finding, Mapping) else None
+        if not isinstance(finding, Mapping) or finding.get("severity") not in SEVERITIES or finding.get("state") not in STATES or not _text(confidence) or not isinstance(paths, Sequence) or isinstance(paths, (str, bytes)) or not isinstance(refs, Sequence) or isinstance(refs, (str, bytes)):
             errors.append("finding is malformed")
+            continue
+        if any(not _text(path) for path in paths):
+            errors.append("finding paths are malformed")
+            continue
+        if not isinstance(finding.get("producer"), str) or not _text(finding.get("producer")):
+            errors.append("finding producer is required")
+            continue
+        if not _text(finding.get("title")):
+            errors.append("finding title is required")
             continue
         if finding.get("state") == "accepted_risk" and not _text(finding.get("reason")):
             errors.append("accepted risk reason is required")
         if finding.get("severity") in {"blocking", "high"} and finding.get("state") not in {"resolved", "not_applicable", "accepted_risk"} and record.get("aggregate_decision") == "approved_for_mr":
             errors.append("finding blocks approved_for_mr")
-        if not set(finding.get("evidence_ids", [])) <= evidence_ids:
+        if any(not _text(ref) for ref in refs) or not set(refs) <= evidence_ids:
             errors.append("finding references unsupported evidence")
-    groups = {item.get("key") for item in record.get("change_groups", []) if isinstance(item, Mapping)}
-    for disposition in record.get("dispositions", []):
+    change_groups = record.get("change_groups")
+    if not isinstance(change_groups, Sequence) or isinstance(change_groups, (str, bytes)):
+        errors.append("change_groups must be a list")
+        change_groups = []
+    groups = {item.get("key") for item in change_groups if isinstance(item, Mapping) and _text(item.get("key"))}
+    dispositions = record.get("dispositions", [])
+    if not isinstance(dispositions, Sequence) or isinstance(dispositions, (str, bytes)):
+        errors.append("dispositions must be a list")
+        dispositions = []
+    for disposition in dispositions:
         if not isinstance(disposition, Mapping) or disposition.get("disposition") not in DISPOSITIONS or disposition.get("change_group") not in groups:
             errors.append("disposition is malformed")
     if record.get("aggregate_decision") == "approved_for_mr" and record.get("deviations"):
