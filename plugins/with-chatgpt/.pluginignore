@@ -1,0 +1,10 @@
+# Generated build output; source is scanned instead.
+c2c/dist/
+# Vendored tests document intentionally fake secrets and traversal inputs.
+c2c/tests/
+# Chinese README is preserved historical documentation.
+c2c/README.zh-CN.md
+# Source mirrors are retained only as compatibility artifacts.
+../core/c2c
+# Local C2C test/tool state is not installed plugin content.
+c2c/.tooling/

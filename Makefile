@@ -1,4 +1,4 @@
-.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test lifecycle-test plugin-test trace-test c2c
+.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test lifecycle-test plugin-test trace-test c2c with-chatgpt-test
 
 # === Pre-flight ===
 doctor:
@@ -47,7 +47,10 @@ setup-test:
 # === c2c ===
 ## Run vendored c2c CLI; extra args via C2C_ARGS (e.g. `make c2c C2C_ARGS="doctor --json"`)
 c2c:
-	node ./core/c2c/bin/cc.js $(C2C_ARGS)
+	@node --import tsx ./plugins/with-chatgpt/c2c/src/cli/index.ts $(C2C_ARGS)
+
+with-chatgpt-test:
+	python3 plugins/with-chatgpt/test_plugin.py
 
 # === Community assets ===
 ## Clone/pull community skill repos
@@ -79,6 +82,8 @@ install-test:
 	bash scripts/test-install.sh
 
 plugin-test:
+	python3 plugins/with-chatgpt/test_plugin.py
+	hermes plugins validate plugins/with-chatgpt
 	python3 plugins/ginflow-gate/test_ginflow_gate.py
 	python3 plugins/ginflow-gate/test_blocker_reporting.py
 	python3 plugins/ginflow-gate/test_recovery_policy.py

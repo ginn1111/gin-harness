@@ -70,7 +70,7 @@ export function ensureSandboxAllowlist(opts?: {
   try {
     fs.chmodSync(configPath, 0o600);
   } catch {
-    // Windows / filesystems without chmod semantics
+    // Windows / filesystems without permission-bit support
   }
   return { added: true, alreadyAllowed: false, stateDir, configPath };
 }

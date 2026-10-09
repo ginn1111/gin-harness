@@ -69,3 +69,13 @@ make clean
 ## Completion expectations
 
 Keep diffs narrow and preserve unrelated worktree changes. For Ginflow work, record exact changed files, baseline/commit metadata, linked artifacts, verification commands/results, and blockers on the selected card. Before declaring setup-repository changes done, run `make lint && make test`; report exact failures and any checks blocked by missing external Hermes/profile context.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues for `ginn1111/gin-harness`. See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context layout — `GLOSSARY.md` at repository root and ADRs under `docs/adrs/`. See `docs/agents/domain.md`.

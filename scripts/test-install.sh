@@ -17,6 +17,8 @@ export GINFLOW_INSTALL_MANIFEST="$TMP/.ginflow-install.json"
 bash "$ROOT/scripts/install.sh" install alpha
 [[ -f "$PROFILES/alpha/skills/ginflow/SKILL.md" ]]
 [[ -f "$PROFILES/alpha/skills/ginflow/lib/harness_core.py" ]]
+[[ -f "$PROFILES/alpha/plugins/with-chatgpt/plugin.yaml" ]]
+[[ -f "$PROFILES/alpha/plugins/with-chatgpt/__init__.py" ]]
 [[ ! -e "$HOME_ROOT/.agents/skills/ginflow" ]]
 [[ -f "$GINFLOW_INSTALL_MANIFEST" ]]
 

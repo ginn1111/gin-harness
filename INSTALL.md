@@ -83,6 +83,40 @@ Setup requires existing profiles. It adds only:
 - CodeGraph MCP and its toolset
 - common CLI toolsets needed by harness/workflow
 
+### Hermes with ChatGPT plugin
+
+`make install` also installs standalone plugin `with-chatgpt` at
+`~/.hermes/profiles/<profile>/plugins/with-chatgpt`. Hermes discovers it through
+native plugin APIs. It registers `with-chatgpt:c2c` and
+`with-chatgpt:terminal-browser` skills plus the CLI command
+`hermes with-chatgpt <setup|doctor|enable|disable|status|pair|stop>`.
+
+The installer excludes `node_modules`, `dist`, and `.tooling`. Build the C2C
+runtime in the installed copy (`pnpm install && pnpm build` under
+`plugins/with-chatgpt/c2c`) before `setup`; `setup` and `doctor` report a
+missing build instead of claiming readiness.
+
+Collaboration stays disabled until the current Hermes session is explicitly
+enabled. `pre_llm_call` adds only bounded local workflow state, never secrets,
+files, diffs, logs, or mutation. Hook failures fail open. Plugin `doctor` is
+read-only by default; pass `--repair` only when bridge/tunnel repair is
+intentional. Normal setup and doctor do not edit Codex configuration; the legacy compatibility command is explicit only. Existing
+C2C names, state, auth, pairing, read-only MCP, and protocol remain unchanged.
+
+Validate without enabling collaboration:
+
+```bash
+hermes plugins validate plugins/with-chatgpt
+make with-chatgpt-test
+```
+
+Uninstall checks both Ginflow and `with-chatgpt` hashes, preserves conflicts, and
+restores backups. Profile identity, secrets, sessions, memories, runtime, and
+C2C state stay outside installer-owned paths.
+
+The plugin is opt-in; installation does not enable collaboration. Setup also
+installs the `with-chatgpt` plugin when using this installer.
+
 Setup preserves profile-owned `SOUL.md`, `distribution.yaml`, provider/model identity, secrets, memories, sessions, auth, cron, and release metadata.
 
 Setup resolves profiles from `$HERMES_PROFILES_DIR` when set. Otherwise it uses `$HERMES_REAL_HOME/.hermes/profiles`, falling back to real user home. This avoids profile-session `$HOME` paths when wiring another profile.

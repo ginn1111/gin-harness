@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { ensureDir, getStateDir } from "../config/paths.js";
-import { findBridgeObservation, findLiveBridge, probeBridge, readRuntimeState, type RuntimeState } from "../bridge/runtime.js";
+import { findBridgeObservation, findLiveBridge, type RuntimeState } from "../bridge/runtime.js";
 import { Workspace } from "../workspace/manager.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -47,7 +47,7 @@ export async function ensureBridge(workspaceRoot: string, opts: { port?: number 
     // daemon's inherited stdout/stderr log owner-readable only.
     fs.chmodSync(logFile, 0o600);
   } catch {
-    // Windows / filesystems without chmod semantics
+    // Windows / filesystems without permission-bit support
   }
   const { cmd, args } = cliEntry();
   const child = spawn(
@@ -101,21 +101,14 @@ export async function adminFetch<T = unknown>(
 
 export async function stopBridge(workspaceRoot: string): Promise<boolean> {
   const workspace = new Workspace(workspaceRoot);
-  const runtime = readRuntimeState(workspace.id);
-  if (!runtime) return false;
-  const healthy = await probeBridge(runtime.port);
-  if (healthy && healthy.workspaceId === workspace.id) {
-    try {
-      await adminFetch(runtime, "POST", "/admin/shutdown", 5000);
-      return true;
-    } catch {
-      // fall through to kill
-    }
-  }
+  const observation = await findBridgeObservation(workspace.id);
+  if (observation.state !== "healthy") return false;
   try {
-    process.kill(runtime.pid, "SIGTERM");
+    await adminFetch(observation.runtime, "POST", "/admin/shutdown", 5000);
     return true;
   } catch {
+    // Do not signal a PID after an authenticated health probe fails. The runtime
+    // record may be stale and the PID may now belong to another process.
     return false;
   }
 }

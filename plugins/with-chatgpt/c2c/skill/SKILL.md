@@ -1,21 +1,21 @@
 ---
-name: codex-with-chatgpt
+name: c2c
 description: >
-  Use ChatGPT (web) as the planning and review brain for Codex coding sessions,
-  while Codex keeps full execution ownership. Use when the user says
-  "Use Codex with ChatGPT ..." / "Set up Codex with ChatGPT" / "Plan with ChatGPT",
+  Use ChatGPT (web) as the planning and review brain for Hermes coding sessions,
+  while Hermes keeps full execution ownership. Use when the user says
+  "Use Hermes with ChatGPT ..." / "Set up Hermes with ChatGPT" / "Plan with ChatGPT",
   when they ask to connect ChatGPT to the current workspace, disconnect it,
   or run a task through the ChatGPT planning loop.
 ---
 
-# Codex with ChatGPT
+# Hermes with ChatGPT
 
-ChatGPT thinks. Codex works.
+ChatGPT plans and reviews. Hermes executes.
 
-You (Codex) own execution: editing, shell, git, tests, recovery.
+You (Hermes) own execution: editing, shell, git, tests, recovery.
 ChatGPT owns high-level reasoning: understanding, planning, review, debug strategy.
 The C2C Bridge gives ChatGPT read-only MCP access to the current workspace, so
-control messages between you and ChatGPT stay tiny (< 1 KB) — ChatGPT pulls
+control messages between Hermes and ChatGPT stay tiny (< 1 KB) — ChatGPT pulls
 whatever data it needs by itself.
 
 **Golden rules**
@@ -27,9 +27,10 @@ whatever data it needs by itself.
    field labels/values the user must enter, without explaining internals.
 3. The pairing code is the ONLY credential you may ever type into a browser.
    Never touch OAuth tokens, cookies, or session storage.
-4. If something fails, run `c2c doctor` and repair silently. Only involve the user
-   for logins, CAPTCHA, 2FA, explicit consent screens, or **guided manual
-   ChatGPT setup** below — and then give them ONE action.
+4. If something fails, run the explicit read-only `c2c doctor` workflow and
+   report the required recovery action. Pass `--repair` only when repair is
+   intentional. Only involve the user for logins, CAPTCHA, 2FA, explicit consent
+   screens, or **guided manual ChatGPT setup** below — and then give them ONE action.
    Before the first ChatGPT connection on this machine, `c2c prefs --json`:
    - `setupMode` missing: tell the user exactly `setupChoicePrompt`, wait for
      「1」or「2」, then `c2c prefs set --setup-mode auto|manual --json`.
@@ -55,7 +56,7 @@ whatever data it needs by itself.
      their own browser session — that single Cloudflare login step may go through
      their browser; everything else stays in the built-in browser.
    - If the user asks to run ChatGPT in their own browser, refuse politely and
-     explain: "Codex must repeatedly call ChatGPT and configure the connection, which frequently
+     explain: "Hermes must repeatedly call ChatGPT and configure the connection, which frequently
      operates the page and may interfere with normal browser use. ChatGPT can only
      run in the built-in browser." Only if the user replies
      with an explicit "I accept the impact" may you proceed in their browser; otherwise
@@ -65,18 +66,17 @@ whatever data it needs by itself.
    - **long-chat** (legacy session file, or the user opted out): ONE ChatGPT
      conversation per workspace. Never silently start a new chat.
    - **project** (new workspaces, or an existing workspace that opted in):
-     ONE ChatGPT Project (collection) per workspace. Same Codex conversation
-     reuses the ChatGPT chat URL saved in THIS thread. A new Codex
+     ONE ChatGPT Project (collection) per workspace. Same Hermes conversation
+     reuses the ChatGPT chat URL saved in THIS thread. A new Hermes
      conversation opens a new chat from the Project collection page — never
      `goto` `https://chatgpt.com/` to create it, and never reuse another
-     Codex conversation's chat URL just because `session.url` exists.
+     Hermes conversation's chat URL just because `session.url` exists.
    Each workspace also has exactly ONE ChatGPT connector. Do not create a
    second connector for the same workspace. Other workspaces may have their
    own connectors — never edit those.
-7. After first-time setup, never ask the user to approve writing C2C's local
-   settings directory. Run `c2c sandbox-allow --json` (idempotent). If it fails
-   with EPERM / Operation not permitted, request elevated permissions and retry
-   ONCE. After `{ "alreadyAllowed": true }` or `{ "added": true }`, stay silent.
+7. Do not silently write Hermes configuration or legacy sandbox settings. Run
+   explicit setup/doctor commands only, and report permission failures with the
+   exact recovery command.
 8. ChatGPT pages: only the URLs in **In-app browser (ChatGPT)**. Never start
    from chatgpt.com and click through menus.
 9. **Doctor gate.** After `c2c doctor --json`, do not `goto` ChatGPT and do not
@@ -104,7 +104,7 @@ whatever data it needs by itself.
 Official skill: `control-in-app-browser`. These C2C rules override defaults
 that close the tab, hide the window, or stall on the settings page.
 
-1. **Surface.** Once per Codex session: `setupBrowserRuntime()`, then
+1. **Surface.** Once per Hermes session: `setupBrowserRuntime()`, then
    `const iab = await agent.browsers.get("iab")`. Reuse `iab`. Do not re-read
    `documentation()` if it is already bound. Never `getDefault()`, `getForUrl()`,
    or Computer Use.
@@ -129,7 +129,7 @@ that close the tab, hide the window, or stall on the settings page.
    - Add plugin: `https://chatgpt.com/plugins#settings/Connectors?create-connector=true&redirectAfter=%2Fplugins`
    - New conversation (long-chat only, and only if no saved chat): `https://chatgpt.com/`
    - Saved C2C chat: `conversation.chatUrl` / `session.url` (long-chat, or
-     the chat already bound in THIS Codex conversation)
+     the chat already bound in THIS Hermes conversation)
    - Saved Project collection: `conversation.projectUrl`
      (`https://chatgpt.com/g/g-p-…/project`)
    Never click Reconnect / Refresh on an existing connector. The old address is
@@ -180,10 +180,11 @@ that close the tab, hide the window, or stall on the settings page.
 
 ## Locations
 
-- The codex-with-chatgpt checkout lives at: `<ACTUAL_CHECKOUT_PATH>`
+- The hermes-with-chatgpt checkout lives at: `<ACTUAL_CHECKOUT_PATH>`
   (installer/update MUST replace this line in the installed Skill with the user's actual checkout path.)
-- Codex home: let `<codex-home>` be a non-empty `CODEX_HOME` when set; otherwise
-  use `~/.codex` (`%USERPROFILE%\.codex` on Windows).
+- Hermes home: use `$HERMES_REAL_HOME` when set; otherwise use the real user home.
+  `CODEX_HOME` remains a compatibility input for legacy installations; do not
+  rename or write it.
 - CLI: let `<checkout>` mean the path on the previous line; run
   `node "<checkout>/bin/c2c.js" <command>` (or `c2c <command>` if globally linked).
   All commands support `--json` for parsing.
@@ -193,45 +194,27 @@ that close the tab, hide the window, or stall on the settings page.
   `restart`, `start`, `stop`, `status`, `pair`, `unpair`, `logs`, `workspace`,
   `record`, `tunnel status`, `tunnel choose`), pass `-w <workspace root>`
   (the project the user is working on, NOT the c2c repo).
-- Do not add `-w` to machine-wide commands: `update-check`, `sandbox-allow`,
-  `prefs`, `tunnel login`. They still accept and ignore `-w`, so a leftover
-  flag must not fail the command.
+- Do not add `-w` to machine-wide commands: `prefs`, `tunnel login`. Legacy
+  `sandbox-allow` remains explicit compatibility tooling; do not run it during
+  normal Hermes setup or doctor.
 
-## Daily update check
+## Explicit update workflow
 
-At the START of every workflow below (before anything else), run these two
-commands (both are cheap / cached; never mention them unless an update exists):
-
-1. `c2c update-check --json` (do not pass `-w`)
-2. `c2c sandbox-allow --json` (do not pass `-w`) — writes the C2C state directory into Codex's
-   sandbox `writable_roots` (macOS: `~/Library/Application Support/codex-with-chatgpt`;
-   Windows: `%LOCALAPPDATA%\codex-with-chatgpt`; config file is
-   `<codex-home>/config.toml`; see **Locations**).
-   If already allowlisted, this is a no-op and does not trigger elevation.
-
-- `{ "updateAvailable": false }` → continue silently. Never mention the check.
-- `{ "updateAvailable": true }` → tell the user one line:
-  "A new Codex with ChatGPT version is available. I will update it first (about 1 minute), then continue your task."
-  Then run the update workflow below, and CONTINUE the original task afterwards.
-
-## Workflow: update ("Update Codex with ChatGPT", or triggered by the daily check)
+Run updates only when the user requests them or the installed plugin reports an
+available update. Do not mutate Hermes configuration or bridge state during a
+routine workflow.
 
 Inside the checkout directory (see Locations):
 
-1. `git pull --ff-only` (if it fails due to local edits: `git stash && git pull --ff-only`).
+1. `git pull --ff-only`.
 2. `corepack pnpm install && corepack pnpm build`.
-3. Re-install the Skill: copy `skill/SKILL.md` to
-   `<codex-home>/skills/codex-with-chatgpt/SKILL.md`, then fix the "checkout lives at:"
-   line in the copy to the actual checkout path.
-4. `c2c sandbox-allow --json` (so existing installs pick up the sandbox allowlist),
-   then `c2c restart -w <workspace>` so the bridge runs the new code, then
-   `c2c update-check --force --json` to refresh the cache (should now report up to date).
-5. Tell the user "✓ Updated to the latest version" — then resume whatever task triggered this.
-   (The updated SKILL.md takes effect from the next Codex session; that's expected.)
+3. Reinstall the plugin through the Gin-harness installer.
+4. Run `c2c doctor --json`; pass `--repair` only when repair is intentional.
+5. Tell the user "✓ Updated to the latest version", then resume the requested task.
 
 ## Connection choice (once per workspace)
 
-Ask this **before** the public address exists (`c2c setup` / first `doctor --fix`
+Ask this **before** the public address exists (`c2c setup` / first `doctor --repair`
 that starts a tunnel). Do not mention tunnels, wrangler, DNS, or hostnames.
 Speak only of temporary address / fixed domain / Cloudflare login.
 
@@ -251,20 +234,18 @@ Speak only of temporary address / fixed domain / Cloudflare login.
 4. Never put connection credentials in the project. The CLI stores them in
    the C2C state directory.
 
-## Workflow: first-time setup ("Complete initial Codex with ChatGPT setup")
+## Workflow: first-time setup ("Complete initial Hermes with ChatGPT setup")
 
 1. Detect prerequisites yourself: `node --version` (>= 20), and check `cloudflared`.
    - If cloudflared is missing on macOS run `brew install cloudflared`; on Windows use
      `winget install Cloudflare.cloudflared`. Do this yourself; don't ask.
 2. If the c2c repo has no `node_modules`, run `pnpm install && pnpm build` in it.
-3. Run `c2c sandbox-allow --json`, then **Connection choice**, then
+3. Run `c2c doctor --json`, then **Connection choice**, then
    `c2c setup -w <workspace> --json`.
-   `sandbox-allow` edits Codex `config.toml` only — it adds C2C's state directory
-   to `[sandbox_workspace_write].writable_roots` so later chats can write logs
-   without elevation. If the write is denied, request approval and retry once.
-   → returns `{ mcpUrl, pairingCode, workspaceName, connectorName, ... }`.
+   Setup must not mutate Hermes configuration. It returns
+   `{ mcpUrl, pairingCode, workspaceName, connectorName, ... }`.
    `connectorName` is this workspace's plugin title (legacy installs stay
-   `Codex with ChatGPT`; additional workspaces get `Codex with ChatGPT · <name>`).
+   `Hermes with ChatGPT`; additional workspaces get `Hermes with ChatGPT · <name>`).
    Pairing codes expire in ~5 minutes. Do not mint one until the ChatGPT
    Authorize / pairing form is on screen: run `c2c pair --json` then type
    that code immediately. Doctor does not pre-mint a code.
@@ -296,7 +277,7 @@ Speak only of temporary address / fixed domain / Cloudflare login.
         Reconnect, never edit-in-place, never open the old Server URL.
       - If it does not exist: create one with that exact name.
       - Never rename, delete, or edit a connector that belongs to another workspace.
-      - Description: `Securely connect ChatGPT to the current Codex workspace for planning and review.`
+      - Description: `Securely connect ChatGPT to the current Hermes workspace for planning and review.`
       - Server URL: the `mcpUrl` from step 3
       - Authentication: OAuth
      Fill the known form in one script when you can. Then Connect / Authorize.
@@ -315,7 +296,7 @@ Speak only of temporary address / fixed domain / Cloudflare login.
 7. Report to the user exactly in this shape (no internals):
 
 ```
-Codex with ChatGPT
+Hermes with ChatGPT
 
 ✓ Current project identified
 ✓ Workspace Bridge started
@@ -340,7 +321,7 @@ A chosen manual path does not wait for those two failures.
 
 Stop automating ChatGPT settings. Keep the current local C2C state and the
 current `mcpUrl`, `pairingCode`, `workspaceName`, and `connectorName`. Do not
-silently fall back to Codex-only execution and do not permanently disable C2C.
+silently fall back to Hermes-only execution and do not permanently disable C2C.
 Do not change the saved `setupMode` when this is a failure fallback.
 
 Opening line:
@@ -360,7 +341,7 @@ next action:
 3. Ask them to open
    `https://chatgpt.com/plugins#settings/Connectors?create-connector=true&redirectAfter=%2Fplugins`
    and create the exact `connectorName` with:
-   - Description: `Securely connect ChatGPT to the current Codex workspace for planning and review.`
+   - Description: `Securely connect ChatGPT to the current Hermes workspace for planning and review.`
    - Server URL: the current `mcpUrl`
    - Authentication: OAuth
 4. Ask them to Connect / Authorize. Then run `c2c pair --json` and give them
@@ -412,16 +393,16 @@ ONE ChatGPT conversation per workspace. Same as before.
 
 One ChatGPT Project per workspace. Mapping:
 
-1. Same Codex conversation (this thread still has context) → same ChatGPT
+1. Same Hermes conversation (this thread still has context) → same ChatGPT
    chat URL. `goto` that URL directly. Do not open the collection first.
-2. Same workspace, a **new** Codex conversation → new ChatGPT chat from the
+2. Same workspace, a **new** Hermes conversation → new ChatGPT chat from the
    collection page (`conversation.projectUrl`). Ignore `session.url` unless
-   you already saved it earlier in THIS Codex thread.
+   you already saved it earlier in THIS Hermes thread.
 3. Different workspace → different Project and different connector.
 
-**Open a chat in this Codex thread**
+**Open a chat in this Hermes thread**
 
-- If you already saved a ChatGPT chat URL earlier in THIS Codex conversation:
+- If you already saved a ChatGPT chat URL earlier in THIS Hermes conversation:
   `goto` that URL. Continue. No new chat. No HANDOFF.
 - Else if `conversation.projectReady`: `goto` `conversation.projectUrl`.
   On that page, use the on-page composer ("New chat in {project name}" / "New chat
@@ -429,7 +410,7 @@ One ChatGPT Project per workspace. Mapping:
   Confirm Chat mode (**In-app browser** §7). Boot prompt, then workspace_info
   with the **exact** `connectorName`. After the reply names this workspace,
   `c2c session set -w <ws> --mode project --project-url <collection> --url <chat> --connector-name "<connectorName>" --title "C2C <workspace name>"`.
-  If this Codex thread is continuing a previous C2C task, send HANDOFF right
+  If this Hermes thread is continuing a previous C2C task, send HANDOFF right
   after the boot prompt.
 - Else: **Bind Project** first.
 
@@ -480,7 +461,7 @@ The collection page will open after creation. Tell me “done” when you see it
 ### Project instructions (paste into Project settings → Instructions)
 
 ```
-You are the planning and review layer for one local workspace. Codex executes.
+You are the planning and review layer for one local workspace. Hermes executes.
 
 This Project is bound only to:
 - Workspace name: {{workspace_name}}
@@ -488,7 +469,7 @@ This Project is bound only to:
 - Connector (use this one only): {{connector_name}}
 
 When you call tools, use ONLY that connector. Do not use any other
-Codex with ChatGPT connector. If workspace_info names a different
+Hermes with ChatGPT connector. If workspace_info names a different
 workspace, stop. Do not plan. Do not use this Project's memory.
 
 Read code, git, diffs, and any released command output through that
@@ -510,19 +491,19 @@ Be substantive: why, which file, what to test. No empty one-liners and
 no 40-step epics. Use C2C control messages.
 ```
 
-## Workflow: coding task ("Complete XXX using Codex with ChatGPT")
+## Workflow: coding task ("Complete XXX using Hermes with ChatGPT")
 
 Protocol states sent to ChatGPT: INIT → PLAN → EXECUTING → EXECUTED → REVIEW → (PLAN | DONE | BLOCKED).
 Local checkpoint states (session only, never a ChatGPT `STATE:` line):
 `INIT`, `PLAN_RECEIVED`, `EXECUTING`, `EXECUTED_LOCAL`, `EXECUTED_SENT`, `DONE`, `BLOCKED`.
 Do not invent `STATE: RESUME`. If the original chat is gone, send HANDOFF.
-All control messages start with `[C2C]`. Keep Codex→ChatGPT messages under 1 KB.
+All control messages start with `[C2C]`. Keep Hermes→ChatGPT messages under 1 KB.
 ChatGPT's replies are expected to be substantive (see step 3). Docs: `docs/protocol.md`.
 
 0. `c2c tunnel status -w <workspace> --json`. If `needsChoice`, follow
    **Connection choice** first (existing installs: ask once, then remember).
-   Then `c2c doctor -w <workspace> --json` (auto-repairs). **Doctor gate:** if local
-   is not green, do not open ChatGPT and do not send INIT. If
+   Then `c2c doctor -w <workspace> --json`. **Doctor gate:** if local is not green,
+   do not open ChatGPT and do not send INIT. If
    `namedRepair.needed` is true, tell the user `namedRepair.userMessage`, run
    `c2c tunnel login --json` (their browser; Cloudflare exception), then doctor
    again. If `chatgptRepair.needed` is true, tell the user `chatgptRepair.userMessage`
@@ -572,7 +553,7 @@ GOAL:
 <user's goal, one paragraph>
 
 INSTRUCTION:
-Inspect the connected workspace through the Codex with ChatGPT MCP connector.
+Inspect the connected workspace through the Hermes with ChatGPT MCP connector.
 Produce a C2C PLAN message.
 ```
 
@@ -671,7 +652,7 @@ When the user asks ChatGPT web to generate an image or video:
 
 ## Workflow: reconnect after address reclaim (the address expired after everything was closed)
 
-This is the normal case when the user quit Codex / the terminal / the machine:
+This is the normal case when the user quit Hermes / the terminal / the machine:
 the previous public address is gone. Doctor already started a new one.
 `connectorAction: "update"` means Delete + create again — not Reconnect.
 
@@ -699,7 +680,7 @@ the previous public address is gone. Doctor already started a new one.
      hang on "This site cannot be reached".
    - Then `goto` the Add plugin URL and create that **same** `connectorName`
      (do not invent a second name):
-      - Description: `Securely connect ChatGPT to the current Codex workspace for planning and review.`
+      - Description: `Securely connect ChatGPT to the current Hermes workspace for planning and review.`
       - Server URL: `chatgptRepair.mcpUrl`
       - Authentication: OAuth
      Then Connect / Authorize. Only then run `c2c pair --json` and type that
@@ -707,7 +688,7 @@ the previous public address is gone. Doctor already started a new one.
      the settings page.
    - If the name is already gone, skip Delete and only create.
 4. `c2c doctor --json` again. Same tab: only after the Doctor gate is green,
-   reopen the chat this Codex thread was already using (`session.url` /
+   reopen the chat this Hermes thread was already using (`session.url` /
    the URL you saved earlier in THIS thread). Do not rewrite Project
    instructions — they store the connector **name**, which did not change.
    In that same chat, send the workspace_info check from setup step 6
@@ -740,14 +721,14 @@ the previous public address is gone. Doctor already started a new one.
 
 | Symptom | Action |
 | --- | --- |
-| Bridge not running | `c2c start` (doctor does this automatically) |
+| Bridge not running | Run `c2c doctor --json`; pass `--repair` to start it explicitly. |
 | Tunnel dead / URL unreachable / connection expired after everything was closed | `c2c doctor` → if `namedRepair.needed`, login to Cloudflare and doctor again (do not Delete). If `chatgptRepair.needed`, tell the user the message, then **Delete** THIS workspace's connector only (`connectorName`) and create it again. Never Reconnect. After recreate, re-check `workspace_info` in the saved chat; if it still fails, new chat in the same Project (or long-chat switch) + HANDOFF. |
 | Collection page shows only Retry | Same iab tab: Retry once, then open the last working chat and click its Project link. Do not write INIT/EXECUTED waiting checkpoints until the message is visible. |
 | ChatGPT says tool call failed / 401 | token expired or revoked → re-pair (new pairing code + authorize) |
 | Pairing code rejected/expired | `c2c pair --json` for a fresh code |
 | Same explicit ChatGPT setup/reconnect browser configuration step fails twice after repair | Stop automating ChatGPT settings and use **Guided manual ChatGPT setup fallback**. Do not count browser/js timeout, loading/generating, or login/2FA waiting as failures. |
 | Port conflict | handled automatically; never surface to the user |
-| Every new chat “repairs” / cannot write the log or settings directory | `c2c sandbox-allow --json` (once). Do not ask the user. |
+| Every new chat cannot write local state | Run `c2c doctor --json`; if repair is intentional, rerun with `--repair`. |
 | cloudflared missing | install it yourself (brew/winget), then retry |
 | Sidebar has no “Projects” | Ask the user to hover “Chats”, click the …, and choose “Organize by project” |
 | Collection page is the wrong Project | Ask the user to open the named collection and say「found」, or accept long-chat |

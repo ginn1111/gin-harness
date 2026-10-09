@@ -1,31 +1,31 @@
-# Codex with ChatGPT
+# Hermes with ChatGPT
 
-> ChatGPT thinks. Codex works.
-> ChatGPT 负责思考，Codex 负责干活。
+> ChatGPT plans and reviews. Hermes executes.
+> ChatGPT 负责规划和审查，Hermes 负责执行。
 
 > [!IMPORTANT]
-> **遇到问题？** 请先向 Codex 发送 **「更新 Codex with ChatGPT」** 并重试。更新到最新版本可以解决大多数已知问题。
-> **Having trouble?** First ask Codex to **“Update Codex with ChatGPT”** and try again. Updating to the latest version resolves most known issues.
+> **遇到问题？** 请先向 Hermes 发送 **「更新 Hermes with ChatGPT」** 并重试。更新到最新版本可以解决大多数已知问题。
+> **Having trouble?** First ask Hermes to **“Update Hermes with ChatGPT”** and try again. Updating to the latest version resolves most known issues.
 
 ## The problem · 解决什么问题
 
-**中文** — ChatGPT 付费订阅的网页版额度大量闲置，Codex 却在消耗紧张的
-API 额度做规划和 Review。本项目把"思考"交给你已付费的网页版 ChatGPT，
-Codex 只负责执行。不用 API Key、不搞逆向代理——官方网页 + 只读 MCP 桥接。
+**中文** — ChatGPT 付费订阅的网页版额度大量闲置，Hermes 却在消耗紧张的
+API 额度做规划和 Review。本项目把规划交给你已付费的网页版 ChatGPT，
+Hermes 只负责执行。不用 API Key、不搞逆向代理——官方网页 + 只读 MCP 桥接。
 
-**EN** — ChatGPT Plus/Pro web quota sits idle while your coding agent burns
-scarce API/Codex tokens on planning and review. This project moves the
-thinking to the subscription you already pay for; Codex only executes.
+**EN** — ChatGPT Plus/Pro web quota sits idle while Hermes burns scarce API
+tokens on planning and review. This project moves planning to the subscription
+you already pay for; Hermes only executes.
 No API keys, no reverse proxy — official web UI plus a read-only MCP bridge.
 
 ## What it is · 这是什么
 
-**中文** — 把 ChatGPT 网页版变成 Codex 编码会话的"规划与审查大脑"，执行权
-完全保留在 Codex 手里。你的仓库永远不会被上传：ChatGPT 通过一条安全的、
+**中文** — 把 ChatGPT 网页版变成 Hermes 编码会话的"规划与审查大脑"，执行权
+完全保留在 Hermes 手里。你的仓库永远不会被上传：ChatGPT 通过一条安全的、
 OAuth 保护的**只读** MCP 连接，按需读取当前工作区里它真正需要的那几行代码。
 
 **EN** — Use the ChatGPT web app as the planning and review brain for your
-Codex coding sessions, while Codex keeps full ownership of execution. Your
+Hermes coding sessions, while Hermes keeps full ownership of execution. Your
 repository is never uploaded: ChatGPT reads exactly the lines it needs through
 a secure, OAuth-protected, **read-only** MCP connection to your current
 workspace.
@@ -35,21 +35,19 @@ Detailed docs below are in English · 详细中文文档见 **[README.zh-CN.md](
 ## One-paste install · 一段话安装
 
 **中文** — 不懂 git、Node、终端？完全不需要懂。把下面这段话原样复制给你的
-编码 Agent（Codex），然后去倒杯咖啡：
+编码 Agent（Hermes），然后去倒杯咖啡：
 
 ```text
-请帮我完整安装并配置 Codex with ChatGPT，全程自动，我是不懂技术的小白，
+请帮我完整安装并配置 Hermes with ChatGPT，全程自动，我是不懂技术的小白，
 所有事情你自己做：
 
 1. 环境自检：需要 git 和 Node.js ≥ 20，缺什么就自动安装
   （macOS 用 Homebrew，Windows 用 winget），同时安装 cloudflared。
-2. 下载：把 https://github.com/XiaoDuoYa/codex-with-chatgpt 克隆到
-   ~/codex-with-chatgpt（已存在就 git pull 更新）。
+2. 下载：把 Hermes with ChatGPT 仓库克隆到
+   ~/hermes-with-chatgpt（已存在就 git pull 更新）。
 3. 构建：在该目录里执行 corepack pnpm install 和 corepack pnpm build。
-4. 安装 Skill：先确定 Codex home：如果设置了非空的 CODEX_HOME 就使用它，
-   否则使用 ~/.codex（Windows 默认为 %USERPROFILE%\.codex）。把仓库里的
-   skill/SKILL.md 复制到 <codex-home>/skills/codex-with-chatgpt/SKILL.md，
-   并把文件中 "The codex-with-chatgpt checkout lives at:" 那一行的路径改成实际克隆路径。
+4. 安装 Skill：将插件安装到 Hermes profile。不要修改旧版宿主配置或路径。
+   Hermes 通过原生插件 API 提供 C2C 和 terminal-browser 指引。
 5. 首次配置：按 SKILL.md 里的 first-time setup 流程执行
   （运行 c2c setup，用内置浏览器打开 ChatGPT 配置连接器并输入配对码）。
    全程只用内置浏览器，禁止打开任何第三方浏览器。
@@ -61,22 +59,21 @@ Detailed docs below are in English · 详细中文文档见 **[README.zh-CN.md](
 
 
 **EN** — Don't know git, Node, or terminals? You don't need to. Copy the
-paragraph below, paste it to your coding agent (Codex), and go grab a coffee:
+paragraph below, paste it to your coding agent (Hermes), and go grab a coffee:
 
 ```text
-Please install and configure "Codex with ChatGPT" for me, fully automatically.
+Please install and configure "Hermes with ChatGPT" for me, fully automatically.
 I am a non-technical user — do everything yourself:
 
 1. Check the environment: git and Node.js >= 20 must be available. Install
    anything missing yourself (macOS: Homebrew, Windows: winget). Also install
    cloudflared.
-2. Download: clone https://github.com/XiaoDuoYa/codex-with-chatgpt into
-   ~/codex-with-chatgpt (if it already exists, git pull to update).
+2. Download the Hermes with ChatGPT checkout into
+   ~/hermes-with-chatgpt (if it already exists, update it in place).
 3. Build: inside that folder run `corepack pnpm install` then `corepack pnpm build`.
-4. Install the Skill: determine the Codex home first: use a non-empty CODEX_HOME
-   when set, otherwise use ~/.codex (%USERPROFILE%\.codex on Windows). Copy
-   skill/SKILL.md to <codex-home>/skills/codex-with-chatgpt/SKILL.md, and update
-   the line "The codex-with-chatgpt checkout lives at:" to the actual clone path.
+4. Install the plugin into a Hermes profile. Do not modify legacy host
+   configuration or paths. Hermes exposes the C2C and terminal-browser guidance
+   through native plugin APIs.
 5. First-time setup: follow the SKILL.md "first-time setup" workflow
    (run c2c setup, configure the ChatGPT connector in the BUILT-IN browser,
    enter the pairing code). Never open a third-party browser.
@@ -88,10 +85,8 @@ I am a non-technical user — do everything yourself:
 ```
 
 
-**Updates · 更新** — The Skill checks GitHub once a day and updates itself when a
-new version is released; no action needed. You can also say "更新 Codex with ChatGPT"
-anytime. / Skill 每天自动检查一次 GitHub，有新版本会自动更新，无需任何操作；
-也可以随时对 Codex 说"更新 Codex with ChatGPT"。
+**Updates · 更新** — Update the Hermes plugin through its profile installer.
+The plugin does not silently mutate profile identity, authentication, or runtime state.
 
 ---
 
@@ -100,25 +95,23 @@ anytime. / Skill 每天自动检查一次 GitHub，有新版本会自动更新�
 
 ## Install → Setup → Use (manual)
 
-Let `<codex-home>` be a non-empty `CODEX_HOME` when set; otherwise use `~/.codex`
-(`%USERPROFILE%\.codex` on Windows).
+Install this plugin into a Hermes profile with the Gin-harness installer.
+Hermes provides `c2c` and the namespaced workflow skills through native plugin
+APIs. Collaboration remains disabled until explicitly enabled for a session.
 
-1. Install the Codex Skill: copy `skill/` to `<codex-home>/skills/codex-with-chatgpt/`.
-2. Tell Codex: **"Set up Codex with ChatGPT."** (中文: "使用 Codex with ChatGPT 完成首次配置。")
-3. Use Codex normally: **"Use Codex with ChatGPT to implement XXX."**
+1. Run `make install PROFILES="<profile>"` from the setup repository.
+2. Enable the current session with `hermes with-chatgpt enable --session-id <id>`.
+3. Use `hermes with-chatgpt setup`, then follow the explicit C2C skill workflow.
 
-> **Installation scope:** This repository does not publish or install a Codex
-> Web GPT, launcher, or model-catalog entry. Installation consists of building
-> this checkout, installing `skill/SKILL.md` as a Codex Skill, and running
-> `c2c setup` to configure the ChatGPT connector. For Web GPT or model-catalog
-> problems, see [troubleshooting](docs/troubleshooting.md).
+> **Installation scope:** This plugin does not publish a Web GPT, launcher, or
+> model-catalog entry. It does not modify legacy host configuration. `terminal-browser`
+> remains an external prerequisite. For runtime details, see [troubleshooting](docs/troubleshooting.md).
 
-That's the whole manual. You don't need to know what MCP, OAuth, tunnels,
-ports or localhost are — Codex configures everything automatically and you
-just see:
+That's the whole manual. Setup and doctor report actionable state; doctor is
+read-only unless `--repair` is explicitly passed.
 
 ```
-Codex with ChatGPT
+Hermes with ChatGPT",
 
 ✓ Project detected
 ✓ Workspace Bridge started
@@ -129,29 +122,20 @@ Codex with ChatGPT
 Ready.
 ```
 
-The only steps that may need you: logging into ChatGPT (and, if you want a
-stable hostname, logging into Cloudflare once). A **new** workspace also asks
-you to create a ChatGPT Project (collection) once — pick **project-only
-memory**, name it after the workspace. If the sidebar has no Projects row,
-hover **Chats**, open the … menu, and choose **Organize by project**. Codex
-then saves that collection link and starts chats from that page. Existing
-workspaces that already have a C2C chat stay on the old one-conversation
-style until you ask to switch.
+The only steps that may need you: logging into ChatGPT or Cloudflare, plus
+confirmation before consequential browser actions. Existing workspace
+connectors and resumable C2C checkpoints are reused; no conversation or
+connector is silently replaced.
 
 ### Optional stable hostname
 
-The default public address is a temporary Cloudflare URL. It changes when the
-bridge restarts, and Codex repairs ChatGPT by deleting that workspace's
-connector and adding it again.
+The default public address is a temporary Cloudflare URL. It can change when
+the bridge restarts. Doctor reports connector repair explicitly; it never
+silently churns a healthy connector.
 
-If you have a Cloudflare account and a domain already on Cloudflare, first-time
-setup (and the next coding session, once) will ask whether you want a stable
-hostname such as `c2c-<project>.your-domain.com`. That path opens a browser so
-you can authorize Cloudflare. After that, the ChatGPT connector keeps working
-across restarts. If you skip it, or the login fails, Codex stays on the temporary
-address — same features, just a slower repair.
-
-Credentials stay in the OS app state directory, not in the project.
+Named tunnels remain optional. If you choose one, Cloudflare authorization
+happens only through the explicit external workflow. Credentials stay in the
+OS app state directory, not in the project.
 
 ## How it works
 
@@ -173,19 +157,19 @@ Credentials stay in the OS app state directory, not in the project.
                         │  read-only
                         ▼
              ┌─────────────────────┐          ┌─────────────────────┐
-             │   Local Workspace   │◀─────────│    Codex Harness    │
+             │   Local Workspace   │◀─────────│    Hermes Runtime   │
              └─────────────────────┘ edit/git │ shell / tests / fix │
                                               └─────────────────────┘
 ```
 
-- **Control plane (Computer Use)**: Codex and ChatGPT exchange tiny structured
+- **Control plane (explicit browser workflow)**: Hermes and ChatGPT exchange tiny structured
   `[C2C]` state messages — `INIT → PLAN → EXECUTED → REVIEW → DONE`. No diffs,
   no logs, no file bodies are ever pasted.
 - **Data plane (MCP)**: ChatGPT pulls what it needs itself through 10 read-only
   tools: `workspace_info`, `list_directory`, `read_file`, `search_workspace`,
   `git_status`, `git_diff`, `test_status`, `execution_summary`,
   `execution_output`, `read_image`.
-- **Independent review**: after Codex executes, ChatGPT inspects the actual
+- **Independent review**: after Hermes executes, ChatGPT inspects the actual
   git diff and test records through MCP — it never trusts "all tests passed"
   claims blindly.
 
@@ -224,7 +208,7 @@ pnpm build          # -> dist/, exposes the `c2c` bin
 pnpm test           # vitest: 150 tests (path security, OAuth, pairing, MCP e2e)
 
 c2c setup           # bridge + tunnel + pairing code, all in one
-c2c sandbox-allow   # whitelist the settings dir in Codex (macOS + Windows)
+c2c sandbox-allow   # explicit legacy compatibility command (macOS + Windows)
 c2c status / doctor / pair / unpair / logs / stop
 ```
 
@@ -248,7 +232,7 @@ src/
   execution/  execution records for the review loop
   process/    daemon lifecycle
   cli/        the c2c CLI
-skill/        the Codex Skill (the real UX layer)
+skill/        the C2C skill (the real UX layer)
 tests/        unit + integration tests
 docs/         architecture / protocol / security / troubleshooting
 ```
@@ -266,10 +250,4 @@ connector setup, zero-touch first-run experience.
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=xiaoduoya%2Fcodex-with-chatgpt&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=xiaoduoya/codex-with-chatgpt&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=xiaoduoya/codex-with-chatgpt&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=xiaoduoya/codex-with-chatgpt&type=date&legend=top-left" />
- </picture>
-</a>
+<!-- Star History omitted: this setup repository is not the upstream project. -->

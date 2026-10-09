@@ -6,7 +6,7 @@ export const CHATGPT_PLUGINS_URL = "https://chatgpt.com/plugins";
 export const CHATGPT_CREATE_CONNECTOR_URL =
   "https://chatgpt.com/plugins#settings/Connectors?create-connector=true&redirectAfter=%2Fplugins";
 
-export const DEFAULT_CONNECTOR_NAME = "Codex with ChatGPT";
+export const DEFAULT_CONNECTOR_NAME = "Hermes with ChatGPT";
 
 export interface LastEndpoint {
   workspaceId: string;
@@ -61,8 +61,8 @@ export function sanitizeConnectorLabel(name: string, workspaceId: string): strin
 
 /**
  * Same workspace keeps one connector title forever.
- * A workspace already recorded without a title stays on the original
- * "Codex with ChatGPT" name. A new workspace gets a distinct title.
+ * Existing workspaces keep their recorded connector title.
+ * A new workspace gets a distinct title.
  */
 export function connectorNameFor(opts: {
   workspaceName: string;
@@ -76,5 +76,5 @@ export function connectorNameFor(opts: {
 }
 
 export function reclaimUserMessage(connectorName: string): string {
-  return `当前项目的安全连接地址已经失效。我会删除「${connectorName}」再按新地址加回去，其它项目的连接不动。请稍等。`;
+  return `This workspace's secure connection expired. Delete '${connectorName}' and add it again with its new address; leave other workspace connectors unchanged.`;
 }

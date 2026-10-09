@@ -1,0 +1,15 @@
+name: with-chatgpt
+version: "0.1.0"
+description: Hermes with ChatGPT — ChatGPT plans and reviews, Hermes executes through a read-only C2C workspace bridge.
+author: gin-harness
+kind: standalone
+provides_hooks:
+  - pre_llm_call
+  - on_session_end
+capabilities:
+  - hooks
+  - cli
+  - skills
+manifest_version: 1
+api_version: 1
+requires_hermes: ">=0.1.0"

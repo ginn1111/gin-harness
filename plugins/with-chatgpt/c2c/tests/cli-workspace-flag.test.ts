@@ -63,6 +63,21 @@ describe("machine-wide commands accept leftover -w", () => {
     expect(payload.ok).toBe(true);
   });
 
+  it("status reports stopped state explicitly", () => {
+    const stateDir = isolateStateDir();
+    const root = makeTmpDir("status-stopped");
+    dirs.push(stateDir, root);
+    makeGitRepo(root);
+    const result = runCli(["status", "--json", "-w", root], { C2C_STATE_DIR: stateDir });
+    expect(result.status).toBe(0);
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      ok: false,
+      running: false,
+      state: "stopped",
+      reason: "runtime_missing",
+    });
+  });
+
   it("doctor reports a missing named tunnel credential without attempting repair", () => {
     const stateDir = isolateStateDir();
     const root = makeTmpDir("doctor-named-credential");
@@ -81,7 +96,7 @@ describe("machine-wide commands accept leftover -w", () => {
     });
     const certPath = write(credentialDir, "cert.pem", "synthetic cert");
     const credentialPath = path.join(credentialDir, `${tunnelId}.json`);
-    const result = runCli(["doctor", "--json", "--no-fix", "-w", root], {
+    const result = runCli(["doctor", "--json", "-w", root], {
       C2C_STATE_DIR: stateDir,
       TUNNEL_ORIGIN_CERT: certPath,
       TUNNEL_CRED_FILE: credentialPath,

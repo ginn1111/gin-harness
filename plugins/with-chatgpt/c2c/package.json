@@ -1,11 +1,11 @@
 {
-  "name": "codex-with-chatgpt",
+  "name": "hermes-with-chatgpt",
   "version": "0.1.3",
-  "description": "ChatGPT thinks. Codex works. Use ChatGPT as the planning brain while keeping the Codex harness.",
+  "description": "ChatGPT plans and reviews. Hermes executes through the read-only C2C workspace bridge.",
   "type": "module",
   "license": "MIT",
   "bin": {
-    "c2c": "./bin/c2c.js"
+    "c2c": "./dist/cli/index.js"
   },
   "engines": {
     "node": ">=20"

@@ -38,7 +38,7 @@ export function writeSecureJson(file: string, data: unknown): void {
   try {
     fs.chmodSync(file, 0o600);
   } catch {
-    // best effort on platforms without chmod semantics
+    // best effort on platforms without permission-bit support
   }
 }
 

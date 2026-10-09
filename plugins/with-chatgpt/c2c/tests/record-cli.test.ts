@@ -71,14 +71,14 @@ describe("c2c record", () => {
     });
   });
 
-  it("keeps recording when no executor is given, so older callers still work", () => {
+  it("identifies default CLI execution as Hermes", () => {
     withRecordEnvironment((root, workspace) => {
       const result = runRecord(root, ["--iteration", "1"]);
 
       expect(result.status).toBe(0);
       const [record] = readExecutionRecords(workspace.id);
       expect(record.taskId).toBe("c2c_test");
-      expect(record.executor).toBeUndefined();
+      expect(record.executor).toBe("hermes");
     });
   });
 

@@ -47,7 +47,15 @@ def sha256(path: Path) -> str:
 
 
 def copy_tree(source: Path, destination: Path) -> None:
-    ignored = shutil.ignore_patterns("__pycache__", "*.pyc", ".git", ".DS_Store")
+    ignored = shutil.ignore_patterns(
+        "__pycache__",
+        "*.pyc",
+        ".git",
+        ".DS_Store",
+        "node_modules",
+        "dist",
+        ".tooling",
+    )
     temporary = Path(tempfile.mkdtemp(prefix=f".{destination.name}.", dir=str(destination.parent)))
     try:
         shutil.copytree(source, temporary / destination.name, ignore=ignored)
@@ -93,44 +101,65 @@ def install(profile_names: list[str]) -> None:
         info("existing Ginflow installation found; cleaning it before reinstall")
         uninstall()
     source_skill = ROOT / "skills/ginflow"
-    if not source_skill.is_dir():
-        fail("setup-repo skill source directory is missing")
+    source_plugin = ROOT / "plugins/with-chatgpt"
+    if not source_skill.is_dir() or not source_plugin.is_dir():
+        fail("setup-repo skill or with-chatgpt plugin source directory is missing")
 
     real_home = Path(os.environ.get("HERMES_REAL_HOME", str(Path.home()))).expanduser().resolve()
     profiles_dir = Path(os.environ.get("HERMES_PROFILES_DIR", str(real_home / ".hermes/profiles"))).expanduser().resolve()
-    destinations = {name: profiles_dir / name / "skills/ginflow" for name in profile_names}
-    for name, destination in destinations.items():
+    destinations = {
+        name: {
+            "skill": profiles_dir / name / "skills/ginflow",
+            "plugin": profiles_dir / name / "plugins/with-chatgpt",
+        }
+        for name in profile_names
+    }
+    for name, paths in destinations.items():
         if not (profiles_dir / name / "config.yaml").is_file():
             fail(f"Hermes profile missing or invalid: {name}")
-        if destination.exists() and not destination.is_dir():
-            fail(f"managed destination is not a directory: {destination}")
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        if backup_path(destination).exists():
-            fail(f"backup already exists; resolve before install: {backup_path(destination)}")
+        for destination in paths.values():
+            if destination.exists() and not destination.is_dir():
+                fail(f"managed destination is not a directory: {destination}")
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            if backup_path(destination).exists():
+                fail(f"backup already exists; resolve before install: {backup_path(destination)}")
 
     manifest: dict[str, Any] = {"version": VERSION, "source_root": str(ROOT), "profiles": {}}
+    rollback: list[tuple[Path, str | None]] = []
     try:
-        for name, destination in destinations.items():
-            backup = backup_existing(destination)
-            if destination.exists() or destination.is_symlink():
-                remove_path(destination)
-            copy_tree(source_skill, destination)
+        for name, paths in destinations.items():
+            backups: dict[str, str | None] = {}
+            for key, source in (("skill", source_skill), ("plugin", source_plugin)):
+                destination = paths[key]
+                backup = backup_existing(destination)
+                backups[key] = backup
+                rollback.append((destination, backup))
+                if destination.exists() or destination.is_symlink():
+                    remove_path(destination)
+                copy_tree(source, destination)
+            skill, plugin = paths["skill"], paths["plugin"]
             manifest["profiles"][name] = {
-                "skill": str(destination),
-                "skill_hash": sha256(destination),
-                "skill_backup": backup,
+                "skill": str(skill),
+                "skill_hash": sha256(skill),
+                "skill_backup": backups["skill"],
+                "plugin": str(plugin),
+                "plugin_hash": sha256(plugin),
+                "plugin_backup": backups["plugin"],
             }
-            ok(f"{name}: Ginflow skill installed at {destination}")
+            ok(f"{name}: Ginflow skill and with-chatgpt plugin installed")
         write_manifest(manifest)
         ok(f"manifest written to {MANIFEST}")
     except Exception:
         print("❌ installation failed; restoring destinations", file=sys.stderr)
-        for item in manifest["profiles"].values():
-            destination = Path(item["skill"])
+        for destination, backup in reversed(rollback):
             remove_path(destination)
-            if item.get("skill_backup"):
-                shutil.move(item["skill_backup"], destination)
+            if backup:
+                shutil.move(backup, destination)
         raise
+
+
+# Rollback state stays in memory until every managed path is installed and the
+# manifest is atomically committed.
 
 
 def remove_managed(path: Path, expected_hash: str, backup: str | None) -> bool:
@@ -156,9 +185,11 @@ def uninstall() -> None:
     manifest = json.loads(MANIFEST.read_text())
     conflicts = []
     for item in manifest.get("profiles", {}).values():
-        skill = Path(item["skill"])
-        if (skill.exists() or skill.is_symlink()) and sha256(skill) != item["skill_hash"]:
-            conflicts.append(skill)
+        for key in ("skill", "plugin"):
+            if key in item:
+                path = Path(item[key])
+                if (path.exists() or path.is_symlink()) and sha256(path) != item[f"{key}_hash"]:
+                    conflicts.append(path)
 
     if conflicts:
         for path in conflicts:
@@ -166,7 +197,9 @@ def uninstall() -> None:
         fail("uninstall blocked by conflicts; no managed paths changed")
     for name, item in manifest.get("profiles", {}).items():
         remove_managed(Path(item["skill"]), item["skill_hash"], item.get("skill_backup"))
-        ok(f"{name}: Ginflow skill removed")
+        if "plugin" in item:
+            remove_managed(Path(item["plugin"]), item["plugin_hash"], item.get("plugin_backup"))
+        ok(f"{name}: Ginflow skill and with-chatgpt plugin removed")
     MANIFEST.unlink()
 
 

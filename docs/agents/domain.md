@@ -1,35 +1,21 @@
-# Domain Docs
+# Domain docs
 
-How the engineering skills should consume this repo's domain documentation when exploring the codebase.
+Engineering skills use this repository's domain vocabulary and architectural decisions while exploring or specifying changes.
 
-## Before exploring, read these
+## Before exploring
 
-- **`CONTEXT.md`** at the repo root
-- **`docs/adr/`** — read ADRs that touch the area you're about to work in.
+Read when present:
 
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/domain-modeling` skill (reached via `/grill-with-docs` and `/improve-codebase-architecture`) creates them lazily when terms or decisions actually get resolved.
+- `GLOSSARY.md`
+- Relevant ADRs under `docs/adrs/`
 
-## File structure
+Missing files do not block work and should be created only when domain modeling resolves terms or decisions.
 
-Single-context repo:
+## Layout
 
-```
-/
-├── CONTEXT.md
-├── docs/adr/
-│   ├── 0001-event-sourced-orders.md
-│   └── 0002-postgres-for-write-model.md
-└── src/
-```
+This repository uses a single-context layout:
 
-## Use the glossary's vocabulary
+- `GLOSSARY.md` defines shared domain vocabulary.
+- `docs/adrs/` stores architectural decisions.
 
-When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
-
-If the concept you need isn't in the glossary yet, that's a signal — either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/domain-modeling`).
-
-## Flag ADR conflicts
-
-If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
-
-> _Contradicts ADR-0007 (event-sourced orders) — but worth reopening because…_
+Use glossary terms in issues, specifications, proposals, and tests. Surface conflicts with existing ADRs explicitly rather than silently overriding them.
