@@ -18,9 +18,8 @@ setup:
 apply:
 	./scripts/setup.sh --apply $(PROFILES)
 
-## Install Ginflow skill into selected Hermes profiles
+## Install Ginflow skill to ~/.agents/skills and with-chatgpt into Hermes profiles (all profiles unless PROFILES is set)
 install:
-	@test -n "$(PROFILES)" || (echo 'No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES="<name>"' >&2; exit 2)
 	bash scripts/install.sh install $(PROFILES)
 
 ## Remove installer-owned Ginflow integrations

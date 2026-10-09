@@ -3,23 +3,30 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
+trap 'chmod -R u+w "$TMP" 2>/dev/null || true; rm -rf "$TMP"' EXIT
 
 HOME_ROOT="$TMP/home"
 PROFILES="$HOME_ROOT/.hermes/profiles"
-mkdir -p "$PROFILES/alpha/plugins"
+SKILL="$HOME_ROOT/.agents/skills/ginflow"
+mkdir -p "$PROFILES/alpha/plugins" "$PROFILES/beta"
 printf 'skills:\n  external_dirs:\n    - keep-me\nplugins:\n  enabled:\n    - keep-plugin\n' > "$PROFILES/alpha/config.yaml"
+cp "$PROFILES/alpha/config.yaml" "$PROFILES/beta/config.yaml"
+mkdir -p "$PROFILES/not-a-profile"   # no config.yaml: must be ignored
 
 export HERMES_REAL_HOME="$HOME_ROOT"
 export HERMES_PROFILES_DIR="$PROFILES"
 export GINFLOW_INSTALL_MANIFEST="$TMP/.ginflow-install.json"
 
-bash "$ROOT/scripts/install.sh" install alpha
-[[ -f "$PROFILES/alpha/skills/ginflow/SKILL.md" ]]
-[[ -f "$PROFILES/alpha/skills/ginflow/lib/harness_core.py" ]]
-[[ -f "$PROFILES/alpha/plugins/with-chatgpt/plugin.yaml" ]]
-[[ -f "$PROFILES/alpha/plugins/with-chatgpt/__init__.py" ]]
-[[ ! -e "$HOME_ROOT/.agents/skills/ginflow" ]]
+# No profile arguments: skill goes to ~/.agents/skills, plugin to every profile.
+bash "$ROOT/scripts/install.sh" install
+[[ -f "$SKILL/SKILL.md" ]]
+[[ -f "$SKILL/lib/harness_core.py" ]]
+for profile in alpha beta; do
+  [[ -f "$PROFILES/$profile/plugins/with-chatgpt/plugin.yaml" ]]
+  [[ -f "$PROFILES/$profile/plugins/with-chatgpt/__init__.py" ]]
+  [[ ! -e "$PROFILES/$profile/skills/ginflow" ]]
+done
+[[ ! -e "$PROFILES/not-a-profile/plugins" ]]
 [[ -f "$GINFLOW_INSTALL_MANIFEST" ]]
 
 python3 - "$PROFILES/alpha/config.yaml" <<'PY'
@@ -30,39 +37,50 @@ assert "keep-me" in text
 assert "keep-plugin" in text
 PY
 
-bash "$ROOT/scripts/install.sh" install alpha >/dev/null
-[[ -f "$PROFILES/alpha/skills/ginflow/SKILL.md" ]]
-[[ ! -e "$HOME_ROOT/.agents/skills/ginflow" ]]
+# Reinstall is idempotent.
+bash "$ROOT/scripts/install.sh" install >/dev/null
+[[ -f "$SKILL/SKILL.md" && -f "$PROFILES/beta/plugins/with-chatgpt/plugin.yaml" ]]
 
-bash "$ROOT/scripts/install.sh" uninstall
-[[ ! -e "$PROFILES/alpha/skills/ginflow" ]]
+bash "$ROOT/scripts/install.sh" uninstall >/dev/null
+[[ ! -e "$SKILL" ]]
+[[ ! -e "$PROFILES/alpha/plugins/with-chatgpt" && ! -e "$PROFILES/beta/plugins/with-chatgpt" ]]
 [[ -f "$PROFILES/alpha/config.yaml" ]]
 [[ ! -e "$GINFLOW_INSTALL_MANIFEST" ]]
+
+# Explicit profile list limits the plugin install; unknown profile fails with no changes.
+bash "$ROOT/scripts/install.sh" install alpha >/dev/null
+[[ -f "$PROFILES/alpha/plugins/with-chatgpt/plugin.yaml" && ! -e "$PROFILES/beta/plugins/with-chatgpt" ]]
+bash "$ROOT/scripts/install.sh" uninstall >/dev/null
+if bash "$ROOT/scripts/install.sh" install alpha missing >/dev/null 2>&1; then
+  echo "expected failure for unknown profile" >&2
+  exit 1
+fi
+[[ ! -e "$SKILL" && ! -e "$GINFLOW_INSTALL_MANIFEST" ]]
 
 # Failure mid-install restores every prior path; conflicts and profile state survive.
 if [[ "$(id -u)" != "0" ]]; then
   A="$PROFILES/alpha"
-  mkdir -p "$A/skills/ginflow" "$A/plugins/with-chatgpt" "$A/sessions" "$A/memories" "$PROFILES/beta/plugins"
-  printf 'prior-skill\n' > "$A/skills/ginflow/prior.txt"
+  mkdir -p "$SKILL" "$A/plugins/with-chatgpt" "$A/sessions" "$A/memories"
+  printf 'prior-skill\n' > "$SKILL/prior.txt"
   printf 'prior-plugin\n' > "$A/plugins/with-chatgpt/prior.txt"
   printf 'secret\n' > "$A/.env"
   printf 'auth\n' > "$A/auth.json"
   printf 'session\n' > "$A/sessions/s.txt"
   printf 'memory\n' > "$A/memories/m.md"
-  cp "$A/config.yaml" "$PROFILES/beta/config.yaml"
+  mkdir -p "$PROFILES/beta/plugins"
   chmod 555 "$PROFILES/beta/plugins"
-  if bash "$ROOT/scripts/install.sh" install alpha beta >/dev/null 2>&1; then
+  if bash "$ROOT/scripts/install.sh" install >/dev/null 2>&1; then
     chmod 755 "$PROFILES/beta/plugins"
     echo "expected install failure" >&2
     exit 1
   fi
   chmod 755 "$PROFILES/beta/plugins"
   [[ ! -e "$GINFLOW_INSTALL_MANIFEST" ]]
-  [[ "$(cat "$A/skills/ginflow/prior.txt")" == "prior-skill" ]]
+  [[ "$(cat "$SKILL/prior.txt")" == "prior-skill" ]]
   [[ "$(cat "$A/plugins/with-chatgpt/prior.txt")" == "prior-plugin" ]]
-  [[ ! -e "$A/skills/ginflow/SKILL.md" && ! -e "$A/plugins/with-chatgpt/plugin.yaml" ]]
-  [[ ! -e "$PROFILES/beta/skills/ginflow" && ! -e "$PROFILES/beta/plugins/with-chatgpt" ]]
-  [[ -z "$(find "$PROFILES" -name '*.bak.ginflow-install')" ]]
+  [[ ! -e "$SKILL/SKILL.md" && ! -e "$A/plugins/with-chatgpt/plugin.yaml" ]]
+  [[ ! -e "$PROFILES/beta/plugins/with-chatgpt" ]]
+  [[ -z "$(find "$HOME_ROOT" -name '*.bak.ginflow-install')" ]]
 
   bash "$ROOT/scripts/install.sh" install alpha >/dev/null
   [[ -f "$A/plugins/with-chatgpt/plugin.yaml" ]]
@@ -74,7 +92,7 @@ if [[ "$(id -u)" != "0" ]]; then
   [[ -f "$A/plugins/with-chatgpt/extra.txt" && -f "$GINFLOW_INSTALL_MANIFEST" ]]
   rm "$A/plugins/with-chatgpt/extra.txt"
   bash "$ROOT/scripts/install.sh" uninstall >/dev/null
-  [[ "$(cat "$A/skills/ginflow/prior.txt")" == "prior-skill" ]]
+  [[ "$(cat "$SKILL/prior.txt")" == "prior-skill" ]]
   [[ "$(cat "$A/plugins/with-chatgpt/prior.txt")" == "prior-plugin" ]]
   [[ "$(cat "$A/.env")" == "secret" && "$(cat "$A/auth.json")" == "auth" ]]
   [[ "$(cat "$A/sessions/s.txt")" == "session" && "$(cat "$A/memories/m.md")" == "memory" ]]

@@ -56,16 +56,16 @@ make apply PROFILES="profile-a"
 make verify PROFILES="profile-a"
 ```
 
-### Install Ginflow skill into Hermes profiles
+### Install Ginflow skill and with-chatgpt plugin
 
-Use dedicated installer for selected profiles:
+Use the dedicated installer. The skill is shared; the plugin goes into Hermes profiles:
 
 ```bash
-make install                              # currently active profile
-make install PROFILES="profile-a profile-b"
+make install                              # plugin into every Hermes profile
+make install PROFILES="profile-a profile-b"   # plugin into selected profiles only
 ```
 
-This copies `skills/ginflow`, including `lib/harness_core.py`, into each selected profile at `~/.hermes/profiles/<profile>/skills/ginflow`. It does not install into universal agent skills or modify profile config/plugins. Installer ownership is recorded in setup-repo-root `.ginflow-install.json`, which is gitignored.
+This copies `skills/ginflow`, including `lib/harness_core.py`, once to `~/.agents/skills/ginflow`, and copies `plugins/with-chatgpt` into `~/.hermes/profiles/<profile>/plugins/with-chatgpt` for every profile that has a `config.yaml` (or only the profiles named in `PROFILES`). It does not modify profile config. Installer ownership is recorded in setup-repo-root `.ginflow-install.json`, which is gitignored.
 
 Remove only installer-owned files with:
 
@@ -85,8 +85,8 @@ Setup requires existing profiles. It adds only:
 
 ### Hermes with ChatGPT plugin
 
-`make install` also installs standalone plugin `with-chatgpt` at
-`~/.hermes/profiles/<profile>/plugins/with-chatgpt`. Hermes discovers it through
+`make install` installs standalone plugin `with-chatgpt` at
+`~/.hermes/profiles/<profile>/plugins/with-chatgpt` for every Hermes profile. Hermes discovers it through
 native plugin APIs. It registers `with-chatgpt:c2c` and
 `with-chatgpt:terminal-browser` skills plus the CLI command
 `hermes with-chatgpt <setup|doctor|enable|disable|status|pair|stop>`.
@@ -109,6 +109,69 @@ Validate without enabling collaboration:
 hermes plugins validate plugins/with-chatgpt
 make with-chatgpt-test
 ```
+
+#### Step-by-step: install and use for an agent
+
+Prerequisites: Node.js 20 or newer, `terminal-browser` installed separately, an existing Hermes profile. Steps 1-4 and 8 are safe for an agent to run. Steps 5-7 start services or change session state; run them only when the user asks. Live ChatGPT, `terminal-browser`, and `cloudflared` flows are not covered by repository tests.
+
+1. Install (repo root). Skill goes to `~/.agents/skills/ginflow`; plugin goes to all Hermes profiles. Add `PROFILES="<profile>"` to limit the plugin:
+
+   ```bash
+   make install
+   ```
+
+2. Build the C2C runtime in the installed copy:
+
+   ```bash
+   cd ~/.hermes/profiles/<profile>/plugins/with-chatgpt/c2c
+   CI=true pnpm install && pnpm build
+   ```
+
+3. Enable the plugin, then restart active Hermes sessions:
+
+   ```bash
+   hermes plugins enable with-chatgpt
+   hermes plugins list
+   ```
+
+4. Check prerequisites (read-only; never starts anything):
+
+   ```bash
+   hermes with-chatgpt setup --workspace /abs/path/to/target-repo
+   ```
+
+   Read `ready` and `next_steps` in the result. Use the target repository as `--workspace`, not this repository.
+
+5. Start the bridge and tunnel (explicit; first run asks the user to choose AI-automated or guided manual setup):
+
+   ```bash
+   cd ~/.hermes/profiles/<profile>/plugins/with-chatgpt/c2c
+   node dist/cli/index.js setup --workspace /abs/path/to/target-repo
+   ```
+
+6. Pair with ChatGPT once the user has the Authorize form open:
+
+   ```bash
+   hermes with-chatgpt pair --workspace /abs/path/to/target-repo
+   ```
+
+7. Enable collaboration for the current session (off by default, per session). Pass the session ID explicitly if `$HERMES_SESSION_ID` is empty:
+
+   ```bash
+   hermes with-chatgpt enable --session-id "$HERMES_SESSION_ID"
+   ```
+
+8. Day to day (add `--json` for stable JSON):
+
+   ```bash
+   hermes with-chatgpt status --workspace /abs/path/to/target-repo
+   hermes with-chatgpt doctor              # read-only
+   hermes with-chatgpt doctor --repair     # only when repair is intended
+   hermes with-chatgpt disable --session-id "$HERMES_SESSION_ID"
+   hermes with-chatgpt stop                # stops a healthy, authenticated bridge
+   ```
+
+Bridge state `unknown` is not `stopped`: run `doctor` and never start a second bridge. ChatGPT gets read-only MCP access to the workspace only.
 
 Uninstall checks both Ginflow and `with-chatgpt` hashes, preserves conflicts, and
 restores backups. Profile identity, secrets, sessions, memories, runtime, and

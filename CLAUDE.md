@@ -52,7 +52,7 @@ python3 plugins/ginflow-trace/test_ginflow_trace.py
 # Setup/profile operations
 make setup [PROFILES="<profile>"]       # preview
 make apply PROFILES="<profile>"          # apply integrations
-make install PROFILES="<profile>"
+make install [PROFILES="<profile>"]     # skill -> ~/.agents/skills, plugin -> all profiles
 make uninstall
 make verify PROFILES="<profile>"
 make verify-strict PROFILES="<profile>"

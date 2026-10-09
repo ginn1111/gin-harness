@@ -17,7 +17,7 @@ from typing import Any
 ROOT = Path(sys.argv[1]).resolve()
 ARGS = sys.argv[2:]
 MANIFEST = Path(os.environ.get("GINFLOW_INSTALL_MANIFEST", str(ROOT / ".ginflow-install.json"))).expanduser().resolve()
-VERSION = 1
+VERSION = 2
 
 
 
@@ -96,6 +96,18 @@ def write_manifest(manifest: dict[str, Any]) -> None:
     os.replace(temporary, MANIFEST)
 
 
+def discover_profiles(profiles_dir: Path, names: list[str]) -> list[str]:
+    if names:
+        for name in names:
+            if not (profiles_dir / name / "config.yaml").is_file():
+                fail(f"Hermes profile missing or invalid: {name}")
+        return names
+    found = sorted(p.name for p in profiles_dir.iterdir() if (p / "config.yaml").is_file()) if profiles_dir.is_dir() else []
+    if not found:
+        fail(f"no Hermes profiles found in {profiles_dir}")
+    return found
+
+
 def install(profile_names: list[str]) -> None:
     if MANIFEST.exists():
         info("existing Ginflow installation found; cleaning it before reinstall")
@@ -107,46 +119,34 @@ def install(profile_names: list[str]) -> None:
 
     real_home = Path(os.environ.get("HERMES_REAL_HOME", str(Path.home()))).expanduser().resolve()
     profiles_dir = Path(os.environ.get("HERMES_PROFILES_DIR", str(real_home / ".hermes/profiles"))).expanduser().resolve()
-    destinations = {
-        name: {
-            "skill": profiles_dir / name / "skills/ginflow",
-            "plugin": profiles_dir / name / "plugins/with-chatgpt",
-        }
-        for name in profile_names
-    }
-    for name, paths in destinations.items():
-        if not (profiles_dir / name / "config.yaml").is_file():
-            fail(f"Hermes profile missing or invalid: {name}")
-        for destination in paths.values():
-            if destination.exists() and not destination.is_dir():
-                fail(f"managed destination is not a directory: {destination}")
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            if backup_path(destination).exists():
-                fail(f"backup already exists; resolve before install: {backup_path(destination)}")
+    profiles = discover_profiles(profiles_dir, profile_names)
 
-    manifest: dict[str, Any] = {"version": VERSION, "source_root": str(ROOT), "profiles": {}}
+    # Skill is shared: one copy under ~/.agents/skills. Plugin goes into every profile.
+    targets: list[tuple[str, Path, Path]] = [("skill", real_home / ".agents/skills/ginflow", source_skill)]
+    targets += [(name, profiles_dir / name / "plugins/with-chatgpt", source_plugin) for name in profiles]
+    for _, destination, _ in targets:
+        if destination.exists() and not destination.is_dir():
+            fail(f"managed destination is not a directory: {destination}")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if backup_path(destination).exists():
+            fail(f"backup already exists; resolve before install: {backup_path(destination)}")
+
+    manifest: dict[str, Any] = {"version": VERSION, "source_root": str(ROOT), "skill": {}, "plugins": {}}
     rollback: list[tuple[Path, str | None]] = []
     try:
-        for name, paths in destinations.items():
-            backups: dict[str, str | None] = {}
-            for key, source in (("skill", source_skill), ("plugin", source_plugin)):
-                destination = paths[key]
-                backup = backup_existing(destination)
-                backups[key] = backup
-                rollback.append((destination, backup))
-                if destination.exists() or destination.is_symlink():
-                    remove_path(destination)
-                copy_tree(source, destination)
-            skill, plugin = paths["skill"], paths["plugin"]
-            manifest["profiles"][name] = {
-                "skill": str(skill),
-                "skill_hash": sha256(skill),
-                "skill_backup": backups["skill"],
-                "plugin": str(plugin),
-                "plugin_hash": sha256(plugin),
-                "plugin_backup": backups["plugin"],
-            }
-            ok(f"{name}: Ginflow skill and with-chatgpt plugin installed")
+        for key, destination, source in targets:
+            backup = backup_existing(destination)
+            rollback.append((destination, backup))
+            if destination.exists() or destination.is_symlink():
+                remove_path(destination)
+            copy_tree(source, destination)
+            entry = {"path": str(destination), "hash": sha256(destination), "backup": backup}
+            if key == "skill":
+                manifest["skill"] = entry
+                ok(f"Ginflow skill installed: {destination}")
+            else:
+                manifest["plugins"][key] = entry
+                ok(f"{key}: with-chatgpt plugin installed")
         write_manifest(manifest)
         ok(f"manifest written to {MANIFEST}")
     except Exception:
@@ -170,44 +170,44 @@ def remove_managed(path: Path, expected_hash: str, backup: str | None) -> bool:
         return False
     remove_path(path)
     if backup and Path(backup).exists():
-        backup_path_obj = Path(backup)
-        if backup_path_obj.is_dir():
-            shutil.move(str(backup_path_obj), str(path))
-        else:
-            shutil.move(str(backup_path_obj), str(path))
+        shutil.move(backup, str(path))
     return True
+
+
+def managed_entries(manifest: dict[str, Any]) -> list[tuple[str, Path, str, str | None]]:
+    """(label, path, hash, backup) for v2 manifests and legacy per-profile v1 manifests."""
+    entries: list[tuple[str, Path, str, str | None]] = []
+    skill = manifest.get("skill")
+    if skill:
+        entries.append(("skill", Path(skill["path"]), skill["hash"], skill.get("backup")))
+    for name, item in manifest.get("plugins", {}).items():
+        entries.append((name, Path(item["path"]), item["hash"], item.get("backup")))
+    for name, item in manifest.get("profiles", {}).items():  # legacy v1
+        for key in ("skill", "plugin"):
+            if key in item:
+                entries.append((f"{name}:{key}", Path(item[key]), item[f"{key}_hash"], item.get(f"{key}_backup")))
+    return entries
 
 
 def uninstall() -> None:
     if not MANIFEST.is_file():
         info("no Ginflow installation manifest found; nothing to uninstall")
         return
-    manifest = json.loads(MANIFEST.read_text())
-    conflicts = []
-    for item in manifest.get("profiles", {}).values():
-        for key in ("skill", "plugin"):
-            if key in item:
-                path = Path(item[key])
-                if (path.exists() or path.is_symlink()) and sha256(path) != item[f"{key}_hash"]:
-                    conflicts.append(path)
-
+    entries = managed_entries(json.loads(MANIFEST.read_text()))
+    conflicts = [path for _, path, digest, _ in entries if (path.exists() or path.is_symlink()) and sha256(path) != digest]
     if conflicts:
         for path in conflicts:
             print(f"⚠️  conflict preserved: {path}", file=sys.stderr)
         fail("uninstall blocked by conflicts; no managed paths changed")
-    for name, item in manifest.get("profiles", {}).items():
-        remove_managed(Path(item["skill"]), item["skill_hash"], item.get("skill_backup"))
-        if "plugin" in item:
-            remove_managed(Path(item["plugin"]), item["plugin_hash"], item.get("plugin_backup"))
-        ok(f"{name}: Ginflow skill and with-chatgpt plugin removed")
+    for label, path, digest, backup in entries:
+        remove_managed(path, digest, backup)
+        ok(f"{label}: removed")
     MANIFEST.unlink()
 
 
 if not ARGS or ARGS[0] not in {"install", "uninstall"}:
-    fail(f"usage: {Path(sys.argv[0]).name} install <profile> [profile ...]|uninstall")
+    fail(f"usage: {Path(sys.argv[0]).name} install [profile ...]|uninstall")
 if ARGS[0] == "install":
-    if len(ARGS) < 2:
-        fail("install requires at least one Hermes profile")
     install(ARGS[1:])
 elif len(ARGS) == 1:
     uninstall()
