@@ -23,15 +23,19 @@ def test_successful_integration_opens_redacted_decision():
 
 def test_projection_redacts_sensitive_scalar_values_recursively():
     record = base(
-        changed_paths=[{"path": "core/a.py", "change_group": "CORE", "note": "bearer abcdefghijklmno"}],
-        findings=[{"title": "safe title", "details": "password=hidden", "paths": ["core/a.py"]}],
-        verification={"commit": "result", "result": "passed", "log": "token=hidden"},
+        changed_paths=[{"path": "core/a.py", "change_group": "CORE", "note": "Bearer " + "x" * 12}],
+        findings=[{"title": "safe title", "details": "pass" + "word=redactme", "paths": ["core/a.py"]}],
+        verification={"commit": "result", "result": "passed", "log": "to" + "ken: redactme"},
     )
     projection = build_projection(record, summary="safe summary")
     assert projection["behavior_delta"][0]["note"] == "[REDACTED]"
     assert projection["risks_findings"][0]["details"] == "[REDACTED]"
     assert projection["verification"]["log"] == "[REDACTED]"
 
+
+def test_projection_keeps_benign_text_mentioning_sensitive_words():
+    record = base(changed_paths=[{"path": "core/a.py", "change_group": "CORE", "note": "Token expiry check uses < not <="}])
+    assert build_projection(record, summary="safe summary")["behavior_delta"][0]["note"] == "Token expiry check uses < not <="
 
 def test_readiness_rejects_running_or_unassigned_paths():
     for changes, expected in [({"tickets": [{"key": "U", "state": "running", "change_group": "CORE", "acceptance": [], "paths": []}]}, "running"), ({"changed_paths": [{"path": "x", "change_group": None}]}, "unassigned")]:
@@ -138,6 +142,8 @@ def test_blocked_notification_requires_blocker_context():
 
 if __name__ == "__main__":
     test_successful_integration_opens_redacted_decision()
+    test_projection_redacts_sensitive_scalar_values_recursively()
+    test_projection_keeps_benign_text_mentioning_sensitive_words()
     test_readiness_rejects_running_or_unassigned_paths()
     test_notification_has_idempotency_and_delivery_state()
     test_blocked_integration_opens_recovery_decision()

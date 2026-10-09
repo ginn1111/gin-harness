@@ -470,8 +470,8 @@ def test_explicit_legacy_card_gets_legacy_guidance():
         with tempfile.TemporaryDirectory(prefix="ginflow-legacy-routing-") as directory:
             target = Path(directory)
             target.joinpath(".ginflow.yaml").write_text(
-                "version: 1\\nginflow:\\n  board: test\\n"
-                f"  workspace: {target.resolve()}\\n"
+                "version: 1\nginflow:\n  board: test\n"
+                f"  workspace: {target.resolve()}\n"
             )
             os.chdir(target)
             os.environ["HERMES_TUI_SKILLS"] = "ginflow"

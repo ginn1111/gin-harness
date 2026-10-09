@@ -100,19 +100,28 @@ def test_duplicate_workspace_declarations_rejected():
         raise AssertionError("duplicate workspace declarations authorized")
 
 
-def test_nested_isolation_proof_does_not_share_mutable_workspace():
+def _two_units(path_u, path_v):
     candidate = package()
     second = deepcopy(candidate["units"][0])
-    second.update({"key": "V", "plan_key": "Q", "objective": "ship docs", "workspace_isolation": {"kind": "worktree", "path": "/repo/u/worktree-v"}})
-    candidate["units"][0]["workspace_isolation"] = {"kind": "worktree", "path": "/repo/u/worktree-u"}
+    second.update({"key": "V", "plan_key": "Q", "objective": "ship docs", "workspace_isolation": {"kind": "worktree", "path": path_v}})
+    candidate["units"][0]["workspace_isolation"] = {"kind": "worktree", "path": path_u}
     candidate["units"].append(second)
     candidate["plans"].append({"key": "Q", "unit_key": "V", "state": "approved", "steps": ["code"], "verification": ["make test"]})
-    try:
-        authorize(candidate)
-    except ValueError as error:
-        assert "shared mutable workspace" in str(error)
-    else:
-        raise AssertionError("nested worktree proof authorized shared mutable path")
+    return candidate
+
+
+def test_nested_worktrees_are_valid_isolation():
+    authorize(_two_units("/repo/u/.claude/worktrees/u", "/repo/u/.claude/worktrees/v"))
+
+
+def test_isolation_path_equal_to_shared_or_to_each_other_is_rejected():
+    for u, v, expected in [("/repo/u", "/repo/u/worktree-v", "isolation proof"), ("/repo/u/wt", "/repo/u/wt", "distinct isolation paths")]:
+        try:
+            authorize(_two_units(u, v))
+        except ValueError as error:
+            assert expected in str(error)
+        else:
+            raise AssertionError("shared mutable path authorized")
 
 
 def test_collection_fields_reject_strings_and_stop_conditions_reject_blanks():
@@ -139,6 +148,7 @@ if __name__ == "__main__":
     test_shared_mutable_workspace_requires_isolation_proof()
     test_isolated_worktree_proof_allows_parallel_units()
     test_duplicate_workspace_declarations_rejected()
-    test_nested_isolation_proof_does_not_share_mutable_workspace()
+    test_nested_worktrees_are_valid_isolation()
+    test_isolation_path_equal_to_shared_or_to_each_other_is_rejected()
     test_collection_fields_reject_strings_and_stop_conditions_reject_blanks()
     print("execution batch tests passed")

@@ -62,6 +62,9 @@ def _boundaries(package: Mapping[str, Any], workspaces: Sequence[str], stop_cond
             continue
         if not all(_isolated_workspace(unit, workspace) for unit in grouped_units):
             raise ValueError("shared mutable workspace requires explicit isolation proof")
+        paths = [Path(unit["workspace_isolation"]["path"]).expanduser().resolve() for unit in grouped_units]
+        if len(set(paths)) != len(paths):
+            raise ValueError("shared mutable workspace requires distinct isolation paths")
 
     if any(not _text(condition) for condition in stop_conditions):
         raise ValueError("stop_conditions must contain text")
@@ -81,15 +84,8 @@ def _isolated_workspace(unit: Mapping[str, Any], workspace: str) -> bool:
         shared = Path(workspace).expanduser().resolve()
     except (OSError, RuntimeError, TypeError, ValueError):
         return False
-    if isolated == shared:
-        return False
-    try:
-        isolated.relative_to(shared)
-    except ValueError:
-        pass
-    else:
-        return False
-    return True
+    # Nested worktrees (e.g. <repo>/.claude/worktrees/x) are valid; only the shared path itself is not isolation.
+    return isolated != shared
 
 
 def authorize_batch(package: Mapping[str, Any], *, actor: Mapping[str, Any], budget: Mapping[str, Any], stop_conditions: Sequence[str], workspaces: Sequence[str], baseline_commit: str, batch_number: int = 1) -> dict[str, Any]:
