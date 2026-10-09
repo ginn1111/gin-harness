@@ -80,9 +80,9 @@ plugin-test:
 	python3 plugins/ginflow-gate/test_blocker_reporting.py
 	python3 plugins/ginflow-gate/test_recovery_policy.py
 	python3 plugins/ginflow-gate/test_recovery.py
-	python3 plugins/ginflow-gate/test_native_review_transition.py
+	@if command -v hermes >/dev/null 2>&1; then python3 plugins/ginflow-gate/test_native_review_transition.py; else echo "SKIP: native review transition (hermes CLI not installed)"; fi
 	$(MAKE) trace-test
 
 trace-test:
 	python3 plugins/ginflow-trace/test_ginflow_trace.py
-	python3 plugins/ginflow-trace/test_ginflow_trace_integration.py
+	@if command -v hermes >/dev/null 2>&1; then python3 plugins/ginflow-trace/test_ginflow_trace_integration.py; else echo "SKIP: trace integration (hermes CLI not installed)"; fi
