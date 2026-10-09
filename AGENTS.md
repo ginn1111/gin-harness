@@ -27,7 +27,7 @@ Gin-harness is a setup and integration repository for Hermes Agent. It owns Ginf
 
 ## Build, test, lint
 - `make lint` — `bash -n` all shell scripts and `python3 -m py_compile` project Python scripts.
-- `make test` — canonical repository verification: `lint`, `setup-test`, `lifecycle-test`, `plugin-test`, and `install-test`.
+- `make test` — canonical repository verification: `lint`, `core-test`, `lifecycle-test`, `plugin-test`, and `install-test`.
 - `make lifecycle-test` — canonical Ginflow flat-flow integration test.
 - `make plugin-test` — Ginflow gate tests plus trace tests.
 - `make install-test` — installer test.
@@ -38,8 +38,6 @@ Gin-harness is a setup and integration repository for Hermes Agent. It owns Ginf
 
 ## Setup commands
 - `make doctor`
-- `make setup` or `make setup PROFILES="<profile>"` — preview setup.
-- `make apply PROFILES="<profile>"` — apply integrations.
 - `make install` / `make uninstall` — install or remove installer-owned Ginflow integrations.
 - `make clean` removes Python caches and `.codegraph`; do not use it to discard source changes.
 

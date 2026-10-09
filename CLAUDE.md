@@ -37,21 +37,17 @@ make doctor-deps                 # installs PyYAML only
 
 # Static checks and canonical repository verification
 make lint
-make test                        # lint + setup, lifecycle, plugin, and installer tests
+make test                        # lint + core, lifecycle, plugin, and installer tests
 
 # Individual checks
-make setup-test
 make lifecycle-test
 make plugin-test
 make trace-test
 make install-test
-make verify-test
 python3 plugins/ginflow-gate/test_ginflow_gate.py
 python3 plugins/ginflow-trace/test_ginflow_trace.py
 
 # Setup/profile operations
-make setup [PROFILES="<profile>"]       # preview
-make apply PROFILES="<profile>"          # apply integrations
 make install PROFILES="<profile>"
 make uninstall
 make verify PROFILES="<profile>"

@@ -45,7 +45,7 @@ Decision readiness requires immutable result state, terminal Ticket outcomes, ex
 | Product behavior and canonical verification | Target project |
 | Intent and human disposition | Human operator |
 
-Small eligible work may still use Direct Work. Clarification remains read-only. Four-phase Initiative applies to committed governed/autonomous work.
+New governed/autonomous work uses the four-phase Initiative lifecycle above. Legacy v1 cards may retain Direct Work and Clarification until closure; those routes are compatibility-only and never bypass a new Initiative record.
 
 ## Derived flow
 

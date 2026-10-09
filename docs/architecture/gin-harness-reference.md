@@ -13,7 +13,7 @@ This document is an evidence-based companion to the editable Draw.io diagrams. I
 
 Gin-harness is a setup/integration repository for Hermes Agent work governance. It is not a product application and it does not own target-project business logic. Its purpose is to make ambiguous, risky, or multi-step work explicit enough to route, execute, verify, and complete without silently bypassing scope or evidence boundaries.
 
-The repository addresses a recurring failure mode: a raw prompt does not by itself establish the target workspace, requirements, root cause, work size, risk, canonical verification, or completion authority. Ginflow adds a vocabulary and validation path around Hermes so unresolved facts lead to Clarification, eligible small work can remain Direct Work, and larger or risky work uses a Kanban card and conditional governance artifacts.
+The repository addresses a recurring failure mode: a raw prompt does not by itself establish the target workspace, requirements, root cause, risk, canonical verification, or completion authority. New governed/autonomous work uses Discovery, Shaping, Execution, and Decision around Hermes. Active legacy v1 cards retain their recorded size-based route only until closure; legacy terms never select or bypass a new Initiative.
 
 ## Runtime and ownership map
 
@@ -25,18 +25,39 @@ The repository addresses a recurring failure mode: a raw prompt does not by itse
 | `ginflow-gate` plugin | Hermes integration hooks, routing context, completion validation, feedback/recovery helpers | `plugins/ginflow-gate/plugin.yaml`, `plugins/ginflow-gate/*.py` | Gate/context provider; not a semantic classifier or replacement runtime |
 | Kanban card | Durable governed-work assignment: objective, scope, acceptance, workspace, assignee, status, links, progress | `skills/ginflow/SKILL.md`; `plugins/ginflow-gate/` | Hermes Kanban is lifecycle authority |
 | Target project | Product code, local rules, tests, and canonical verification | `AGENTS.md` contract; `skills/ginflow/SKILL.md` | Target repository owns product delivery |
-| Setup verification | Shared repository lint/test and integration health | `Makefile`, `scripts/verify.sh` | Proves setup/integration health, not target product behavior |
+| Setup verification | Shared repository lint/test and integration health | `Makefile`, `skills/ginflow/scripts/validate-harness.py` | Proves setup/integration health, not target product behavior |
 | Target verification | Product-native command selected by target repository | `skills/ginflow/SKILL.md` completion rules | Required evidence for the target change |
 
 ## Current user flow
 
 1. **Startup** — confirm the real target workspace and read local `AGENTS.md`/`.hermes.md`.
-2. **Route selection** — Hermes evaluates work mode, work size, risk impact, clarity, ownership, and canonical verification with Ginflow guidance.
-3. **Clarification** — unresolved requirements, target, cause, size, risk, ownership, artifact need, or verification remain conversation-led and read-only.
-4. **Direct Work** — only affirmatively eligible XS/S work may proceed without a card or governance artifact. It must be localized, reversible, low-risk, project-permitted, and verifiable.
-5. **Governed Work** — M/L/XL, risky, or artifact-requiring work starts from a complete Kanban card. A Spec is conditional on behavior/contract drift; a Plan is conditional on ordering, investigation, rollback, coordination, or layered verification.
-6. **Execution and verification** — the worker changes only the selected workspace and runs the target project's canonical checks. Setup checks remain separate evidence.
-7. **Review and completion** — workers submit governed work with native `kanban_request_review` after canonical verification and linked-artifact finalization. Hermes Kanban owns review-state transitions and the reviewer rework loop. Reviewers call native `kanban_complete` to finish valid work or `kanban_request_changes` with a minimal handoff (`reason`, `evidence`, `next_action`) to return invalid work. `ginflow-gate` validates Ginflow-specific evidence, linked artifact state, verification metadata, baseline commit, and drift at the native transition points.
+2. **New Initiative** — Discovery captures problem and boundaries; Shaping approves one artifact-first package; Execution authorizes isolated immutable batches and blocked cards; Integration opens read-only Decision.
+3. **Decision and completion** — human review consumes exact evidence, routes follow-up to Execution/Shaping/Discovery, and only `approved_for_mr` yields provider-neutral MR intent. Hermes Kanban remains lifecycle authority.
+4. **Execution and verification** — workers change only selected workspaces and run target canonical checks. Setup checks remain separate evidence.
+5. **Legacy v1 compatibility** — active pre-migration cards may retain Clarification, Direct Work, and size-based Governed Work until closure. This route is not valid for new Initiatives and does not override artifact-first package requirements.
+6. **Review and completion** — workers submit governed work with native `kanban_request_review` after canonical verification and linked-artifact finalization. Hermes Kanban owns review-state transitions and reviewer rework; `ginflow-gate` validates evidence, baseline, and drift at native transitions.
+
+Legacy v1 routing is retained only to finish active cards; it is not current Initiative policy.
+
+## Legacy v1 compatibility detail
+
+The old Work Mode, Work Size, Clarification, Direct Work, and conditional Spec/Plan rules remain documented for active cards during migration. New work must not use those labels to avoid Discovery, Shaping, Execution, or Decision.
+
+### Legacy v1 route reference
+
+1. **Clarification** — unresolved requirements, target, cause, size, risk, ownership, artifact need, or verification remain read-only.
+2. **Direct Work** — only affirmatively eligible XS/S work may proceed without a card or artifact.
+3. **Governed Work** — M/L/XL, risky, or artifact-requiring work starts from a complete Kanban card with conditional Spec/Plan.
+
+These rules have no authority over `initiative/v1` records.
+
+## Execution and verification
+
+Workers change only the selected workspace and run target canonical checks. Setup checks remain separate evidence. Hermes owns card and lifecycle transitions; Ginflow validates contracts and evidence.
+
+## Review and completion
+
+Workers submit governed work with native `kanban_request_review` after canonical verification and linked-artifact finalization. Hermes owns review-state transitions and the reviewer rework loop. Reviewers call native `kanban_complete` or `kanban_request_changes`; `ginflow-gate` validates Ginflow evidence, linked artifact state, baseline commit, and drift.
 
 The detailed branch model is in [`ginflow-flow.md`](./ginflow-flow.md), and the routing vocabulary is in [`../../skills/ginflow/SKILL.md`](../../skills/ginflow/SKILL.md).
 
@@ -66,10 +87,10 @@ No committed `pyproject.toml`, `package.json`, `go.mod`, `Cargo.toml`, or requir
 
 ## Problems addressed
 
-- **Ambiguous intent:** route to Clarification rather than inventing requirements.
-- **Wrong scale:** separate Work Mode, Work Size, and Risk Impact; do not classify by title or raw file count.
-- **Workspace collisions:** require a real workspace and one active governed card per mutable workspace.
-- **Premature execution:** require a build-ready card for governed work and fail closed on missing fields.
+- **Ambiguous intent:** Discovery resolves problem, boundaries, and open questions rather than inventing requirements.
+- **Wrong execution shape:** Shaping approves one artifact-first package before immutable batch authorization.
+- **Workspace collisions:** require isolated workspaces and one active governed card per mutable workspace.
+- **Premature execution:** require approved Shaping artifacts, immutable batch authorization, and fail closed on missing fields.
 - **Weak completion claims:** require canonical verification and native completion-gate validation.
 - **Artifact drift:** compare linked artifacts against a completion baseline and reject drift.
 - **Boundary confusion:** keep Hermes, Ginflow core, plugin, skill, and target-project ownership distinct.
@@ -90,7 +111,7 @@ No committed `pyproject.toml`, `package.json`, `go.mod`, `Cargo.toml`, or requir
 
 ### Pros
 
-- Clear separation between clarification, Direct Work, and Governed Work.
+- Clear separation between Discovery, Shaping, Execution, and Decision; legacy routes remain explicitly bounded.
 - Evidence-oriented Kanban completion rather than chat-only status.
 - Reusable workflow guidance across target repositories.
 - Explicit ownership boundaries reduce accidental runtime/profile changes.

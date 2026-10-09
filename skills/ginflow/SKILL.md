@@ -74,46 +74,71 @@ Ginflow uses logical states; Hermes Kanban stores the physical states. Routing m
 
 Never write `in_progress` to Hermes Kanban. `running` is active work. `todo`/`ready` requires startup validation before claim.
 
-### Kanban boundary
+### New Initiative boundary
 
-Before a card exists, ginflow may brainstorm, inspect read-only context, choose work mode, size work, choose artifacts, and draft proposed card content. Clarification remains conversation-only and read-only. Direct Work is the explicit exception: after every eligibility factor is affirmatively established, eligible XS/S implementation may proceed without a card or Governance Artifact.
+New governed/autonomous work must use one `initiative/v1` record and the canonical Discovery → Shaping → Execution → Decision lifecycle. Discovery resolves ambiguity and records boundaries. Shaping approves the artifact-first Execution Package v2. Execution authorizes an immutable batch and creates blocked cards. Integration opens read-only Decision; only human `approved_for_mr` yields MR intent. Do not use Work Size, Direct Work, or conditional artifact selection to bypass this lifecycle.
 
-Governed Work requires one selected Kanban card before creating governed artifacts, running implementation investigation, changing code, dispatching, recording progress, verifying completion, or handing off. No selected card blocks project execution for Governed Work. Direct Work must remain inside its affirmatively established scope and must stop and re-route if scope, risk, ownership, clarity, or verification changes.
+Hermes remains identity, Kanban, assignment, dispatch, persistence, and lifecycle authority. A selected card must contain ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing fields block governed execution.
 
-Selected card must contain: ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing required fields block Governed Work until the card is repaired.
+### Legacy v1 compatibility boundary
 
-### Choose artifact level
+Active cards created before artifact-first rollout may retain their recorded Work Mode, Work Size, Clarification, Direct Work, and Governed Work route until closure. The legacy route is read-only compatibility guidance; it cannot select or override a new Initiative and cannot weaken package, evidence, isolation, or Decision requirements. The following legacy rules apply only when the card is explicitly an active v1 card.
 
-| Case                                     | Kanban card |        Spec |        Plan |
-| ---------------------------------------- | ----------: | ----------: | ----------: |
-| Direct Work — eligible XS/S              |          no |          no |          no |
-| Governed Work — M                        |    required | conditional | conditional |
-| Governed Work — L/XL or risky            |    required | conditional | conditional |
-| Clarification or read-only investigation |          no |          no |          no |
+- Before a legacy card exists, brainstorming and read-only clarification remain conversation-only.
+- Eligible legacy XS/S Direct Work may proceed without a card only when every existing eligibility factor is affirmative.
+- Legacy M/L/XL or risky work requires a complete card and its conditional Spec/Plan rules.
+- Stop and re-route legacy work if scope, risk, ownership, clarity, or verification changes.
 
-Rule:
+### Legacy v1 artifact reference
 
-- Direct Work creates no Kanban card or Governance Artifact.
-- Governed Work requires a card; choose Spec when behavior or contract can drift and Plan when ordering, investigation, rollback, coordination, or layered verification matters.
+| Legacy v1 case | Kanban card | Spec | Plan |
+| --- | ---: | ---: | ---: |
+| Direct Work — eligible XS/S | no | no | no |
+| Governed Work — M/L/XL or risky | required | conditional | conditional |
+| Clarification/read-only | no | no | no |
 
-- Before creating a plan for planning-required work, load and follow the `plan` skill.
-- Use the Kanban card ID across governed artifacts for deterministic linking.
-- Follow linked artifact templates and project-local rules for content quality and boundaries.
-- All Ginflow Markdown artifacts use YAML frontmatter at byte 0 for metadata. Specs and plans use `status`, `size`, `scope`, and `owner`; keep lifecycle state in the header and do not duplicate it as body-only `Status:` metadata.
+New Initiative records never use this table.
+
+Rule: compatibility labels describe active legacy cards only; they are not current Initiative policy.
+
+### Choose artifact level (legacy v1 only)
+
+For an active legacy v1 card, choose Spec when behavior or contract can drift and Plan when ordering, investigation, rollback, coordination, or layered verification matters. New Initiatives always retain the approved package artifacts from Shaping.
+
+Selected card must contain: ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing required fields block legacy governed execution until card repair.
 
 ### Routing guidance and feedback boundary
 
-When no selected/running card owns the workspace, use the injected routing guidance to evaluate Work Mode, Work Size, Risk Impact, and Direct Work Eligibility. The three outcomes are:
+When no selected/running card owns the workspace, new work routes to Discovery/Shaping rather than size classification. Legacy v1 routing may use the injected compatibility guidance only when the active card is explicitly identified as v1.
 
-- affirmative XS/S eligibility → Direct Work (`direct-no-card`), with Delivery Change plus conversation result only;
-- known M/L/XL size, actual Risk Impact, or Governance Artifact need → Governed Work with a build-ready card and conditional Spec/Plan outputs;
-- any unresolved requirement or routing fact → Clarification with read-only investigation only and no mutation.
+The plugin's candidate skill mapping remains deterministic advisory guidance, not authorization. Hermes must call `skill_view(name='...')`; the plugin never calls it, inspects skill contents, creates cards/artifacts, or mutates Kanban. Canonical output precedence is target-project rules, explicit Initiative/card contract, Ginflow matrix, selected skill, then skill defaults.
 
-Direct Work Eligibility is affirmative evidence for clarity, known cause, genuine XS/S size, localized reversible scope, no actual Risk Impact, no Governance Artifact need, known canonical verification, project-local permission, and an unowned single-worker workspace. Raw file count, title wording, and risky keywords are not sufficient evidence. Stop mutation and reclassify if scope, clarity, ownership, verification, or impact changes.
+Feedback v1 remains a pure legacy Governed Work lifecycle event contract. New Initiative Decision notifications use `notification/v1`; transport remains adapter-owned.
 
-The plugin's candidate skill mapping is deterministic guidance, not semantic similarity search or authorization. Hermes must call `skill_view(name='...')`; the plugin never calls it, inspects skill contents, creates cards/artifacts, or mutates Kanban. Canonical output precedence is target-project rules, explicit route/card contract, Ginflow matrix, selected skill, then skill defaults. Adapt skill output into the selected canonical artifact rather than duplicating it.
+- Before creating a legacy v1 plan, load and follow the `plan` skill.
+- Use the Initiative key and package artifact paths for new work; use the Kanban card ID across legacy artifacts.
+- Follow linked artifact templates and project-local rules for content quality and boundaries.
+- All Ginflow Markdown artifacts use YAML frontmatter at byte 0 for metadata. Specs and plans use `status`, `size`, `scope`, and `owner`; keep lifecycle state in the header and do not duplicate it as body-only `Status:` metadata.
 
-Feedback v1 is a pure Governed Work lifecycle event contract. It validates stable event/task identifiers, supported signals, single-line safe fields, and RFC3339 UTC timestamps, then returns a fresh dictionary. It does not persist, notify, mutate Kanban, or infer work. Direct Work has no feedback event in v1. Supported signal mappings are documented in `CONTEXT.md`.
+### Legacy routing guidance and feedback boundary
+
+When an explicitly active v1 card has no selected/running owner, use injected routing guidance to evaluate Work Mode, Work Size, Risk Impact, and Direct Work Eligibility. New Initiative work routes through Discovery/Shaping instead.
+
+- affirmative legacy XS/S eligibility → Direct Work (`direct-no-card`);
+- known legacy M/L/XL size, actual Risk Impact, or artifact need → Governed Work;
+- unresolved legacy routing fact → Clarification with read-only investigation.
+
+Legacy Direct Work eligibility still requires clarity, known cause, genuine XS/S scope, localized reversible change, no actual Risk Impact, no artifact need, known verification, project permission, and an unowned workspace. These checks never authorize a new Initiative.
+
+The plugin's candidate skill mapping is deterministic guidance, not semantic similarity search or authorization. Hermes must call `skill_view(name='...')`; the plugin never calls it, inspects skill contents, creates cards/artifacts, or mutates Kanban. Canonical output precedence is target-project rules, explicit Initiative/card contract, Ginflow matrix, selected skill, then skill defaults. Adapt skill output into the selected canonical artifact rather than duplicating it.
+
+Feedback v1 is a pure legacy Governed Work lifecycle event contract. New Initiative Decision events use `notification/v1`; transport remains adapter-owned.
+
+### New Initiative artifact boundary
+
+Discovery and Shaping may create and revise Initiative artifacts before cards exist, but no product-code mutation or execution dispatch occurs. Use approved package artifacts, immutable batch records, blocked cards, exact evidence, and Decision projections for new work.
+
+Hermes remains the lifecycle authority; Ginflow core validates records and `ginflow-gate` enforces evidence at native transitions.
 
 ## Project session startup
 
@@ -126,11 +151,6 @@ version: 1
 ginflow:
   board: <Kanban board slug>
   workspace: /absolute/path/to/project
-  worker:
-    profile: <worker Hermes profile>
-    provider: <provider name>
-    model: <model name>
-  trace: false # optional; enables ginflow-trace function logging
 ```
 
 `workspace` is the resolved project directory and `board` is the selected board. Resolution precedence is explicit command/API override, `HERMES_KANBAN_BOARD`, the existing `.ginflow.yaml`, then Hermes's active board. The optional `worker` block stores repository-local dispatch defaults: `profile` maps to `kanban_create.assignee`, and `provider`/`model` are passed as explicit `kanban_create` overrides when present. Only board and workspace are required; the worker block is recommended for reproducible dispatch and never invalidates a minimal config.
@@ -139,21 +159,21 @@ Before creating a governed card, `/ginflow` checks the configured worker block. 
 
 `ginflow.trace` is optional and defaults off. See `references/project-context.md` for the enablement contract (env override, log locations).
 
-Before target-project work, determine whether the request is Direct Work, Governed Work, or Clarification. The card and Kanban checks below apply to Governed Work; Direct Work still requires affirmative eligibility, project-local permission, and known canonical verification.
+Before target-project work, determine whether the request is a new Initiative or active legacy v1 card. New Initiatives follow Discovery/Shaping/Execution/Decision. Legacy card checks below apply only to explicitly identified v1 cards.
 
 1. Confirm workspace points at real target repo.
 2. Read local `AGENTS.md` / `.hermes.md`.
 3. **Check Kanban board state:**
-   - If no Kanban cards exist → route to work shaping/sizing (investigation/brainstorming/implementation choice, artifact level, draft card).
-   - If Kanban cards exist → read progress first (use `kanban_list`/`kanban_show` TOOLS in agent code), then resume from selected/active card.
-4. For Governed Work, require and read the selected or assigned Kanban card. Stop if absent.
-5. For Governed Work, confirm all required card fields and workspace. Stop if incomplete.
+   - If no Kanban cards exist → route a new request to Discovery/Shaping; active legacy work cannot be inferred.
+   - If Kanban cards exist → read progress first (use `kanban_list`/`kanban_show` TOOLS in agent code), then resume selected/active card.
+4. For legacy governed work, require and read selected or assigned card. Stop if absent.
+5. For legacy governed work, confirm all required card fields and workspace. Stop if incomplete.
 6. Read linked spec/plan when present.
-7. If the selected card is completed, run the linked-artifact drift gate before any project action.
+7. If selected card is completed, run linked-artifact drift gate before any project action.
 8. Inspect git state and run project baseline verification.
-9. For Governed Work, run external ginflow harness against target repo and selected card; do not copy harness into target repo.
-10. Report project verification and Ginflow harness separately when Governed Work applies.
-11. Follow routing context injected by `ginflow-gate`; it chooses work mode only when no card exists.
+9. For legacy governed work, run external ginflow harness against target repo and selected card; do not copy harness into target repo.
+10. Report project verification and Ginflow harness separately when legacy governed work applies.
+11. Follow routing context injected by `ginflow-gate`; it chooses legacy work mode only when an active v1 card exists.
 
 ### Kanban task notifications
 
@@ -173,7 +193,7 @@ The `ginflow-gate` completion policy is integrated with native `kanban_request_r
 ```
 kanban_request_review(task_id='<card-id>', summary='<short review request>',
   metadata={'verification_result': {'commit': '<commit>', 'command': 'make test', 'result': 'passed'},
-            'artifact_baseline': {'commit': '<commit>', 'paths': ['docs/specs/<card-id>.md']}})
+            'artifact_baseline': {'commit': '<commit>', 'paths': ['docs/specs/<CARD-ID>.md']}})
 ```
 
 - `kanban_complete(task_id='t_abc123', summary='Review approved', metadata={...})`
@@ -183,9 +203,9 @@ Reviewer returns an invalid review with native `kanban_request_changes` using a 
 ## Execution contract
 
 - One active card per mutable workspace. Parallel cards are allowed only when each uses an isolated worktree or a different workspace. Hermes dispatcher claim remains the mechanical authority; no public `kanban_claim` tool exists for plugin interception, so atomic workspace-collision enforcement requires Hermes core.
-- No Governed Work execution without a selected, complete card. Direct Work is allowed only after affirmative eligibility and creates no card or Governance Artifact.
+- New Initiative execution requires a selected package-derived card and immutable batch. Legacy v1 execution requires a selected complete card.
 - Do not resume, hand off, or derive work from a completed card while its linked-artifact drift is unresolved. Unrelated cards and unlinked project work may continue.
-- Stay inside card scope and target workspace for Governed Work; keep Direct Work inside its explicitly established scope and workspace.
+- Stay inside package/card scope and target workspace; preserve exact evidence.
 - Use project-native commands and local conventions.
 - Block on material ambiguity; do not invent requirements.
 - Preserve real verification evidence.
@@ -197,9 +217,9 @@ Work is done only when:
 - [ ] Acceptance criteria are satisfied.
 - [ ] Relevant project checks ran and passed.
 - [ ] Changed files were reviewed against scope.
-- [ ] Governed Work records verification evidence on its Kanban card, or Direct Work reports exact evidence in its scoped result.
-- [ ] Governed Work Kanban status is accurate.
-- [ ] Governed Work linked artifacts reflect completion — mark them done, superseded, or final; do not leave them in active/progress state.
+- [ ] New Initiative records exact Decision/MR evidence; legacy governed work records verification on its Kanban card.
+- [ ] Hermes lifecycle status is accurate.
+- [ ] Linked artifacts reflect completion or package state.
 - [ ] Repo is restartable from documented verification path.
 - [ ] Remaining limits or blockers are explicit.
 
@@ -230,9 +250,9 @@ Links:
 
 Hermes stores workspace, status, assignee, and ID on the task row. It stores `artifact_baseline` in the latest completion run metadata. The harness reads both locations; do not create a second shadow card JSON format.
 
-To avoid dispatch racing ahead of linked artifacts, draft card and artifact contents in memory, then create card assigned to the current profile, with complete future `Links:` paths and `--initial-status blocked`. Write and commit linked target artifacts, then run project checks and external candidate-baseline harness. Unblock only after dispatch readiness passes. Current profile loads its configured Ginflow skill; do not force `--skill ginflow`.
+To avoid dispatch racing ahead of linked artifacts, draft card and artifact contents in memory, then create card assigned to the current profile, with complete future links and `--initial-status blocked`. Write and commit linked target artifacts, then run project checks and external candidate-baseline harness. Unblock only after dispatch readiness passes. Current profile loads its configured Ginflow skill; do not force `--skill ginflow`.
 
-If an existing live body is missing required sections, keep it blocked and ask the human to edit the title/body in the Kanban dashboard, then rerun the harness. The current CLI `hermes kanban edit` only backfills completed-task result/summary/metadata; do not invent a `--body` option. If dashboard repair is unavailable, create a corrected replacement card only with human approval and preserve a link/comment back to the malformed card.
+If an existing live body is missing required sections, keep it blocked and ask the human to edit the title/body in Kanban dashboard, then rerun harness. The current CLI `hermes kanban edit` only backfills completed-task result/summary/metadata; do not invent a `--body` option. If dashboard repair is unavailable, create corrected replacement card only with human approval and preserve link/comment back to malformed card.
 
 Use real target repo workspace:
 
@@ -286,7 +306,7 @@ Temporary or ad-hoc checks are not completion evidence unless selected card expl
 Live harness examples:
 
 ```bash
-# Startup/resume: reads the task row, body, and latest run metadata directly.
+# Startup/resume: reads task row, body, and latest run metadata directly.
 python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --setup-repo <setup-repo> --target <target-repo> \
   --kanban-task-id "$TASK_ID" --json
@@ -299,17 +319,17 @@ python3 <setup-repo>/skills/ginflow/scripts/validate-harness.py \
   --baseline-path docs/specs/<CARD-ID>.md --json
 ```
 
-The live harness reads from the current board. `--card <json-file>` remains available for fixtures and accepts either normalized Ginflow JSON or saved `hermes kanban show --json` output. It is optional evidence; workers do not need a separate harness handoff before calling `kanban_request_review`.
+The live harness reads from current board. `--card <json-file>` remains available for fixtures and accepts either normalized Ginflow JSON or saved `hermes kanban show --json` output. It is optional evidence; workers do not need separate harness handoff before calling `kanban_request_review`.
 
 ## Harness subsystem mapping
 
-| Subsystem    | Ginflow implementation                                                                              |
-| ------------ | --------------------------------------------------------------------------------------------------- |
+| Subsystem | Ginflow implementation |
+| --- | --- |
 | Instructions | profile distribution chooses whether to route to `ginflow`; target `AGENTS.md` stores local context |
-| State        | Hermes Kanban card and linked artifacts                                                             |
-| Verification | project-native canonical command and card evidence                                                  |
-| Scope        | card objective, scope, acceptance, workspace, and one active card per mutable workspace             |
-| Lifecycle    | startup, close, restart, and optional Markdown export in `ginflow`                                  |
+| State | Hermes Kanban card and Initiative artifacts |
+| Verification | project-native canonical command and Decision/card evidence |
+| Scope | package/card objective, scope, acceptance, workspace, and isolation |
+| Lifecycle | Discovery, Shaping, Execution, Decision; Hermes owns physical transitions |
 
 `feature_list.json`, `progress.md`, `init.sh`, and mandatory handoff files are not required equivalents.
 
@@ -325,7 +345,7 @@ Flow:
 4. In target repo, read `git config user.name` and `git config user.email`.
 5. Render `templates/session-handoff.md` preview.
 6. Use `Not recorded on Kanban card.` for missing card data and `Not linked from selected Kanban card.` for missing artifact links. Use `Not configured in Git.` for missing Git identity.
-7. Ask Gin to approve content and output path. Use the target project's local convention.
+7. Ask Gin to approve content and output path. Use target project's local convention.
 8. Write only after approval.
 
 Never infer missing facts from status, chat, OS identity, commit history, or unrelated cards. Never mutate card status, assignee, links, or content during export.
@@ -353,10 +373,10 @@ Rule:
 - The worker must commit every linked artifact and prepare truthful `artifact_baseline.commit` and exact target-local linked `artifact_baseline.paths` when calling `kanban_request_review`. Worker may create this baseline commit without human review; stage only exact linked artifacts and intended card-scoped implementation files.
 - Never copy harness script into target repo. Report project verification and ginflow harness as separate results.
 - `ginflow-gate` is enforcement authority. During `kanban_request_review` and `kanban_complete`, it synchronously validates required card fields, verification metadata, baseline commit, exact linked paths, and artifact drift. Invalid or unavailable evidence rejects transition.
-- On startup, resume, handoff, or derived work involving a completed card, compare only linked paths against completion commit. Do not compare the whole repository.
+- On startup, resume, handoff, or derived work involving a completed card, compare only linked paths against completion commit. Do not compare whole repository.
 - A missing/unavailable commit, path-list mismatch, missing artifact, committed change, or uncommitted change is drift detected by gate/harness and blocks affected lifecycle use. Unrelated paths remain unblocked.
 - External harness checks are optional manual/CI evidence, not a required worker handoff.
-- Never silently advance a completion commit. Do not use per-file SHA fallback.
+- Never silently advance completion commit. Do not use per-file SHA fallback.
 
 ## Blank project flow
 
@@ -368,7 +388,7 @@ If user starts in blank project:
 4. add forbidden areas / deploy rules if known
 5. if commands are unknown, leave placeholders and mark them missing
 6. retain routing line that sends shared workflow to `ginflow`
-7. document one canonical verification command; `verify.sh`, `make verify`, or a project-native command are valid
+7. document one canonical verification command; `verify.sh`, `make verify`, or project-native command are valid
 8. if repo has executable project files, run baseline verification; otherwise record `baseline unavailable: no implementation yet`
 9. only then shape first task
 
