@@ -4,6 +4,7 @@
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -412,8 +413,11 @@ if __name__ == "__main__":
     test_work_guidance_maps_modes_to_bounded_skills()
     test_work_guidance_routes_known_failure_and_unknown_separately()
     test_work_guidance_rejects_risk_and_preserves_canonical_outputs()
-    test_live_tmp_project_card()
-    test_live_tmp_next_card_docs()
+    if shutil.which("hermes"):
+        test_live_tmp_project_card()
+        test_live_tmp_next_card_docs()
+    else:
+        print("SKIP: live Kanban card tests (hermes CLI not installed)")
     test_blocked_route_context_reports_metadata_without_execution()
     print("ginflow routing test passed")
 
