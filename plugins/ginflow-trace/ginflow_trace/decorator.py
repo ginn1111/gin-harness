@@ -47,12 +47,45 @@ def _read_config(file: Path) -> dict | None:
     try:
         import yaml
     except ImportError:
-        return None
+        return _read_simple_config(file)
     try:
         data = yaml.safe_load(file.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return None
     return data if isinstance(data, dict) else None
+
+
+def _read_simple_config(file: Path) -> dict | None:
+    """Read flat ginflow config fields needed by tracing without PyYAML."""
+    try:
+        lines = file.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    config: dict[str, object] = {}
+    ginflow: dict[str, object] = {}
+    in_ginflow = False
+    for line in lines:
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if line.strip() == "ginflow:":
+            in_ginflow = True
+            continue
+        if in_ginflow and line[:1].isspace():
+            key, separator, value = line.strip().partition(":")
+            if not separator:
+                continue
+            value = value.strip().strip("'\"")
+            if key == "trace":
+                ginflow[key] = value.lower() == "true"
+            else:
+                ginflow[key] = value
+            continue
+        in_ginflow = False
+        key, separator, value = line.partition(":")
+        if separator:
+            config[key.strip()] = value.strip().strip("'\"")
+    config["ginflow"] = ginflow
+    return config
 
 
 def _find_config(start: Path) -> dict | None:
