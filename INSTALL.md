@@ -65,7 +65,7 @@ make install                              # plugin into every Hermes profile
 make install PROFILES="profile-a profile-b"   # plugin into selected profiles only
 ```
 
-This copies `skills/ginflow`, including `lib/harness_core.py`, once to `~/.agents/skills/ginflow`, and copies `plugins/with-chatgpt` into `~/.hermes/profiles/<profile>/plugins/with-chatgpt` for every profile that has a `config.yaml` (or only the profiles named in `PROFILES`). It does not modify profile config. Installer ownership is recorded in setup-repo-root `.ginflow-install.json`, which is gitignored.
+This copies `skills/ginflow`, including `lib/harness_core.py`, once to `~/.agents/skills/ginflow`, and copies `plugins/with-chatgpt`, `plugins/ginflow-gate` (bundling `core/ginflow-core/routing.py` as `lib/routing.py`), and `plugins/ginflow-trace` into `~/.hermes/profiles/<profile>/plugins/` for every profile that has a `config.yaml` (or only the profiles named in `PROFILES`). It does not modify profile config. Installer ownership is recorded in setup-repo-root `.ginflow-install.json`, which is gitignored.
 
 Remove only installer-owned files with:
 
@@ -75,11 +75,10 @@ make uninstall
 
 Uninstall restores installer backups and refuses to delete paths changed after installation. Resolve reported conflicts manually, then rerun `make uninstall`.
 
-Setup requires existing profiles. It adds only:
+`make apply` edits native profile config only and no longer links the skill or plugins; run `make install` for those. Setup requires existing profiles. It adds only:
 
-- Ginflow skill
 - setup-repo and optional community skill directories
-- `ginflow-gate` plugin
+- `ginflow-gate` plugin enablement (files come from `make install`)
 - CodeGraph MCP and its toolset
 - common CLI toolsets needed by harness/workflow
 
@@ -114,7 +113,7 @@ make with-chatgpt-test
 
 Prerequisites: Node.js 20 or newer, `terminal-browser` installed separately, an existing Hermes profile. Steps 1-4 and 8 are safe for an agent to run. Steps 5-7 start services or change session state; run them only when the user asks. Live ChatGPT, `terminal-browser`, and `cloudflared` flows are not covered by repository tests.
 
-1. Install (repo root). Skill goes to `~/.agents/skills/ginflow`; plugin goes to all Hermes profiles. Add `PROFILES="<profile>"` to limit the plugin:
+1. Install (repo root). Skill goes to `~/.agents/skills/ginflow`; plugins (`with-chatgpt`, `ginflow-gate`, `ginflow-trace`) go to all Hermes profiles. Add `PROFILES="<profile>"` to limit the plugin:
 
    ```bash
    make install

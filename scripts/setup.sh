@@ -33,21 +33,10 @@ for profile in "$@"; do
   echo
   info "Integrating $profile (SOUL.md and distribution.yaml remain profile-owned)"
   if [[ "$APPLY" == 0 ]]; then
-    info "$profile: would link skills/ginflow and plugins/ginflow-gate"
+    info "$profile: would not copy files; run make install for skill and plugins"
     info "$profile: would add repo skill dirs, CodeGraph MCP, toolsets, and plugin enablement to native config"
     continue
   fi
-
-  mkdir -p "$profile_dir/skills" "$profile_dir/plugins"
-  for link in "$profile_dir/skills/ginflow" "$profile_dir/plugins/ginflow-gate"; do
-    if [[ -e "$link" && ! -L "$link" ]]; then
-      backup="$link.bak.integration.$(date +%s)"
-      mv "$link" "$backup"
-      info "$profile: backed up $(basename "$link") to $backup"
-    fi
-  done
-  ln -sfn "$ROOT/skills/ginflow" "$profile_dir/skills/ginflow"
-  ln -sfn "$ROOT/plugins/ginflow-gate" "$profile_dir/plugins/ginflow-gate"
 
   python3 - "$config" "$ROOT" <<'PY'
 import sys
@@ -90,7 +79,7 @@ if not backup.exists():
     backup.write_text(path.read_text())
 path.write_text(yaml.safe_dump(config, sort_keys=False))
 PY
-  ok "$profile: integrations applied; native identity and distribution untouched"
+  ok "$profile: config integrations applied (run make install for skill/plugins); native identity and distribution untouched"
 done
 
 if [[ "$APPLY" == 1 ]]; then

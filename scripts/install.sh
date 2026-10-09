@@ -113,9 +113,10 @@ def install(profile_names: list[str]) -> None:
         info("existing Ginflow installation found; cleaning it before reinstall")
         uninstall()
     source_skill = ROOT / "skills/ginflow"
-    source_plugin = ROOT / "plugins/with-chatgpt"
-    if not source_skill.is_dir() or not source_plugin.is_dir():
-        fail("setup-repo skill or with-chatgpt plugin source directory is missing")
+    plugin_names = ("with-chatgpt", "ginflow-gate", "ginflow-trace")
+    core_routing = ROOT / "core/ginflow-core/routing.py"
+    if not source_skill.is_dir() or not core_routing.is_file() or not all((ROOT / "plugins" / n).is_dir() for n in plugin_names):
+        fail("setup-repo skill, routing core, or plugin source directory is missing")
 
     real_home = Path(os.environ.get("HERMES_REAL_HOME", str(Path.home()))).expanduser().resolve()
     profiles_dir = Path(os.environ.get("HERMES_PROFILES_DIR", str(real_home / ".hermes/profiles"))).expanduser().resolve()
@@ -123,7 +124,11 @@ def install(profile_names: list[str]) -> None:
 
     # Skill is shared: one copy under ~/.agents/skills. Plugin goes into every profile.
     targets: list[tuple[str, Path, Path]] = [("skill", real_home / ".agents/skills/ginflow", source_skill)]
-    targets += [(name, profiles_dir / name / "plugins/with-chatgpt", source_plugin) for name in profiles]
+    targets += [
+        (f"{profile}/{plugin}", profiles_dir / profile / "plugins" / plugin, ROOT / "plugins" / plugin)
+        for profile in profiles
+        for plugin in plugin_names
+    ]
     for _, destination, _ in targets:
         if destination.exists() and not destination.is_dir():
             fail(f"managed destination is not a directory: {destination}")
@@ -140,13 +145,17 @@ def install(profile_names: list[str]) -> None:
             if destination.exists() or destination.is_symlink():
                 remove_path(destination)
             copy_tree(source, destination)
+            if destination.name == "ginflow-gate":
+                # Copied gate cannot reach repo core/; it falls back to its own lib/routing.py.
+                (destination / "lib").mkdir(exist_ok=True)
+                shutil.copy2(core_routing, destination / "lib/routing.py")
             entry = {"path": str(destination), "hash": sha256(destination), "backup": backup}
             if key == "skill":
                 manifest["skill"] = entry
                 ok(f"Ginflow skill installed: {destination}")
             else:
                 manifest["plugins"][key] = entry
-                ok(f"{key}: with-chatgpt plugin installed")
+                ok(f"{key}: plugin installed")
         write_manifest(manifest)
         ok(f"manifest written to {MANIFEST}")
     except Exception:

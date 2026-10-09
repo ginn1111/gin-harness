@@ -24,10 +24,25 @@ bash "$ROOT/scripts/install.sh" install
 for profile in alpha beta; do
   [[ -f "$PROFILES/$profile/plugins/with-chatgpt/plugin.yaml" ]]
   [[ -f "$PROFILES/$profile/plugins/with-chatgpt/__init__.py" ]]
+  [[ -f "$PROFILES/$profile/plugins/ginflow-gate/plugin.yaml" && -f "$PROFILES/$profile/plugins/ginflow-gate/lib/routing.py" ]]
+  [[ -f "$PROFILES/$profile/plugins/ginflow-trace/plugin.yaml" ]]
   [[ ! -e "$PROFILES/$profile/skills/ginflow" ]]
 done
 [[ ! -e "$PROFILES/not-a-profile/plugins" ]]
 [[ -f "$GINFLOW_INSTALL_MANIFEST" ]]
+
+# Copied gate loads from a profile: harness core from ~/.agents/skills, routing from bundled lib, trace from sibling plugin.
+python3 -I - "$PROFILES/alpha/plugins/ginflow-gate" <<PY
+import importlib.util, sys
+from pathlib import Path
+gate = Path(sys.argv[1])
+spec = importlib.util.spec_from_file_location("copied_gate", gate / "gate.py")
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+assert module.CORE.is_relative_to(gate.resolve().parents[4] / ".agents"), module.CORE
+spec = importlib.util.spec_from_file_location("copied_routing", gate / "routing.py")
+spec.loader.exec_module(importlib.util.module_from_spec(spec))
+PY
 
 python3 - "$PROFILES/alpha/config.yaml" <<'PY'
 import sys
