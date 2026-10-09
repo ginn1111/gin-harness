@@ -1,4 +1,4 @@
-.PHONY: setup apply install uninstall install-test verify verify-strict verify-test setup-test doctor doctor-deps community-update clean lint test lifecycle-test plugin-test trace-test c2c
+.PHONY: install uninstall install-test verify verify-strict doctor doctor-deps community-update clean lint test lifecycle-test plugin-test trace-test c2c
 
 # === Pre-flight ===
 doctor:
@@ -10,14 +10,6 @@ doctor-deps:
 	python3 -m pip install pyyaml
 
 # === Setup ===
-## Preview profile setup
-setup:
-	./scripts/setup.sh $(PROFILES)
-
-## Apply integrations to existing Hermes-native profiles
-apply:
-	./scripts/setup.sh --apply $(PROFILES)
-
 ## Install Ginflow skill into selected Hermes profiles
 install:
 	@test -n "$(PROFILES)" || (echo 'No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES="<name>"' >&2; exit 2)
@@ -35,14 +27,6 @@ verify:
 verify-strict:
 	@test -n "$(PROFILES)" || (echo 'No active Hermes profile found; run `hermes profile use <name>` or pass PROFILES="<name>"' >&2; exit 2)
 	python3 skills/ginflow/scripts/validate-harness.py --setup-repo . --json
-
-## Test verify default and strict drift behavior
-verify-test:
-	bash scripts/test-verify.sh
-
-## Test active-profile default selection
-setup-test:
-	bash scripts/test-setup.sh
 
 # === c2c ===
 ## Run vendored c2c CLI; extra args via C2C_ARGS (e.g. `make c2c C2C_ARGS="doctor --json"`)
@@ -69,7 +53,7 @@ lint:
 	@echo "lint ok"
 
 ## Run deterministic repository tests
-test: lint core-test setup-test lifecycle-test plugin-test install-test
+test: lint core-test lifecycle-test plugin-test install-test
 
 core-test:
 	python3 core/ginflow-core/test_execution_package.py
@@ -80,6 +64,7 @@ core-test:
 	python3 core/ginflow-core/test_review_cycle.py
 	python3 core/ginflow-core/test_followup.py
 	python3 core/ginflow-core/test_merge_request.py
+	python3 core/ginflow-core/test_initiative_workflow.py
 
 # ponytail: keep core tests as direct scripts until shared repository test runner exists.
 

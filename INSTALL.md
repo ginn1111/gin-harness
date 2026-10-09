@@ -50,9 +50,7 @@ Distribution root must contain `distribution.yaml`. Hermes previews manifest bef
 ```bash
 make doctor
 make community-update                         # optional
-make setup                                # preview currently active profile
-make setup PROFILES="profile-a"          # preview named profile
-make apply PROFILES="profile-a"
+make install PROFILES="profile-a"
 make verify PROFILES="profile-a"
 ```
 
@@ -106,7 +104,7 @@ hermes profile update <profile> --force-config
 Profile update may replace integration links or config entries. Reapply kit:
 
 ```bash
-make apply PROFILES="<profile>"
+make install PROFILES="<profile>"
 make verify PROFILES="<profile>"
 ```
 
