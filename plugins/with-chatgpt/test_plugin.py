@@ -105,8 +105,37 @@ with tempfile.TemporaryDirectory() as temp:
     ctx.hooks[1][1](session_id="s1")
     assert not state_module.session_enabled(ctx.state, "s1")
 
+# Active runtime and Hermes skill surfaces stay English. Chinese README and
+# historical migration docs are intentionally exempt.
+import re
+cjk = re.compile("[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef]")
+exempt = {"README.md", "README.zh-CN.md"}
+active = [*ROOT.glob("*.py"), *(ROOT / "skills").rglob("*.md"), *(ROOT / "c2c" / "src").rglob("*.ts"),
+          *(ROOT / "c2c" / "skill").rglob("*.md"), *(ROOT / "c2c" / "docs").glob("*.md")]
+offenders = [str(f.relative_to(ROOT)) for f in active
+             if f.name not in exempt and f.name != Path(__file__).name and cjk.search(f.read_text(encoding="utf-8"))]
+assert not offenders, f"unintended Chinese text in active surfaces: {offenders}"
+
 # Optional CLI failures remain structured instead of escaping through Hermes.
 from with_chatgpt import cli
+# Setup reports bridge/tunnel/pairing readiness read-only; unknown stays distinct.
+_saved = (cli._node_version, cli._package_check, cli._browser_check, cli._c2c_json)
+cli._node_version = lambda: (True, "v22")
+cli._package_check = lambda: (True, "ok")
+cli._browser_check = lambda: (True, "ok")
+try:
+    cli._c2c_json = lambda *_a, **_k: {"ok": False, "state": "unknown"}
+    unknown = cli._setup_result()
+    assert unknown["ok"] and not unknown["ready"] and unknown["bridge"]["state"] == "unknown"
+    assert "second bridge" in unknown["next_steps"][0] and not unknown["mutating"]
+    cli._c2c_json = lambda *_a, **_k: {"ok": False, "state": "stopped"}
+    assert cli._setup_result()["bridge"]["state"] == "stopped"
+    cli._c2c_json = lambda *_a, **_k: {"ok": True, "state": "healthy", "tunnel": {"running": True}, "tokenCount": 1}
+    ready = cli._setup_result()
+    assert ready["ready"] and ready["pairing"]["paired"] and not ready["next_steps"]
+finally:
+    cli._node_version, cli._package_check, cli._browser_check, cli._c2c_json = _saved
+
 failed = cli._parse_json_output(subprocess.CompletedProcess([], 1, stdout="", stderr="timeout"))
 assert failed["ok"] is False and failed["error"] == "timeout"
 print("with-chatgpt plugin tests passed")

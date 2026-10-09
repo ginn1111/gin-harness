@@ -136,19 +136,45 @@ def _forwarded_result(action: str, workspace: str | None, json_output: bool) -> 
     }
 
 
-def _setup_result() -> dict[str, Any]:
+def _setup_result(workspace: str | None = None) -> dict[str, Any]:
     node_ok, node_detail = _node_version()
     package_ok, package_detail = _package_check()
     browser_ok, browser_detail = _browser_check()
-    return {
-        "ok": node_ok and package_ok and browser_ok,
+    prerequisites_ok = node_ok and package_ok and browser_ok
+    result: dict[str, Any] = {
+        "ok": prerequisites_ok,
         "action": "setup",
         "node": {"ok": node_ok, "detail": node_detail},
         "c2c": {"ok": package_ok, "detail": package_detail},
         "terminal_browser": {"ok": browser_ok, "detail": browser_detail},
         "repair_required": False,
+        "mutating": False,
     }
-
+    next_steps: list[str] = []
+    if not prerequisites_ok:
+        next_steps.append("Resolve the failed prerequisites above, then rerun setup.")
+    else:
+        # Read-only observation; starting bridge, tunnel, or pairing stays explicit.
+        status = _c2c_json("status", workspace)
+        state = status.get("state", "unknown")
+        if state not in {"healthy", "stopped"}:
+            state = "unknown"
+        tunnel = status.get("tunnel") if isinstance(status.get("tunnel"), dict) else {}
+        paired = bool(status.get("tokenCount"))
+        result["bridge"] = {"ok": state == "healthy", "state": state}
+        result["tunnel"] = {"ok": bool(tunnel.get("running"))}
+        result["pairing"] = {"ok": paired or bool(status.get("pairingActive")), "paired": paired}
+        if state == "unknown":
+            next_steps.append("Bridge state is unknown; run doctor and do not start a second bridge.")
+        elif state == "stopped":
+            next_steps.append("Run `c2c setup` explicitly to start the bridge, tunnel, and pairing.")
+        elif not result["tunnel"]["ok"]:
+            next_steps.append("Run `c2c setup` explicitly to establish the secure tunnel.")
+        elif not result["pairing"]["ok"]:
+            next_steps.append("Run `hermes with-chatgpt pair` when the ChatGPT Authorize form is open.")
+    result["ready"] = prerequisites_ok and not next_steps
+    result["next_steps"] = next_steps
+    return result
 
 def setup_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("action", choices=["setup", "doctor", "enable", "disable", "status", "pair", "stop"])
@@ -183,7 +209,7 @@ def handle_command(args: argparse.Namespace, ctx: Any) -> None:
             "state": observation.get("state", "unknown"),
         }
     elif action == "setup":
-        result = _setup_result()
+        result = _setup_result(args.workspace)
     elif action == "doctor":
         result = _doctor(args.workspace, args.repair)
     else:

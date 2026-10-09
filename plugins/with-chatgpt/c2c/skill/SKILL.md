@@ -33,7 +33,7 @@ whatever data it needs by itself.
    screens, or **guided manual ChatGPT setup** below — and then give them ONE action.
    Before the first ChatGPT connection on this machine, `c2c prefs --json`:
    - `setupMode` missing: tell the user exactly `setupChoicePrompt`, wait for
-     「1」or「2」, then `c2c prefs set --setup-mode auto|manual --json`.
+     "1" or "2", then `c2c prefs set --setup-mode auto|manual --json`.
      Do not start ChatGPT configuration until they answer. Do not guess.
    - `setupMode` is `manual`: skip automatic ChatGPT settings. Use guided
      manual from the start (chosen, not a failure).
@@ -251,7 +251,7 @@ Speak only of temporary address / fixed domain / Cloudflare login.
    that code immediately. Doctor does not pre-mint a code.
 4. `c2c prefs --json` (this machine, not this workspace).
    - If `setupMode` is null: tell the user exactly `setupChoicePrompt`. Wait
-     for「1」or「2」. Then `c2c prefs set --setup-mode auto` or `--setup-mode manual`.
+     for"1" or "2". Then `c2c prefs set --setup-mode auto` or `--setup-mode manual`.
      Do not open ChatGPT settings and do not start automatic configuration
      until they answer. Do not default to auto.
    - If they later ask to switch: same `c2c prefs set --setup-mode` command.
@@ -731,4 +731,4 @@ the previous public address is gone. Doctor already started a new one.
 | Every new chat cannot write local state | Run `c2c doctor --json`; if repair is intentional, rerun with `--repair`. |
 | cloudflared missing | install it yourself (brew/winget), then retry |
 | Sidebar has no “Projects” | Ask the user to hover “Chats”, click the …, and choose “Organize by project” |
-| Collection page is the wrong Project | Ask the user to open the named collection and say「found」, or accept long-chat |
+| Collection page is the wrong Project | Ask the user to open the named collection and say "found", or accept long-chat |
