@@ -9,15 +9,13 @@ Provider-document rules (supersedes the earlier repository-local-only rule):
 - One provider-neutral document reference (provider, stable ID, path or URL) and one `document_baseline` for every provider. Local baseline: Git commit plus normalized content hash. Remote baseline: provider, stable ID, canonical URL, content hash, and fetch time, freshly re-fetched by the adapter (max age 5 minutes) before review and completion. `ginflow-gate` validates supplied evidence without provider credentials. Inaccessible, deleted, stale, or drifted records fail closed.
 - Hermes Kanban stays lifecycle authority; cards stay concise and link to the provider document. Setup resolves the provider (explicit directives only, never tool availability); no silent fallback.
 - GitHub/Linear tracker Issue workflow status syncs only through explicit mappings: workers own start, block, resume, review-request; reviewers own request-changes and completion. Provider update precedes the Hermes transition, then re-fetch; failure or missing mapping fails closed. Provider document content is not rewritten and no other provider fields sync.
-- Newest schema only: setup migrates configuration and unfinished work through approved, reversible replacement cards; completed history is untouched. Version selection and legacy runtime paths are removed once migration tooling exists.
-
+- Newest schema only: installed contract is authoritative.
 Shaping owns brainstorming, feedback, read-only investigation, artifact drafting, splitting, and one final approval. Cards are created blocked, then share one committed package baseline. A deterministic validator must pass before root cards unblock. Integration combines Work Units but does not complete its Initiative; successful Integration opens the read-only human Decision phase, and `approved_for_mr` completes Ginflow lifecycle.
 
 Initiative, Execution Batch, Review Cycle, Decision Projection, Notification, and MR Intent are additive provider-neutral contracts. Hermes remains lifecycle authority; target repositories remain product and canonical-verification authority.
 
 TUI, direct Hermes database access, gateway transport/subscription setup, and provider-specific merge-request publication remain deferred.
 
-Active version 1 cards keep legacy behavior during migration. New v2 work does not use Work Size, Direct Work, or size-based routing.
 
 ## Context
 
@@ -29,7 +27,6 @@ Size-based routing permits incomplete scope and subjective execution decisions. 
 - Provider-hosted canonical documents require reliable retrieval; mitigated by stable identity, fresh-fetch evidence (≤ 5 minutes), and fail-closed gates.
 - Stable human keys improve links, but require key validation before Hermes task IDs exist.
 - One package baseline improves reproducibility, but package revisions require reapproval and revalidation.
-- Explicit v1 compatibility adds migration logic temporarily, but avoids invalidating active work.
 
 ## Rejected alternative
 

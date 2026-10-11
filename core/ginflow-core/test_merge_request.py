@@ -9,7 +9,7 @@ def review(**changes):
 
 def test_approved_review_creates_provider_neutral_intent():
     intent = build_mr_intent(review(), title="Ship context recovery", body="Summary")
-    assert intent["schema"] == "merge_request_intent/v1"
+    assert intent["schema"] == "merge_request_intent"
     assert intent["publication_status"] == "not_published"
     assert intent["source_commit"] == "result"
 

@@ -31,8 +31,8 @@ def _utc(value: Any) -> bool:
 
 def _errors(record: Mapping[str, Any]) -> list[str]:
     errors: list[str] = []
-    if record.get("schema") != "initiative/v1":
-        errors.append("schema must be initiative/v1")
+    if record.get("schema") != "initiative":
+        errors.append("schema must be initiative")
     for field in ("initiative_key", "phase", "phase_state", "problem", "desired_outcome"):
         if not _text(record.get(field)):
             errors.append(f"{field} is required")

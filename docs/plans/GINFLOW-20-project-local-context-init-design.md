@@ -8,7 +8,7 @@ owner: ginb
 
 ## Decision
 
-Ginflow will use `.ginflow.yaml` at the current project repository root as the only project-local canonical Kanban context file. It will not read, migrate, or write `.hermes/ginflow.yaml`, and it will not add a `ginflow` CLI.
+Ginflow will use `.ginflow.yaml` at the current project repository root as the only project-local canonical Kanban context file. It will not add a `ginflow` CLI.
 
 The initialization event is the first `/ginflow` skill invocation in a project where `.ginflow.yaml` does not exist. The skill resolves the current working directory to an absolute path, discovers the current/default Kanban board, and asks the user to either use that board or create a new board. A new board requires a non-empty user-provided board name. The config is persisted only after a complete context has been resolved and, when requested, board creation has succeeded.
 
@@ -87,6 +87,6 @@ make test
 
 ## Scope boundaries
 
-This design does not add a new CLI, modify Hermes global config, migrate legacy config files, select a board silently, switch workspaces, or change profile identity and credentials. The implementation is scoped to the Ginflow skill, project-context library, routing/verification adapters, and deterministic tests.
+This design does not add a new CLI, modify Hermes global config, select a board silently, switch workspaces, or change profile identity and credentials. The implementation is scoped to the Ginflow skill, project-context library, routing/verification adapters, and deterministic tests.
 
 **Status: completed** — implemented with project-local context validation, fail-closed first-use initialization, native board-creation ordering, and deterministic verification.

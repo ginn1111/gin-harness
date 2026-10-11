@@ -16,9 +16,9 @@
 - **Decision** — read-only human context recovery and disposition phase after successful or blocked Integration.
 - **Review Cycle** — append-only evidence, findings, dispositions, and aggregate Decision revision bound to exact commits and actors.
 - **Disposition vs outcome** — a disposition (`accept`, `enhance`, `reject`, `defer`) is the human verb applied to one Change Group; the projection's `choices` offer exactly these. An outcome (`approved_for_mr`, `enhancement_requested`, `rejected`, `resume_execution`, `reshape_required`, `stopped`) is the aggregate Review Cycle result derived from them. Only `approved_for_mr` completes Ginflow lifecycle.
-- **Decision Projection** — bounded, redacted `decision_projection/v1` structured view for future TUI consumers; it is not workflow authority.
-- **Notification** — gateway-ready `notification/v1` envelope for material outcomes, with idempotency and delivery state; transport remains adapter-owned.
-- **MR Intent** — provider-neutral `merge_request_intent/v1` preview containing exact refs/commits, lineage, review digest, checks, risks, reviewers, labels, draft state, and publication status.
+- **Decision Projection** — bounded, redacted `decision_projection` structured view for future TUI consumers; it is not workflow authority.
+- **Notification** — gateway-ready `notification` envelope for material outcomes, with idempotency and delivery state; transport remains adapter-owned.
+- **MR Intent** — provider-neutral `merge_request_intent` preview containing exact refs/commits, lineage, review digest, checks, risks, reviewers, labels, draft state, and publication status.
 - **Prototype promotion** — explicit production coverage for prototype evidence through Spec, Plan, Ticket, acceptance, and verification; prototype code is non-production by default.
 
 ## Authority boundaries

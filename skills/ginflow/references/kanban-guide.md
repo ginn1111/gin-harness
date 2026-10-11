@@ -72,7 +72,7 @@ Do not leave project work in scratch workspace if files must be read from repo.
 
 ## Feedback boundary
 
-Decision notifications use the pure `notification/v1` contract; transport remains adapter-owned.
+Decision notifications use the pure `notification` contract; transport remains adapter-owned.
 
 ## Task notifications
 

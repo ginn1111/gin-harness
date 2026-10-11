@@ -148,7 +148,7 @@ def build_projection(record: Mapping[str, Any], *, summary: str) -> dict[str, An
     if not _text(summary) or len(summary) > 1000:
         raise ValueError("summary must be bounded")
     projection = {
-        "schema": "decision_projection/v1",
+        "schema": "decision_projection",
         "decision_required": "human disposition required",
         "executive_context": {"initiative_key": record["initiative_key"], "summary": summary},
         "behavior_delta": deepcopy(list(record["changed_paths"])),
@@ -207,7 +207,7 @@ def build_notification(record: Mapping[str, Any], *, message: str, outcome: str 
         raise ValueError("invalid notification outcome or message")
     key = f"{record['batch_key']}:{record['review_key']}:{outcome}"
     result = {
-        "schema": "notification/v1",
+        "schema": "notification",
         "event_id": sha256(key.encode()).hexdigest(),
         "initiative_key": record["initiative_key"],
         "batch_key": record["batch_key"],

@@ -19,13 +19,13 @@ One consolidated local Markdown record per Work Unit is the canonical governance
 - **L3 Render.** Visible sections in fixed order: Objective, Scope, Acceptance, Contract, Spec, Plan, Verification, Dependencies, Risks. Local rendering puts machine metadata (provider, work unit key, schema) in YAML frontmatter at byte 0.
 - **L4 Hash.** `content_hash` = sha256 of final rendering after newline and trailing-space normalization only. Order and all other content significant.
 - **L5 Local adapter.** Outside the builder. Path `docs/work-units/<UNIT-KEY>.md` (assumption A1). Missing file: write. Existing file with equal metadata and hash: adopt. Existing file that differs: block, never overwrite.
-- **L6 Package validation.** `validate_package` accepts one provider-neutral document reference `{provider, id, path_or_url}` per unit, rejects missing or mismatched references. Legacy v2 packages without references keep current behavior until #25.
+- **L6 Package validation.** `validate_package` accepts one provider-neutral document reference `{provider, id, path_or_url}` per unit, rejects missing or mismatched references.
 - **L7 Cards.** `create_execution_cards` keeps cards blocked, concise (Objective, Scope, Acceptance, Verification, Dependencies, document link). Detailed Contract/Spec/Plan text is not copied. Structured reference lives in card metadata.
 - **L8 Gate.** `ginflow-gate` review/completion requires `document_baseline` = `{content_hash, commit}` with committed content, hash equal to a recomputed hash of the committed file, and passing project verification evidence. Missing or drifted baseline rejects.
 
 ## Non-goals
 
-GitHub/Linear providers (#22/#23), config resolution (#21), migration (#24), legacy removal (#25), tracker status sync.
+GitHub/Linear providers (#22/#23), config resolution (#21), migration (#24), tracker status sync.
 
 ## Assumptions to confirm
 

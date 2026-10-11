@@ -18,7 +18,6 @@ Give workers deterministic retry and exception behavior so recoverable work cont
 ## Execution
 
 - Implement the smallest complete vertical slice described by this plan.
-- Preserve version 1 behavior until the explicit contraction unit.
 - Run project-native verification and record exact evidence on the Kanban card.
 
 ## Acceptance criteria

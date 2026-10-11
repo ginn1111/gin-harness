@@ -32,7 +32,7 @@ def route_followup(request: Mapping[str, Any]) -> dict[str, Any]:
     if not route:
         raise ValueError("unsupported follow-up delta class")
     packet = deepcopy(dict(request))
-    packet["schema"] = "execution_packet/v1"
+    packet["schema"] = "execution_packet"
     packet["batch_attempt"] = prior + 1 if route == "Execution" else None
     packet["immutable"] = True
     return {"route": route, "packet": packet, "policy_proposals": []}

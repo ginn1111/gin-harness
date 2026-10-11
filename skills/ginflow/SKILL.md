@@ -30,9 +30,9 @@ Never use setup repo as default code workspace.
 
 ## Four-phase Initiative lifecycle
 
-For large autonomous work, use one stable Initiative across Discovery, Shaping, Execution, and Decision. Discovery captures problem framing, boundaries, vocabulary, prototype evidence, and open questions, then records approved Shaping handoff. Shaping retains artifact-first Execution Package v2. Execution binds one immutable `execution_batch/v1` attempt to package digest, artifact baseline, Tickets, isolated workspaces, budget, stop conditions, and actor authorization. Integration success opens read-only Decision; it does not complete Initiative.
+For large autonomous work, use one stable Initiative across Discovery, Shaping, Execution, and Decision. Discovery captures problem framing, boundaries, vocabulary, prototype evidence, and open questions, then records approved Shaping handoff. Shaping retains artifact-first Execution Package v2. Execution binds one immutable `execution_batch` attempt to package digest, artifact baseline, Tickets, isolated workspaces, budget, stop conditions, and actor authorization. Integration success opens read-only Decision; it does not complete Initiative.
 
-Decision consumes deterministic evidence and append-only `review_cycle/v1` revisions. Every changed path maps to a Change Group or justified generated/excluded bucket; every nontrivial claim references evidence. `decision_projection/v1` is bounded/redacted and excludes raw logs, secrets, personal data, prompts, and transcripts. Material outcomes use `notification/v1`; transport remains adapter-owned. Human dispositions are `approved_for_mr`, `enhancement_requested`, `rejected`, `resume_execution`, `reshape_required`, or `stopped`. Only `approved_for_mr` completes Ginflow lifecycle and yields provider-neutral `merge_request_intent/v1`; publication/merge remain separate.
+Decision consumes deterministic evidence and append-only `review_cycle` revisions. Every changed path maps to a Change Group or justified generated/excluded bucket; every nontrivial claim references evidence. `decision_projection` is bounded/redacted and excludes raw logs, secrets, personal data, prompts, and transcripts. Material outcomes use `notification`; transport remains adapter-owned. Human dispositions are `approved_for_mr`, `enhancement_requested`, `rejected`, `resume_execution`, `reshape_required`, or `stopped`. Only `approved_for_mr` completes Ginflow lifecycle and yields provider-neutral `merge_request_intent`; publication/merge remain separate.
 
 Hermes remains identity, Kanban, assignment, dispatch, persistence, and lifecycle authority. Target repositories remain product/canonical-verification authority. TUI, direct Hermes DB access, gateway transport/subscriptions, and provider-specific publication remain deferred.
 
@@ -77,7 +77,7 @@ Never write `in_progress` to Hermes Kanban. `running` is active work. `todo`/`re
 
 ### New Initiative boundary
 
-New governed/autonomous work must use one `initiative/v1` record and the canonical Discovery → Shaping → Execution → Decision lifecycle. Discovery resolves ambiguity and records boundaries. Shaping approves the artifact-first Execution Package v2. Execution authorizes an immutable batch and creates blocked cards. Integration opens read-only Decision; only human `approved_for_mr` yields MR intent.
+New governed/autonomous work must use one `initiative` record and the canonical Discovery → Shaping → Execution → Decision lifecycle. Discovery resolves ambiguity and records boundaries. Shaping approves the artifact-first Execution Package v2. Execution authorizes an immutable batch and creates blocked cards. Integration opens read-only Decision; only human `approved_for_mr` yields MR intent.
 
 Hermes remains identity, Kanban, assignment, dispatch, persistence, and lifecycle authority. A selected card must contain ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing fields block governed execution.
 
@@ -87,7 +87,7 @@ When no selected/running card owns the workspace, new work routes to Discovery/S
 
 The plugin's candidate skill mapping remains deterministic advisory guidance, not authorization. Hermes must call `skill_view(name='...')`; the plugin never calls it, inspects skill contents, creates cards/artifacts, or mutates Kanban. Canonical output precedence is target-project rules, explicit Initiative/card contract, Ginflow matrix, selected skill, then skill defaults.
 
-Decision notifications use `notification/v1`; transport remains adapter-owned.
+Decision notifications use `notification`; transport remains adapter-owned.
 
 - Use the Initiative key and package artifact paths.
 - Follow linked artifact templates and project-local rules for content quality and boundaries.
@@ -103,7 +103,7 @@ Hermes remains the lifecycle authority; Ginflow core validates records and `ginf
 
 ### Canonical project context
 
-On the first `/ginflow` load in a project, inspect `.ginflow.yaml` at the current repository root. Do not create a `ginflow` CLI and do not read, migrate, or write `.hermes/ginflow.yaml` or Hermes global config. If the project-local file is absent, show the resolved workspace and current/default Kanban board, then ask whether to use that board or create a new one. A new board requires a non-empty user-provided board name; create it through native Kanban operations before writing the config.
+On the first `/ginflow` load in a project, inspect `.ginflow.yaml` at the current repository root. Do not create a `ginflow` CLI or touch Hermes global config. If the project-local file is absent, show the resolved workspace and current/default Kanban board, then ask whether to use that board or create a new one. A new board requires a non-empty user-provided board name; create it through native Kanban operations before writing the config.
 
 ```yaml
 version: 1
@@ -125,7 +125,7 @@ Before creating a governed card, `/ginflow` checks the configured worker block. 
 
 `ginflow.trace` is optional and defaults off. See `references/project-context.md` for the enablement contract (env override, log locations).
 
-Before target-project work, determine whether the request is a new Initiative or active legacy v1 card. New Initiatives follow Discovery/Shaping/Execution/Decision. Legacy card checks below apply only to explicitly identified v1 cards.
+Before target-project work, follow Discovery/Shaping/Execution/Decision. Card checks below apply once execution starts.
 
 1. Confirm workspace points at real target repo.
 2. Read local `.hermes.md`, then any team `AGENTS.md`.

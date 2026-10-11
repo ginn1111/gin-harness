@@ -40,7 +40,7 @@ def integration_record(**changes):
 
 def review():
     return {
-        "schema": "review_cycle/v1",
+        "schema": "review_cycle",
         "review_key": "APP-42/review-1",
         "initiative_key": "APP-42",
         "batch_key": "APP-42/run-1",

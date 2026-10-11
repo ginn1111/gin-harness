@@ -13,7 +13,6 @@ Ginflow currently asks the agent to classify work by size and choose between Dir
 
 The desired workflow front-loads brainstorming, feedback, specification, work splitting, planning, approval, and validation. Kanban workers should receive complete, committed execution packages and continue until done or until a narrowly defined exception makes safe progress impossible.
 
-Related documentation also describes the current size-based workflow across several surfaces. It must be created, updated, or deleted as part of the migration so documentation, enforcement, tests, examples, and diagrams remain consistent.
 
 ## Solution
 
@@ -23,7 +22,7 @@ Interactive Shaping happens before Kanban execution. During Shaping, the user an
 
 After splitting, Ginflow creates blocked Kanban cards so each Work Unit has a durable execution record and stable links. The complete artifact package is committed and validated before any root card is unblocked. Dependency-gated cards wait for completed parents. Every implementation card runs in goal mode until it is done or reaches a defined Worker Exception. A final Integration Card verifies cross-unit behavior and global acceptance before the initiative completes.
 
-Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional artifact selection. Clarification becomes part of Shaping rather than an execution route. Existing active version 1 cards finish under legacy rules during migration.
+Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional artifact selection. Clarification becomes part of Shaping rather than an execution route.
 
 ## User Stories
 
@@ -73,31 +72,25 @@ Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional a
 44. As Gin, I want unit cancellation to trigger impact analysis and package reapproval, so that dependencies and acceptance remain coherent.
 45. As Gin, I want material changes discovered during execution to pause affected cards and return impacted artifacts to Shaping, so that workers do not silently expand approved work.
 46. As Gin, I want unaffected independent cards to continue while an impacted branch is reshaped, so that reapproval remains scoped.
-47. As a maintainer, I want version 2 selected by a versioned Work Contract, so that legacy and artifact-first workflows can coexist during rollout.
-48. As a maintainer, I want active legacy cards to finish under version 1 rules, so that migration does not invalidate work already underway.
-49. As a maintainer, I want new initiatives piloted under explicit version 2 before default cutover, so that real workflow friction is found safely.
-50. As a maintainer, I want version 1 removed after active legacy work closes, so that compatibility logic does not become permanent.
-51. As a maintainer, I want Contract states for draft, approved, active, completed, and cancelled, so that initiative lifecycle is explicit.
-52. As a maintainer, I want Spec and Plan states for draft, approved, active, completed, superseded, and cancelled, so that supporting artifact lifecycle is explicit.
-53. As Gin, I want approval identity and UTC time recorded on the Work Contract, so that approval is auditable.
-54. As a maintainer, I want all execution cards bound to the same committed package baseline, so that workers use one approved artifact snapshot.
-55. As a maintainer, I want artifact drift checks preserved through review and completion, so that linked documents cannot change silently.
-56. As a maintainer, I want canonical project verification preserved, so that Ginflow evidence never substitutes for product behavior checks.
-57. As a maintainer, I want one deterministic package validator, so that approval readiness has a single observable result.
-58. As a maintainer, I want validation to reject missing or unapproved artifacts, duplicate keys, broken links, cyclic dependencies, incomplete fields, unsafe workspace overlap, dirty linked paths, and missing baseline evidence, so that invalid packages fail before dispatch.
-59. As a documentation owner, I want a dedicated documentation migration Work Unit, so that related documentation receives explicit ownership and acceptance criteria.
-60. As a documentation owner, I want to create new Work Contract and artifact-first workflow documentation, so that version 2 is understandable.
-61. As a documentation owner, I want every Ginflow workflow document audited, so that stale size-based behavior is not missed.
-62. As a documentation owner, I want README, skill guidance, architecture material, starter guidance, examples, and diagrams updated together, so that users see one consistent workflow.
-63. As a documentation owner, I want obsolete Work Size and Direct Work guidance deleted, so that removed concepts are not presented as valid version 2 behavior.
-64. As a documentation owner, I want legacy version 1 guidance retained only where active-card compatibility requires it, so that migration rules remain precise.
-65. As a documentation owner, I want references and links checked during lifecycle verification, so that documentation CRUD does not leave broken navigation.
-66. As a future maintainer, I want canonical definitions for Shaping, Work Contract, Execution Package, Work Unit, Package Approval, Worker Exception, Integration Card, and Legacy Workflow, so that code and documentation share one language.
-67. As a future maintainer, I want an architectural decision record for artifact-first execution, so that the removal of Direct Work and Work Size remains understandable.
+47. As a maintainer, I want new initiatives piloted under explicit version 2 before default cutover, so that real workflow friction is found safely.
+48. As a maintainer, I want Contract states for draft, approved, active, completed, and cancelled, so that initiative lifecycle is explicit.
+49. As a maintainer, I want Spec and Plan states for draft, approved, active, completed, superseded, and cancelled, so that supporting artifact lifecycle is explicit.
+50. As Gin, I want approval identity and UTC time recorded on the Work Contract, so that approval is auditable.
+51. As a maintainer, I want all execution cards bound to the same committed package baseline, so that workers use one approved artifact snapshot.
+52. As a maintainer, I want artifact drift checks preserved through review and completion, so that linked documents cannot change silently.
+53. As a maintainer, I want canonical project verification preserved, so that Ginflow evidence never substitutes for product behavior checks.
+54. As a maintainer, I want one deterministic package validator, so that approval readiness has a single observable result.
+55. As a maintainer, I want validation to reject missing or unapproved artifacts, duplicate keys, broken links, cyclic dependencies, incomplete fields, unsafe workspace overlap, dirty linked paths, and missing baseline evidence, so that invalid packages fail before dispatch.
+56. As a documentation owner, I want to create new Work Contract and artifact-first workflow documentation, so that version 2 is understandable.
+57. As a documentation owner, I want every Ginflow workflow document audited, so that stale size-based behavior is not missed.
+58. As a documentation owner, I want README, skill guidance, architecture material, starter guidance, examples, and diagrams updated together, so that users see one consistent workflow.
+59. As a documentation owner, I want references and links checked during lifecycle verification, so that documentation CRUD does not leave broken navigation.
+60. As a future maintainer, I want canonical definitions for Shaping, Work Contract, Execution Package, Work Unit, Package Approval, Worker Exception, and Integration Card, so that code and documentation share one language.
+61. As a future maintainer, I want an architectural decision record for artifact-first execution, so that the removal of Direct Work and Work Size remains understandable.
 
 ## Implementation Decisions
 
-- Introduce `workflow_version: 2` as the explicit selector for artifact-first initiatives. A linked version 2 Work Contract selects the new flow. Active cards without one remain legacy version 1 work during migration.
+- Introduce `workflow_version: 2` as the explicit selector for artifact-first initiatives. A linked version 2 Work Contract selects the new flow.
 - Replace pre-execution route selection with **Shaping**. Shaping includes brainstorming, feedback, read-only repository investigation, artifact drafting, work splitting, dependency design, and package approval.
 - Permit artifact creation before Kanban cards exist. Prohibit product-code mutation, implementation dispatch, and execution commands during Shaping.
 - Define **Work Contract** as the initiative authority for objective, boundaries, exclusions, global acceptance, and verification strategy.
@@ -131,11 +124,8 @@ Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional a
 - Cancel a whole initiative by archiving unfinished cards and marking the Contract cancelled. Cancel a unit only after impact analysis; reshape and reapprove whenever global acceptance or dependencies change.
 - Add a deterministic package validator covering artifact states, required sections, unique keys, exact links, dependency cycles, owners, workspaces, simultaneous workspace safety, clean committed artifact paths, and baseline project verification.
 - Preserve Hermes Kanban as lifecycle authority, project-native canonical verification, review transitions, evidence-backed completion, artifact drift checks, workspace isolation, and setup-repository versus target-repository boundaries.
-- Create a dedicated documentation migration Work Unit. It owns creation, reading/auditing, updating, and deletion of all related workflow documentation and diagrams.
-- Create a domain glossary containing Shaping, Work Contract, Execution Package, Work Unit, Package Approval, Worker Exception, Integration Card, and Legacy Workflow.
+- Create a domain glossary containing Shaping, Work Contract, Execution Package, Work Unit, Package Approval, Worker Exception, and Integration Card.
 - Record the artifact-first workflow choice in an ADR because it is hard to reverse, surprising without context, and chosen over a materially different size-based alternative.
-- Migrate all coupled surfaces in one coordinated release: workflow skill, templates, routing guidance, completion gate, package validator, lifecycle tests, plugin tests, repository overview, architecture documentation, examples, diagrams, and target-project starter guidance.
-- Pilot version 2 behind the explicit version marker. Make it default for new initiatives after a successful real pilot. Preserve version 1 only for cards already active at cutover, then remove it after those cards close.
 
 ## Testing Decisions
 
@@ -148,7 +138,6 @@ Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional a
 - Extend the lifecycle seam to prove that a material artifact revision returns affected work to Shaping and requires a new approved baseline before resume.
 - Extend the lifecycle seam to prove that a blocked independent branch does not stop unrelated branches and that its descendants remain gated.
 - Extend the lifecycle seam to prove cancellation and partial-completion rules.
-- Extend the lifecycle seam to prove active legacy version 1 cards retain old behavior while version 2 packages use artifact-first behavior.
 - Add narrow plugin or validator unit tests only for failure cases that are difficult to observe precisely through the lifecycle test. Keep seams minimal.
 - Unit-test package rejection for missing artifacts, non-approved states, missing required sections, duplicate keys, broken or mismatched links, cyclic dependencies, missing owners, unsafe concurrent workspace overlap, dirty linked paths, missing commits, and absent baseline verification.
 - Unit-test Worker Exception classification and confirm ordinary implementation/test failures are not exceptions.
@@ -157,7 +146,6 @@ Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional a
 - Preserve prior completion-gate and native review-transition tests as regression coverage for evidence, linked-artifact state, completion baselines, drift, request-changes, and final completion.
 - Use existing plugin tests as prior art for deterministic guidance and gate failures.
 - Use existing shell integration tests as prior art for command-level startup and setup behavior.
-- Make documentation migration testable: scan maintained workflow sources for obsolete version 2 Work Size and Direct Work language, permit legacy terms only in explicitly marked version 1 compatibility sections, and validate references/links through the lifecycle test or one focused documentation check.
 - Run canonical repository verification before declaring implementation complete: lint plus full deterministic test suite.
 
 ## Out of Scope
@@ -171,7 +159,6 @@ Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional a
 - Allowing workers to expand objective, scope, acceptance, dependencies, specified behavior, security boundaries, or verification contracts without reapproval.
 - Replacing Hermes Kanban, its native task states, dispatcher, reviewer lifecycle, or notification model.
 - Replacing target-project canonical verification with Ginflow validation.
-- Creating permanent version 1 compatibility mode for new initiatives.
 - Estimating effort through renamed size labels. Turn budgets are runtime bounds, not effort categories.
 - Reviewer-authored implementation fixes.
 - Completing an initiative based on percentage done or a subset of the original acceptance criteria.
@@ -182,12 +169,10 @@ Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional a
 - Canonical flow: `Shaping → Work Contract → Spec → Work Units and Plans → blocked cards → package approval and commit → package validation → root unblocking → goal-mode execution → review → Integration Card → initiative completion`.
 - Artifact creation is part of Shaping and occurs before Kanban execution. Product-code mutation starts only after cards exist and the package passes its gate.
 - “Run until done or exception” is the central worker design constraint. New prompts or pauses should not be added for decisions already delegated by the approved package.
-- The documentation migration is a first-class Work Unit, not cleanup after implementation. Release cannot complete while current and version 2 workflow descriptions conflict.
-- Rollout order: implement explicit version 2, run one real pilot initiative, fix package/worker friction, make version 2 default for new work, allow active legacy cards to close, then remove legacy routing.
 
 ## Provider documents
 
-Architecture alignment for GitHub #18/#19. Runtime implementation (setup resolution, adapters, migration, compatibility removal) is out of scope here.
+Architecture alignment for GitHub #18/#19. Runtime implementation (setup resolution, adapters) is out of scope here.
 
 - **Provider document** — the single canonical governance record for one Work Unit, hosted by `local` (consolidated Markdown, frontmatter metadata), `github` (Issue), or `linear` (Issue; hidden machine metadata marker for remote providers). **Work Package** is the normalized, provider-neutral content (Contract, Spec, Plan, acceptance, verification, dependencies, risks) rendered into it.
 - **Document reference** — provider-neutral `{provider, stable ID, path or URL}` replacing local-file-specific package links. Human-readable link lives in the card; structured reference in package/task metadata.
@@ -199,4 +184,4 @@ Architecture alignment for GitHub #18/#19. Runtime implementation (setup resolut
 - **Creation and adoption** — a pure provider-document builder renders and hashes; adapters perform side effects. Remote writes need explicit approval. External records are created before Hermes cards; provider failure creates no card. Local flow keeps blocked-card-first safety. Exactly one metadata match may be adopted with confirmation; multiple matches block; title-only matches only warn. No silent fallback to another provider; no overwrite of conflicting content.
 - **Authority** — Hermes Kanban stays lifecycle authority (status, assignment, workspace, dependencies, review, completion). Cards stay concise (Objective, Scope, Acceptance, Verification, dispatch dependencies, document link). Provider records carry no Hermes task backlink in v1; stable Work Unit key enables cross-search. Content freezes when the card starts running; later change needs explicit re-baseline and approval. Project-native verification remains behavior authority.
 - **Tracker status sync (github/linear only)** — applies only to Issue workflow status via explicit setup-resolved mappings; local provider has none; provider document content/frontmatter is not rewritten. Workers sync start, block, resume, review-request; reviewers sync request-changes and successful completion. Provider update happens before the Hermes transition completes, then the adapter re-fetches fresh evidence. Missing/invalid mapping, update failure, or re-fetch mismatch fails closed with no partial-success claim. Assignment, labels, milestones, cycles, dependencies are never synced.
-- **Newest schema only** — installed contract is authoritative; users do not select workflow versions. Setup performs previewed, approved, backed-up (timestamped, in ignored migration state) one-way config migration. Outdated or malformed config permits read-only inspection but blocks governed creation. Only unfinished work migrates: replacement blocked cards are created, validated, cross-linked, then old cards archived; old authority stays until every step succeeds; old local artifacts are marked superseded and deleted only by separate approval. Completed and archived history is untouched. Legacy runtime paths and `workflow_version` selection are removed after migration tooling exists; this supersedes the pilot/version-selector rollout above.
+- **Newest schema only** — installed contract is authoritative; users do not select workflow versions. Outdated or malformed config permits read-only inspection but blocks governed creation.

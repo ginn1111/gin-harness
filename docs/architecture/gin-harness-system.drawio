@@ -229,9 +229,6 @@
         <mxCell id="pd-stop" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;fontFamily=Architects Daughter;" value="Stop, fail closed&lt;div&gt;conflict · no access · missing mapping · stale / drifted / missing record · no local fallback&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="180" x="220" y="1180" as="geometry" />
         </mxCell>
-        <mxCell id="pd-migrate" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Architects Daughter;" value="Newest schema only&lt;div&gt;setup migrates unfinished work via approved replacement blocked cards; history untouched&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="180" y="1180" as="geometry" />
-        </mxCell>
         <mxCell id="pd-e1" edge="1" parent="1" source="pd-pkg" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;" target="pd-resolve" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -269,14 +266,6 @@
         </mxCell>
         <mxCell id="pd-e11" edge="1" parent="1" source="pd-resolve" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;dashed=1;" target="pd-stop" value="conflict / no access">
           <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="pd-e12" edge="1" parent="1" source="pd-migrate" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;dashed=1;" target="pd-resolve" value="setup">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="90" y="1100" />
-              <mxPoint x="310" y="1100" />
-            </Array>
-          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

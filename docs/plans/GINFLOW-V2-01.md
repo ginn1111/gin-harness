@@ -9,7 +9,7 @@ owner: ginb
 
 ## Objective
 
-Establish the version 2 domain contract so Ginflow can recognize and validate a minimal artifact-first Execution Package without changing active version 1 behavior. Define canonical vocabulary, artifact lifecycles, stable keys, approval evidence, package baseline rules, and the architectural decision behind the migration.
+Establish the version 2 domain contract so Ginflow can recognize and validate a minimal artifact-first Execution Package. Define canonical vocabulary, artifact lifecycles, stable keys, approval evidence, package baseline rules, and the architectural decision.
 
 ## Dependencies
 
@@ -18,7 +18,6 @@ None — can start immediately.
 ## Execution
 
 - Implement the smallest complete vertical slice described by this plan.
-- Preserve version 1 behavior until the explicit contraction unit.
 - Run project-native verification and record exact evidence on the Kanban card.
 
 ## Acceptance criteria
@@ -26,4 +25,3 @@ None — can start immediately.
 - [x] Canonical terms and lifecycle states are documented and used consistently.
 - [x] An ADR records the artifact-first decision and its trade-offs.
 - [x] A minimal approved version 2 package validates through one deterministic seam.
-- [x] Existing version 1 behavior remains unchanged.

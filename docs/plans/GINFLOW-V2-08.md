@@ -18,7 +18,6 @@ Handle material discoveries and cancellation without corrupting active execution
 ## Execution
 
 - Implement the smallest complete vertical slice described by this plan.
-- Preserve version 1 behavior until the explicit contraction unit.
 - Run project-native verification and record exact evidence on the Kanban card.
 
 ## Acceptance criteria

@@ -3,7 +3,7 @@ from initiative import approve_discovery, transition, validate_initiative
 
 def discovery():
     return {
-        "schema": "initiative/v1",
+        "schema": "initiative",
         "initiative_key": "APP-42",
         "phase": "Discovery",
         "phase_state": "draft",

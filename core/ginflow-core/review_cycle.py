@@ -19,8 +19,8 @@ def _text(value: Any) -> bool:
 
 def _base_errors(record: Mapping[str, Any]) -> list[str]:
     errors = []
-    if record.get("schema") != "review_cycle/v1":
-        errors.append("schema must be review_cycle/v1")
+    if record.get("schema") != "review_cycle":
+        errors.append("schema must be review_cycle")
     for field in ("review_key", "initiative_key", "batch_key"):
         if not _text(record.get(field)):
             errors.append(f"{field} is required")

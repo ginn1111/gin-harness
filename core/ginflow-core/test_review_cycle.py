@@ -2,7 +2,7 @@ from review_cycle import append_revision, validate_review
 
 
 def review(**changes):
-    value = {"schema": "review_cycle/v1", "review_key": "APP-42/review-1", "initiative_key": "APP-42", "batch_key": "APP-42/run-1", "actor": {"id": "gin", "profile": "operator", "claim": "review:decide"}, "commits": {"baseline": "base", "result": "result", "target": "target"}, "ticket_outcomes": [{"key": "U", "state": "completed"}], "change_groups": [{"key": "CORE", "paths": ["core/a.py"], "tickets": ["U"]}], "evidence": [{"id": "ev", "kind": "verification"}], "findings": [], "deviations": [], "risks": [], "dispositions": [{"change_group": "CORE", "disposition": "accept"}], "aggregate_decision": "approved_for_mr", "revision": 1}
+    value = {"schema": "review_cycle", "review_key": "APP-42/review-1", "initiative_key": "APP-42", "batch_key": "APP-42/run-1", "actor": {"id": "gin", "profile": "operator", "claim": "review:decide"}, "commits": {"baseline": "base", "result": "result", "target": "target"}, "ticket_outcomes": [{"key": "U", "state": "completed"}], "change_groups": [{"key": "CORE", "paths": ["core/a.py"], "tickets": ["U"]}], "evidence": [{"id": "ev", "kind": "verification"}], "findings": [], "deviations": [], "risks": [], "dispositions": [{"change_group": "CORE", "disposition": "accept"}], "aggregate_decision": "approved_for_mr", "revision": 1}
     value.update(changes)
     return value
 

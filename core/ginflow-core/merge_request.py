@@ -29,7 +29,7 @@ def build_mr_intent(review: Mapping[str, Any], *, title: str, body: str, reviewe
     if not isinstance(title, str) or not title.strip() or not isinstance(body, str) or not body.strip():
         raise ValueError("title and body are required")
     return {
-        "schema": "merge_request_intent/v1",
+        "schema": "merge_request_intent",
         "initiative_key": review["initiative_key"],
         "review_key": review["review_key"],
         "revision_digest": review["revision_digest"],

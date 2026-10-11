@@ -15,4 +15,4 @@ Update Draw.io first when workflow behavior changes, then update the Mermaid exp
 - [Ginflow routing core](../../core/ginflow-core/routing.py) — framework-agnostic routing primitives.
 - [`ginflow-gate` plugin](../../plugins/ginflow-gate/) — routing-context injection and the blocking Kanban completion gate.
 - [Provider-document architecture](../specs/GINFLOW-V2.md#provider-documents) — canonical provider document, `document_baseline`, status sync, and newest-schema-only rules; ADR: [0001](../adrs/0001-artifact-first-execution-packages.md).
-- [Ginflow v2 spec](../specs/GINFLOW-V2.md) — artifact-first Execution Package, Work Contract, and documentation-migration rules.
+- [Ginflow v2 spec](../specs/GINFLOW-V2.md) — artifact-first Execution Package, Work Contract, and documentation rules.

@@ -142,7 +142,7 @@ def test_ginflow_skill_active():
             "Run `/ginflow` to initialize", "Repair `.ginflow.yaml`",
         )), "context should provide route action"
         if "no_cards_for_workspace" in result["context"]:
-            assert "initiative/v1" in result["context"]
+            assert "initiative" in result["context"]
             assert "Discovery → Shaping → Execution → Decision" in result["context"]
             assert "Choose work mode" not in result["context"]
             assert "Legacy compatibility guidance is withheld" in result["context"]

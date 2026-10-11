@@ -107,7 +107,7 @@ def authorize_batch(package: Mapping[str, Any], *, actor: Mapping[str, Any], bud
     if not _text(initiative):
         raise ValueError("initiative_key is required")
     return {
-        "schema": "execution_batch/v1",
+        "schema": "execution_batch",
         "batch_key": f"{initiative}/run-{batch_number}",
         "initiative_key": initiative,
         "package_revision": package.get("package_revision", f"{initiative}/pkg-1"),

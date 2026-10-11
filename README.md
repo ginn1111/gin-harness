@@ -5,7 +5,7 @@
 
 **Ginflow: a workflow, routing, and completion-gate layer around [Hermes Agent](https://hermes-agent.nousresearch.com/) Kanban.** It makes autonomous agent work scoped, restartable, and evidence-backed.
 
-> **Status: early.** Contracts are versioned `v1` and may change.
+> **Status: early.** Contracts may change.
 
 Hermes is an agent runtime with profiles and a native Kanban board. Ginflow adds shared documents, routing, and gates so a card cannot be completed without proof.
 

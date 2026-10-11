@@ -16,7 +16,7 @@ def base(**changes):
 def test_successful_integration_opens_redacted_decision():
     assert decision_ready(base())["outcome"] == "decision_ready"
     projection = build_projection(base(), summary="safe summary")
-    assert projection["schema"] == "decision_projection/v1"
+    assert projection["schema"] == "decision_projection"
     assert projection["behavior_delta"][0]["path"] == "core/a.py"
     assert "raw_log" not in projection
 
@@ -71,7 +71,7 @@ def blocked(**changes):
 
 def test_notification_has_idempotency_and_delivery_state():
     notification = build_notification(base(), message="review ready")
-    assert notification["schema"] == "notification/v1"
+    assert notification["schema"] == "notification"
     assert notification["idempotency_key"] == "APP-42/run-1:APP-42/review-1:decision_ready"
     assert notification["delivery"] == {"attempts": 0, "acknowledged": False, "replay_key": notification["idempotency_key"]}
 

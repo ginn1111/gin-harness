@@ -36,7 +36,7 @@ def test_digest_is_canonical_and_authorization_binds_inputs():
     first = canonical_digest(p)
     assert first == canonical_digest({key: p[key] for key in reversed(p)})
     result = authorize_batch(p, actor=ACTOR, budget={"max_turns": 10}, stop_conditions=["verification failure"], workspaces=["/repo/u"], baseline_commit="base")
-    assert result["schema"] == "execution_batch/v1"
+    assert result["schema"] == "execution_batch"
     assert result["batch_key"] == "APP-42/run-1"
     assert result["package_digest"] == first
     assert result["immutable"] is True

@@ -324,7 +324,7 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
     if route_name == "no_cards_for_workspace":
         context += (
             "Report workspace to orchestrator; no Kanban card exists for workspace. "
-            "For new governed/autonomous work, create or select one initiative/v1 record "
+            "For new governed/autonomous work, create or select one initiative record "
             "and follow Discovery → Shaping → Execution → Decision. Discovery resolves "
             "ambiguity; Shaping approves the artifact-first package; do not mutate product "
             "code or dispatch cards before approved Shaping. Legacy Work Mode/Work Size "

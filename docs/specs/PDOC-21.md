@@ -25,7 +25,7 @@ Setup establishes one explicit documentation authority per project, validated an
 
 ## Non-goals
 
-Document building (#20), remote adapters (#22/#23), card migration (#24), legacy removal (#25).
+Document building (#20), remote adapters (#22/#23), card migration (#24).
 
 ## Assumptions to confirm
 

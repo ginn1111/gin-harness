@@ -97,7 +97,7 @@ Collaboration stays disabled until the current Hermes session is explicitly
 enabled. `pre_llm_call` adds only bounded local workflow state, never secrets,
 files, diffs, logs, or mutation. Hook failures fail open. Plugin `doctor` is
 read-only by default; pass `--repair` only when bridge/tunnel repair is
-intentional. Normal setup and doctor do not edit Codex configuration; the legacy compatibility command is explicit only. Existing
+intentional. Normal setup and doctor do not edit Codex configuration. Existing
 C2C names, state, auth, pairing, read-only MCP, and protocol remain unchanged.
 
 Validate without enabling collaboration:
