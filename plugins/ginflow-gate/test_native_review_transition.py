@@ -82,7 +82,7 @@ def test_native_review_transition():
         gate = load_gate()
         card = gate.load_card(task_id, board=BOARD)
         assert gate.pre_tool_call("kanban_request_review", {"task_id": task_id, "metadata": metadata}, "", board=BOARD) is None
-        run_hermes(worker_env, "kanban", "--board", BOARD, "request-review", task_id, "--summary", "transition verified", "--reviewer", "gintary", "--metadata", json.dumps(metadata))
+        run_hermes(worker_env, "kanban", "--board", BOARD, "request-review", task_id, "--summary", "transition verified", "--metadata", json.dumps(metadata))
         reviewed = json.loads(run_hermes(env, "kanban", "--board", BOARD, "show", task_id, "--json").stdout)["task"]
         assert reviewed["status"] == "review"
         assert reviewed["assignee"] == "gintary"

@@ -104,8 +104,12 @@ ginflow:
     profile: <worker Hermes profile>
     provider: <provider name>
     model: <model name>
+  reviewer:
+    profile: <installed Hermes profile>   # optional
   trace: false
 ```
+
+Optional `ginflow.reviewer.profile` must name an installed Hermes profile; unknown or malformed values fail closed before governed card creation. When valid, `/ginflow` seeds Hermes `kanban.default_reviewer_profile` (`project_config.seed_default_reviewer`). When absent, the existing Hermes value is left unchanged. `kanban_request_review` never passes a reviewer; Hermes resolves its configured default.
 
 `board` and `workspace` are required. Board resolution uses explicit runtime override, `HERMES_KANBAN_BOARD`, this file, then Hermes active board. Missing context sends work to `/ginflow`; malformed, incomplete, or workspace-mismatched context fails closed. Ordinary verification reads config but does not initialize or rewrite it. The optional `worker` block supplies governed-card dispatch defaults; explicit card values win.
 

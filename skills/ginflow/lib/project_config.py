@@ -5,7 +5,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Callable, Iterable, Mapping
 
 try:
     import yaml
@@ -180,6 +180,89 @@ def resolve_worker_dispatch(
     return result
 
 
+class ReviewerConfigError(ValueError):
+    """Raised when the configured project reviewer is unusable."""
+
+
+def _reviewer_block(workspace: Path) -> Any:
+    context = load_config(workspace).get("ginflow")
+    return context.get("reviewer") if isinstance(context, dict) else None
+
+
+def configured_reviewer(workspace: Path) -> str | None:
+    block = _reviewer_block(workspace)
+    value = block.get("profile") if isinstance(block, dict) else None
+    return value.strip() if isinstance(value, str) and value.strip() else None
+
+
+def reviewer_error(workspace: Path, installed_profiles: Iterable[str]) -> str | None:
+    """Validate optional ginflow.reviewer.profile; None when absent or valid."""
+    block = _reviewer_block(workspace)
+    if block is None:
+        return None
+    if not isinstance(block, dict):
+        return "ginflow.reviewer must be a mapping"
+    unknown = set(block) - {"profile"}
+    if unknown:
+        return "ginflow.reviewer has unknown fields: " + ", ".join(sorted(unknown))
+    value = block.get("profile")
+    if not isinstance(value, str) or not value.strip():
+        return "ginflow.reviewer.profile must be a non-empty string"
+    if value.strip() not in set(installed_profiles):
+        return f"ginflow.reviewer.profile {value.strip()!r} is not an installed Hermes profile"
+    return None
+
+
+def installed_profiles() -> list[str]:
+    root = Path(os.environ.get("HERMES_PROFILES_ROOT", Path.home() / ".hermes" / "profiles"))
+    names = [p.name for p in root.iterdir() if p.is_dir()] if root.is_dir() else []
+    return ["default", *names]
+
+
+def hermes_default_reviewer() -> str | None:
+    home = os.environ.get("HERMES_HOME")
+    if not home or yaml is None:
+        return None
+    try:
+        data = yaml.safe_load((Path(home) / "config.yaml").read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError):
+        return None
+    kanban = data.get("kanban") if isinstance(data, dict) else None
+    value = kanban.get("default_reviewer_profile") if isinstance(kanban, dict) else None
+    return value if isinstance(value, str) and value.strip() else None
+
+
+def _hermes_write(profile: str) -> None:
+    subprocess.run(
+        ["hermes", "config", "set", "kanban.default_reviewer_profile", profile],
+        check=True, capture_output=True, text=True,
+    )
+
+
+def seed_default_reviewer(
+    workspace: Path,
+    *,
+    installed_profiles: Iterable[str],
+    current: str | None = None,
+    write: Callable[[str], Any] = _hermes_write,
+) -> tuple[str | None, list[str]]:
+    """Seed Hermes kanban.default_reviewer_profile from project config.
+
+    Absent project reviewer: Hermes config untouched. Invalid reviewer: raises
+    before any write (fail closed). Writes only when value differs from
+    ``current``. Returns (configured reviewer, values written).
+    """
+    error = reviewer_error(workspace, list(installed_profiles))
+    if error:
+        raise ReviewerConfigError(error)
+    reviewer = configured_reviewer(workspace)
+    written: list[str] = []
+    if reviewer and reviewer != current:
+        write(reviewer)
+        written.append(reviewer)
+    return reviewer, written
+
+
 def context_mismatch(workspace: Path) -> str | None:
     """Return a deterministic error when a config belongs to another project."""
     error = context_error(workspace)
@@ -332,4 +415,4 @@ def initialize_context(
     return persisted
 
 
-__all__ = ["CONFIG_RELATIVE_PATH", "CONFIG_VERSION", "WORKER_FIELDS", "ContextInitializationError", "WorkerDefaultsError", "active_board", "config_exists", "config_path", "configured_context", "configured_worker", "context_error", "context_mismatch", "initialize_context", "load_config", "persist_context", "persist_worker_defaults", "resolve_board", "resolve_worker_dispatch", "worker_error"]
+__all__ = ["ReviewerConfigError", "configured_reviewer", "hermes_default_reviewer", "installed_profiles", "reviewer_error", "seed_default_reviewer", "CONFIG_RELATIVE_PATH", "CONFIG_VERSION", "WORKER_FIELDS", "ContextInitializationError", "WorkerDefaultsError", "active_board", "config_exists", "config_path", "configured_context", "configured_worker", "context_error", "context_mismatch", "initialize_context", "load_config", "persist_context", "persist_worker_defaults", "resolve_board", "resolve_worker_dispatch", "worker_error"]

@@ -12,7 +12,7 @@ if str(LIB) not in sys.path:
     sys.path.insert(0, str(LIB))
 
 from harness_core import artifact_gate, check, has, linked_artifacts, load_kanban_card, normalize_card
-from project_config import config_exists, config_path, context_error, resolve_board
+from project_config import config_exists, config_path, context_error, installed_profiles, resolve_board, reviewer_error
 
 
 COMMAND_TIMEOUT = 5
@@ -108,6 +108,8 @@ def main():
     ginflow = (root / "skills/ginflow/SKILL.md").read_text()
     target = args.target.resolve() if args.target else None
     config_error = context_error(target) if target else None
+    if target and not config_error:
+        config_error = reviewer_error(target, installed_profiles())
     if target and not config_error and not config_exists(target):
         config_error = "project config is absent; run `/ginflow` to initialize .ginflow.yaml"
     board = resolve_board(target or Path.cwd(), args.board)

@@ -123,6 +123,8 @@ ginflow:
     profile: <worker Hermes profile>
     provider: <provider name>
     model: <model name>
+  reviewer:
+    profile: <installed Hermes profile> # optional; seeds kanban.default_reviewer_profile
   trace: false # optional; enables ginflow-trace function logging
 ```
 

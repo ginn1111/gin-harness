@@ -76,6 +76,7 @@ test: lint setup-test lifecycle-test plugin-test install-test
 ## Canonical ginflow flat-flow integration test (single command, per-step PASS/FAIL)
 lifecycle-test:
 	python3 skills/ginflow/scripts/test-ginflow-lifecycle.py
+	python3 skills/ginflow/scripts/test-project-reviewer.py
 
 install-test:
 	bash scripts/test-install.sh
