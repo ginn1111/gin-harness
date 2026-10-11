@@ -1,5 +1,5 @@
 ---
-status: in_progress
+status: completed
 scope:
   - plugins/ginflow-gate/ block routing for kanban_task_blocked
   - skills/ginflow/lib/project_config.py notify.target validation
@@ -37,13 +37,13 @@ When `notify.target` is absent or the push fails, this slice does only what is c
 
 ## Acceptance criteria
 
-- [ ] Critical block with valid target sends one `hermes send` with the bounded message and the task remains `blocked` (B3, B5)
-- [ ] Trace off: no send, no routing, native `kanban_block` behavior (B1)
-- [ ] `dependency` block is untouched (B4)
-- [ ] Invalid `notify.target` reports an invalid project config route (B7)
-- [ ] Hook failure does not break the block transition (B2)
-- [ ] New test is wired into the `plugin-test` target
-- [ ] `make lint && make test` pass
+- [x] Critical block with valid target sends one `hermes send` with the bounded message and the task remains `blocked` (B3, B5)
+- [x] Trace off: no send, no routing, native `kanban_block` behavior (B1)
+- [x] `dependency` block is untouched (B4)
+- [x] Invalid `notify.target` reports an invalid project config route (B7)
+- [x] Hook failure does not break the block transition (B2)
+- [x] New test is wired into the `plugin-test` target
+- [x] `make lint && make test` pass
 
 ## Verification
 

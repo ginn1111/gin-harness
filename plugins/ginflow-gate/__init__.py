@@ -1,10 +1,11 @@
 """Combined Ginflow routing and completion gate plugin."""
 
-from . import gate, routing
+from . import block_routing, gate, routing
 
 
 def register(ctx) -> None:
     routing.register(ctx)
+    block_routing.register(ctx)
     gate.register(ctx)
 
 

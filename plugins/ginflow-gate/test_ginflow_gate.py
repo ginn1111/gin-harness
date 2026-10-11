@@ -625,6 +625,6 @@ sys.modules["ginflow_gate_package"] = package
 package_spec.loader.exec_module(package)
 hooks = Hooks()
 package.register(hooks)
-assert hooks.names == ["pre_llm_call", "pre_tool_call", "post_tool_call"]
+assert hooks.names == ["pre_llm_call", "kanban_task_blocked", "pre_tool_call", "post_tool_call"]
 
 print("ginflow gate rejection test passed")

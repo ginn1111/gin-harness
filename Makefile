@@ -86,6 +86,7 @@ plugin-test:
 	python3 plugins/ginflow-gate/test_recovery_policy.py
 	python3 plugins/ginflow-gate/test_recovery.py
 	python3 plugins/ginflow-gate/test_reviewer_injection.py
+	@if command -v hermes >/dev/null 2>&1; then python3 plugins/ginflow-gate/test_block_routing.py; else echo "SKIP: block routing (hermes CLI not installed)"; fi
 	@if command -v hermes >/dev/null 2>&1; then python3 plugins/ginflow-gate/test_native_review_transition.py; else echo "SKIP: native review transition (hermes CLI not installed)"; fi
 	$(MAKE) trace-test
 

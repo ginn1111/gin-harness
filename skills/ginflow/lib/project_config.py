@@ -126,7 +126,29 @@ def context_error(workspace: Path) -> str | None:
     actual = Path(workspace).expanduser().resolve()
     if expected != actual:
         return f"project config workspace {expected} does not match {actual}"
+    return notify_error(context)
+
+
+def notify_error(context: Mapping[str, Any]) -> str | None:
+    """Validate optional ginflow.notify.target; None when absent or valid."""
+    if "notify" not in context:
+        return None
+    block = context["notify"]
+    if not isinstance(block, dict):
+        return "ginflow.notify must be a mapping"
+    unknown = set(block) - {"target"}
+    if unknown:
+        return "ginflow.notify has unknown fields: " + ", ".join(sorted(unknown))
+    if "target" in block and (not isinstance(block["target"], str) or not block["target"].strip()):
+        return "ginflow.notify.target must be a non-empty string"
     return None
+
+
+def configured_notify_target(workspace: Path) -> str | None:
+    context = load_config(workspace).get("ginflow")
+    block = context.get("notify") if isinstance(context, dict) else None
+    value = block.get("target") if isinstance(block, dict) else None
+    return value.strip() if isinstance(value, str) and value.strip() else None
 
 
 def configured_context(workspace: Path) -> dict[str, str]:
