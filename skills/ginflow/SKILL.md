@@ -396,6 +396,7 @@ Stop and clarify when:
 - `references/drift-detect.md`
 - `references/blank-project-checklist.md`
 - `references/workspace-health-warnings.md`
+- `references/trace-routing.md` (block kinds, `required_action`, critical/repairable routing; read before `kanban_block`)
 
 - `templates/plan.md`
 - `templates/spec.md`

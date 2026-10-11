@@ -1,5 +1,5 @@
 ---
-status: in_progress
+status: completed
 scope:
   - skills/ginflow/references/trace-routing.md
   - skills/ginflow/SKILL.md pointer line
@@ -22,7 +22,7 @@ Workers and the repair profile have one reference for block-kind routing.
 
 ## Acceptance criteria
 
-- [ ] Reference documents kinds, `required_action`, both routes, injected context, credential constraint
-- [ ] One pointer line added to the `ginflow` skill entry
-- [ ] Reference matches shipped behavior
-- [ ] `make lint && make test` pass
+- [x] Reference documents kinds, `required_action`, both routes, injected context, credential constraint
+- [x] One pointer line added to the `ginflow` skill entry
+- [x] Reference matches shipped behavior
+- [x] `make lint && make test` pass
