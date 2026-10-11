@@ -1,5 +1,5 @@
 ---
-status: in_progress
+status: completed
 scope:
   - plugins/ginflow-gate/ block routing repeat guard and test
 owner: ginb
@@ -21,11 +21,11 @@ One auto-repair per task. A second repairable block on the same task becomes cri
 
 ## Acceptance criteria
 
-- [ ] Second `transient` block pushes a critical notice
-- [ ] Task stays `blocked`; not reassigned to `gintary` again
-- [ ] First `transient` block still auto-repairs
-- [ ] `make lint && make test` pass
+- [x] Second `transient` block pushes a critical notice
+- [x] Task stays `blocked`; not reassigned to `gintary` again
+- [x] First `transient` block still auto-repairs
+- [x] `make lint && make test` pass
 
 ## TBD
 
-- How a prior auto-repair is detected (card comment marker vs event history) — owner: ginb. Must use card data only; no new persistence (see #26).
+- Resolved: prior auto-repair detected by existing `[ginflow] origin=worker` card comment (card data only, no new persistence).

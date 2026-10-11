@@ -17,6 +17,7 @@ from pathlib import Path
 CRITICAL_KINDS = frozenset({"needs_input", "capability"})
 VALID_KINDS = ("needs_input", "capability", "transient", "dependency")
 _REQUIRED_ACTION = re.compile(r"(?im)^\s*required_action:[ \t]*(\S.*)$")
+_REPAIR_MARKER = "[ginflow] origin=worker"
 MAX_BODY = 800
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,7 @@ def _load_task(task_id: str, board: str | None) -> dict:
         raise RuntimeError(result.stderr.strip() or "unable to read task")
     data = json.loads(result.stdout)
     task = data["task"]
+    task["comments"] = data.get("comments") or []
     # `show --json` omits tasks.block_kind; the latest block event carries it.
     if not task.get("block_kind"):
         for event in reversed(data.get("events") or []):
@@ -136,8 +138,10 @@ def on_task_blocked(task_id: str = "", board: str | None = None, assignee: str |
         if not _trace_on(path):
             return
         if kind == "transient":
-            _route_repairable(task_id, board, assignee or task.get("assignee"), run_id, reason)
-            return
+            # Prior auto-repair marker lives on the card; a repeat becomes critical (no reassign).
+            if not any(str(c.get("body") or "").startswith(_REPAIR_MARKER) for c in task["comments"]):
+                _route_repairable(task_id, board, assignee or task.get("assignee"), run_id, reason)
+                return
         error = _config.context_error(path)
         if error:
             logger.warning("ginflow block routing: invalid project config route: %s", error)

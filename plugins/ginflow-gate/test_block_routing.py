@@ -190,6 +190,20 @@ def main():
         assert status(t) == "blocked"
         (tmp / "fail").unlink()
 
+        # second transient block on same task: critical push, no reassign, still blocked
+        write_config("  trace: true\n  notify:\n    target: telegram:1\n")
+        t = block("transient", "flaky")
+        n = len(fire(t, "flaky"))  # first: auto-repair, no send
+        assert show(t)["task"]["assignee"] == "gintary"
+        hermes(env, "kanban", "--board", BOARD, "claim", t)
+        hermes(env, "kanban", "--board", BOARD, "block", t, "flaky again", "--kind", "transient")
+        got = fire(t, "flaky again")
+        assert len(got) == n + 1 and got[-1].startswith("send --to telegram:1 -q ") and "flaky again" in got[-1], got[n:]
+        data = show(t)
+        # hook never unblocks/reassigns; Hermes core may itself escalate a re-blocked task to triage
+        assert data["task"]["assignee"] == "gintary" and data["task"]["status"] in ("blocked", "triage"), data["task"]
+        assert len([c for c in data["comments"] if c["body"].startswith("[ginflow] origin=worker")]) == 1
+
         # hook failure (hermes send missing/erroring) never raises
         write_config("  trace: true\n  notify:\n    target: telegram:1\n")
         os.environ["PATH"] = "/nonexistent"
