@@ -4,6 +4,7 @@
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -21,6 +22,7 @@ _ginflow_loaded = module._ginflow_loaded
 _routing_context = module._routing_context
 _route = module._route
 _project_config_route = module._project_config_route
+_is_legacy_v1_card = module._is_legacy_v1_card
 format_work_guidance = module.format_work_guidance
 
 
@@ -89,7 +91,9 @@ def test_project_config_routes_fail_closed():
             )
             invalid = _routing_context()
             assert "route=project_config_invalid" in invalid["context"]
-            assert "must be an absolute path" in invalid["context"]
+            assert any(message in invalid["context"] for message in (
+                "must be an absolute path", "requires PyYAML",
+            ))
             assert "Repair `.ginflow.yaml`" in invalid["context"]
             assert "mutation_allowed=False" in invalid["context"]
 
@@ -97,14 +101,15 @@ def test_project_config_routes_fail_closed():
                 "version: 1\nginflow:\n  board: test\n"
                 f"  workspace: {target.resolve()}\n"
             )
-            assert _project_config_route(target) is None
-            old_loader = module._load_tasks
-            module._load_tasks = lambda: []
-            try:
-                no_cards = _routing_context()
-            finally:
-                module._load_tasks = old_loader
-            assert "route=no_cards_for_workspace" in no_cards["context"]
+            if "requires PyYAML" not in invalid["context"]:
+                assert _project_config_route(target) is None
+                old_loader = module._load_tasks
+                module._load_tasks = lambda: []
+                try:
+                    no_cards = _routing_context()
+                finally:
+                    module._load_tasks = old_loader
+                assert "route=no_cards_for_workspace" in no_cards["context"]
         finally:
             os.chdir(old_cwd)
             if old_skills is None:
@@ -133,14 +138,15 @@ def test_ginflow_skill_active():
         assert "route=" in result["context"] and "mutation_allowed=" in result["context"], \
             "context should expose structured deterministic route"
         assert any(marker in result["context"] for marker in (
-            "Report", "Validate", "Resume", "Do not implement", "Choose work mode",
+            "Report", "Validate", "Resume", "Do not implement",
             "Run `/ginflow` to initialize", "Repair `.ginflow.yaml`",
         )), "context should provide route action"
         if "no_cards_for_workspace" in result["context"]:
-            assert "Choose work mode" in result["context"]
-            assert "investigation" in result["context"]
-            assert "implementation" in result["context"]
-            assert "brainstorming" in result["context"]
+            assert "initiative/v1" in result["context"]
+            assert "Discovery → Shaping → Execution → Decision" in result["context"]
+            assert "Choose work mode" not in result["context"]
+            assert "Legacy compatibility guidance is withheld" in result["context"]
+            assert "mutation_allowed=False" in result["context"]
     finally:
         if old_skills is not None:
             os.environ["HERMES_TUI_SKILLS"] = old_skills
@@ -148,8 +154,20 @@ def test_ginflow_skill_active():
             os.environ.pop("HERMES_TUI_SKILLS", None)
         if old_task is not None:
             os.environ["HERMES_KANBAN_TASK"] = old_task
+        else:
+            os.environ.pop("HERMES_KANBAN_TASK", None)
 
     print("PASS: ginflow active → routing called")
+
+
+def test_legacy_v1_detection_requires_explicit_card_metadata():
+    assert _is_legacy_v1_card({"id": "new", "metadata": {}}) is False
+    assert _is_legacy_v1_card({"id": "new", "metadata": {"workflow_version": 2}}) is False
+    assert _is_legacy_v1_card({"id": "old", "metadata": {"workflow_version": 1}}) is True
+    assert _is_legacy_v1_card({"id": "old", "metadata": {"ginflow_version": 1}}) is True
+    assert _is_legacy_v1_card({"id": "old", "metadata": {"legacy_v1": True}}) is True
+    assert _is_legacy_v1_card({"id": "old", "metadata": {"legacy_v1": "true"}}) is False
+    print("PASS: legacy v1 detection requires explicit metadata")
 
 
 def test_work_guidance_maps_modes_to_bounded_skills():
@@ -296,6 +314,9 @@ def test_live_tmp_next_card_docs():
             os.environ["HERMES_TUI_SKILLS"] = "ginflow"
             os.environ["HERMES_KANBAN_TASK"] = task["id"]
             result = _routing_context()
+            if "requires PyYAML" in result["context"]:
+                print("SKIP: live temporary next-card docs requires PyYAML")
+                return
             assert result and "route=ready_to_start" in result["context"], result
             assert "mutation_allowed=False" in result["context"], result
             # startup validation reserves review for completed work only: no premature
@@ -362,6 +383,9 @@ def test_blocked_route_context_reports_metadata_without_execution():
             os.environ["HERMES_TUI_SKILLS"] = "ginflow"
             os.environ["HERMES_KANBAN_TASK"] = task["id"]
             result = _routing_context()
+            if "requires PyYAML" in result["context"]:
+                print("SKIP: blocked route context requires PyYAML")
+                return
             assert result and "route=blocked_card" in result["context"], result
             assert "Report blocker to orchestrator; do not implement." in result["context"]
             assert '"event_id": "evt-1"' in result["context"]
@@ -385,16 +409,21 @@ if __name__ == "__main__":
     test_no_ginflow_skill()
     test_project_config_routes_fail_closed()
     test_ginflow_skill_active()
+    test_legacy_v1_detection_requires_explicit_card_metadata()
     test_work_guidance_maps_modes_to_bounded_skills()
     test_work_guidance_routes_known_failure_and_unknown_separately()
     test_work_guidance_rejects_risk_and_preserves_canonical_outputs()
-    test_live_tmp_project_card()
-    test_live_tmp_next_card_docs()
+    if shutil.which("hermes"):
+        test_live_tmp_project_card()
+        test_live_tmp_next_card_docs()
+    else:
+        print("SKIP: live Kanban card tests (hermes CLI not installed)")
     test_blocked_route_context_reports_metadata_without_execution()
     print("ginflow routing test passed")
 
 
 # Completion gate integration coverage
+routing_module = module
 #!/usr/bin/env python3
 import importlib.util
 import json
@@ -411,6 +440,77 @@ assert spec and spec.loader
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 validate_completion = module.validate_completion
+
+
+def test_linked_frontmatter_without_pyyaml():
+    old_yaml = module.yaml
+    module.yaml = None
+    try:
+        with tempfile.TemporaryDirectory(prefix="ginflow-frontmatter-") as directory:
+            target = Path(directory)
+            brief = target / "docs/specs/GATE-1.md"
+            brief.parent.mkdir(parents=True)
+            card = {"links": ["docs/specs/GATE-1.md"]}
+            brief.write_text("---\nstatus: completed\n---\n# Gate\n")
+            assert module.linked_documents_missing_completion(card, target) == []
+            brief.write_text("---\nstatus: draft\n---\n# Gate\n")
+            assert module.linked_documents_missing_completion(card, target) == ["docs/specs/GATE-1.md"]
+    finally:
+        module.yaml = old_yaml
+    print("PASS: linked frontmatter works without PyYAML")
+
+
+test_linked_frontmatter_without_pyyaml()
+
+
+def test_explicit_legacy_card_gets_legacy_guidance():
+    old_loader = routing_module._load_tasks
+    old_context_error = routing_module._context_error
+    old_config_exists = routing_module._config_exists
+    old_skills = os.environ.get("HERMES_TUI_SKILLS")
+    old_task = os.environ.get("HERMES_KANBAN_TASK")
+    old_cwd = Path.cwd()
+    try:
+        with tempfile.TemporaryDirectory(prefix="ginflow-legacy-routing-") as directory:
+            target = Path(directory)
+            target.joinpath(".ginflow.yaml").write_text(
+                "version: 1\nginflow:\n  board: test\n"
+                f"  workspace: {target.resolve()}\n"
+            )
+            os.chdir(target)
+            os.environ["HERMES_TUI_SKILLS"] = "ginflow"
+            os.environ.pop("HERMES_KANBAN_TASK", None)
+            routing_module._context_error = lambda _workspace: None
+            routing_module._config_exists = lambda _workspace: True
+            routing_module._load_tasks = lambda: [{
+                "id": "legacy",
+                "title": "Legacy card",
+                "workspace_path": str(target),
+                "status": "in_progress",
+                "metadata": {"workflow_version": 1},
+            }]
+            result = routing_module._routing_context()
+            assert "route=ready_to_start" in result["context"]
+            assert "Route: Clarification" in result["context"]
+            assert "candidate skill: brainstorming" in result["context"]
+            assert "Legacy compatibility guidance is withheld" not in result["context"]
+    finally:
+        routing_module._load_tasks = old_loader
+        routing_module._context_error = old_context_error
+        routing_module._config_exists = old_config_exists
+        os.chdir(old_cwd)
+        if old_skills is None:
+            os.environ.pop("HERMES_TUI_SKILLS", None)
+        else:
+            os.environ["HERMES_TUI_SKILLS"] = old_skills
+        if old_task is None:
+            os.environ.pop("HERMES_KANBAN_TASK", None)
+        else:
+            os.environ["HERMES_KANBAN_TASK"] = old_task
+    print("PASS: explicit legacy card gets legacy guidance")
+
+
+test_explicit_legacy_card_gets_legacy_guidance()
 
 card = {
     "id": "GATE-1",

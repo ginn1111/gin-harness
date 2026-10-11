@@ -8,7 +8,41 @@ import os
 import subprocess
 from pathlib import Path
 
-import yaml
+try:
+    import yaml
+except ImportError:  # pragma: no cover - optional parser fallback is tested below
+    yaml = None
+
+
+def _frontmatter_status(text: str) -> str | None:
+    """Read simple status frontmatter without making gate import depend on PyYAML."""
+    if not text.startswith("---\n"):
+        return None
+    lines = text.splitlines()
+    try:
+        end = lines.index("---", 1)
+    except ValueError:
+        return None
+    for line in lines[1:end]:
+        key, separator, value = line.partition(":")
+        if separator and key.strip() == "status":
+            status = value.strip()
+            if status and not status.startswith(("[", "{", "|", ">")):
+                return status.strip("'\"")
+    return None
+
+
+def _frontmatter_status_is_completed(text: str) -> bool:
+    if yaml is not None:
+        try:
+            lines = text.splitlines()
+            end = lines.index("---", 1)
+            frontmatter = yaml.safe_load("\n".join(lines[1:end]))
+        except (ValueError, yaml.YAMLError):
+            frontmatter = None
+        return isinstance(frontmatter, dict) and frontmatter.get("status") == "completed"
+    return _frontmatter_status(text) == "completed"
+
 
 try:
     from .trace_adapter import trace
@@ -65,6 +99,7 @@ def load_card(task_id: str, board: str | None = None) -> dict:
 @trace
 def linked_documents_missing_completion(card: dict, target: Path) -> list[str]:
     """Return linked local brief/spec/plan paths without completed frontmatter."""
+    target = target.resolve()
     missing = []
     for link in card.get("links", []):
         path_str = link if isinstance(link, str) else link.get("path") if isinstance(link, dict) else None
@@ -83,13 +118,7 @@ def linked_documents_missing_completion(card: dict, target: Path) -> list[str]:
             if not text.startswith("---\n"):
                 missing.append(path_str)
                 continue
-            lines = text.splitlines()
-            try:
-                end = lines.index("---", 1)
-                frontmatter = yaml.safe_load("\n".join(lines[1:end]))
-            except (ValueError, yaml.YAMLError):
-                frontmatter = None
-            if not isinstance(frontmatter, dict) or frontmatter.get("status") != "completed":
+            if not _frontmatter_status_is_completed(text):
                 missing.append(path_str)
     return sorted(missing)
 
