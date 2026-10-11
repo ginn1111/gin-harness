@@ -1,5 +1,5 @@
 ---
-status: in_progress
+status: completed
 scope:
   - plugins/ginflow-gate/ block routing fallback chain and test
 owner: ginb
@@ -21,8 +21,8 @@ A critical block is never lost silently: when no target is set it uses native no
 
 ## Acceptance criteria
 
-- [ ] No target: native subscription destination used
-- [ ] No destination: card comment carries the notice; task `blocked`
-- [ ] Push failure: card comment carries the notice; task `blocked`
-- [ ] Hook failure never breaks the block transition
-- [ ] `make lint && make test` pass
+- [x] No target: native subscription destination used
+- [x] No destination: card comment carries the notice; task `blocked`
+- [x] Push failure: card comment carries the notice; task `blocked`
+- [x] Hook failure never breaks the block transition
+- [x] `make lint && make test` pass

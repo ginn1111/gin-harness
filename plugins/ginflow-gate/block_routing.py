@@ -1,7 +1,8 @@
 """Push critical worker blocks to ginflow.notify.target via `hermes send`.
 
 Observer-only kanban_task_blocked hook. Any failure is swallowed so the block
-transition is never affected. Fallbacks, guard and repeat handling: later slices.
+transition is never affected. Destination chain: notify.target, else the task's
+native notify subscription, else (or on push failure) a card comment.
 """
 from __future__ import annotations
 
@@ -55,6 +56,32 @@ def _load_task(task_id: str, board: str | None) -> dict:
     return task
 
 
+def _native_destination(task_id: str, board: str | None) -> str | None:
+    command = ["hermes", "kanban"] + (["--board", board] if board else []) + ["notify-list", "--json", task_id]
+    result = subprocess.run(command, text=True, capture_output=True, timeout=30)
+    if result.returncode:
+        return None
+    for sub in json.loads(result.stdout or "[]"):
+        if sub.get("platform") and sub.get("chat_id"):
+            return ":".join(str(sub[k]) for k in ("platform", "chat_id", "thread_id") if sub.get(k))
+    return None
+
+
+def _push(destination: str, message: str) -> bool:
+    # Inherits worker HERMES_HOME, so send runs under the worker's profile (B6).
+    try:
+        return subprocess.run(["hermes", "send", "--to", destination, "-q", message],
+                              text=True, capture_output=True, timeout=60).returncode == 0
+    except Exception as exc:
+        logger.warning("ginflow block push failed: %s", exc)
+        return False
+
+
+def _comment(task_id: str, board: str | None, message: str) -> None:
+    command = ["hermes", "kanban"] + (["--board", board] if board else []) + ["comment", task_id, message]
+    subprocess.run(command, text=True, capture_output=True, timeout=30)
+
+
 def guard_block(args: dict, task_id: str = "", **_: object) -> dict | None:
     """pre_tool_call guard for kanban_block (trace on only). Inactive on lookup errors."""
     try:
@@ -102,12 +129,15 @@ def on_task_blocked(task_id: str = "", board: str | None = None, assignee: str |
             logger.warning("ginflow block routing: invalid project config route: %s", error)
             return
         target = _config.configured_notify_target(path)
-        if not target:
-            return
         message = build_message(task_id, reason, assignee or task.get("assignee"), run_id)
-        # Inherits worker HERMES_HOME, so send runs under the worker's profile (B6).
-        subprocess.run(["hermes", "send", "--to", target, "-q", message],
-                       text=True, capture_output=True, timeout=60)
+        try:
+            destination = target or _native_destination(task_id, board)
+        except Exception as exc:
+            logger.warning("ginflow block routing: subscription lookup failed: %s", exc)
+            destination = None
+        if destination and _push(destination, message):
+            return
+        _comment(task_id, board, f"[ginflow] {'push failed' if destination else 'no notify destination'}: {message}")
     except Exception as exc:  # observer-only: never break the block transition
         logger.warning("ginflow block routing failed: %s", exc)
 

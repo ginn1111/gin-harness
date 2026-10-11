@@ -15,6 +15,7 @@ BODY = "Objective: x\nScope:\n- x\nAcceptance:\n- x\nLinks:\n- docs/specs/X-1.md
 REAL_HERMES = shutil.which("hermes")
 STUB = f"""#!/bin/sh
 if [ "$1" = "send" ]; then
+  [ -f "$STUB_FAIL" ] && exit 1
   printf '%s\\n' "$*" >> "$STUB_LOG"
   exit 0
 fi
@@ -62,7 +63,7 @@ def main():
         home.mkdir(parents=True)
         env = os.environ | {
             "PATH": f"{tmp / 'bin'}{os.pathsep}{os.environ['PATH']}",
-            "HERMES_HOME": str(home), "HERMES_KANBAN_BOARD": BOARD, "STUB_LOG": str(log),
+            "HERMES_HOME": str(home), "HERMES_KANBAN_BOARD": BOARD, "STUB_LOG": str(log), "STUB_FAIL": str(tmp / "fail"),
         }
         env.pop("GINFLOW_LOG", None)
         # Isolate from any outer Hermes session (delegated child, kanban worker).
@@ -142,6 +143,36 @@ def main():
         assert "notify" in project_config.context_error(project), project_config.context_error(project)
         write_config("  trace: true\n")  # missing notify valid
         assert project_config.context_error(project) is None
+
+        def comments(tid):
+            data = json.loads(hermes(env, "kanban", "--board", BOARD, "show", tid, "--json"))
+            return [c["body"] for c in data["comments"] if c["body"].startswith("[ginflow]")]
+
+        # no target: native subscription destination used
+        write_config("  trace: true\n")
+        n = len(log.read_text().splitlines())
+        t = block("needs_input", "need key")
+        hermes(env, "kanban", "--board", BOARD, "notify-subscribe", t, "--platform", "telegram", "--chat-id", "99")
+        got = fire(t, "need key")
+        assert len(got) == n + 1 and got[-1].startswith("send --to telegram:99 -q "), got[n:]
+        assert comments(t) == [] and status(t) == "blocked", (comments(t), status(t))
+
+        # no target, no subscription: card comment, stays blocked
+        t = block("capability", "need access")
+        assert len(fire(t, "need access")) == n + 1
+        got = comments(t)
+        assert len(got) == 1 and t in got[0] and "no notify destination" in got[0], got
+        assert status(t) == "blocked"
+
+        # push failure: card comment, stays blocked
+        write_config("  trace: true\n  notify:\n    target: telegram:1\n")
+        (tmp / "fail").write_text("")
+        t = block("needs_input", "need key")
+        fire(t, "need key")
+        got = comments(t)
+        assert len(got) == 1 and "push failed" in got[0], got
+        assert status(t) == "blocked"
+        (tmp / "fail").unlink()
 
         # hook failure (hermes send missing/erroring) never raises
         write_config("  trace: true\n  notify:\n    target: telegram:1\n")
