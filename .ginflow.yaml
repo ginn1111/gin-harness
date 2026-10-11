@@ -1,7 +1,7 @@
 version: 1
 ginflow:
   board: harness
-  workspace: /home/aioz/personal/gin-harness
+  workspace: /Users/gin/dev/gin-harness
   worker:
     profile: ginb
     provider: custom

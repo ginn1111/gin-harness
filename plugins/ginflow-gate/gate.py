@@ -78,6 +78,9 @@ _core = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_core)
 artifact_gate = _core.artifact_gate
 normalize_card = _core.normalize_card
+_cfg_spec = importlib.util.spec_from_file_location("ginflow_project_config", CORE.with_name("project_config.py"))
+_project_config = importlib.util.module_from_spec(_cfg_spec)
+_cfg_spec.loader.exec_module(_project_config)
 
 
 def _block(message: str) -> dict[str, str]:
@@ -178,7 +181,15 @@ def pre_tool_call(tool_name: str, args: dict, task_id: str = "", **kwargs):
             return _block("metadata object is required")
         card = load_card(selected, args.get("board") or os.environ.get("HERMES_KANBAN_BOARD"))
         error = validate_completion(card, metadata)
-        return _block(error) if error else None
+        if error:
+            return _block(error)
+        # Hermes has no default reviewer setting: inject ginflow.reviewer.profile.
+        if tool_name == "kanban_request_review" and not args.get("reviewer"):
+            workspace = str(card.get("workspace") or "")
+            reviewer = _project_config.configured_reviewer(Path(workspace.removeprefix("dir:"))) if workspace.startswith("dir:") else None
+            if reviewer:
+                return {"action": "modify", "args": {"reviewer": reviewer}}
+        return None
     except Exception as error:
         return _block(f"validation failed closed: {error}")
 

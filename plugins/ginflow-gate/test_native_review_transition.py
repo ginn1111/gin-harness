@@ -55,6 +55,7 @@ def test_native_review_transition():
         target = Path(project)
         (target / "docs/specs").mkdir(parents=True)
         (target / "docs/specs/HARNESS-REVIEW-1.md").write_text(SPEC)
+        (target / ".ginflow.yaml").write_text("version: 1\nginflow:\n  board: x\n  workspace: " + str(target) + "\n  reviewer:\n    profile: gintary\n")
         subprocess.run(["git", "init", "-q"], cwd=target, check=True)
         subprocess.run(["git", "config", "user.name", "Ginflow Test"], cwd=target, check=True)
         subprocess.run(["git", "config", "user.email", "ginflow@example.test"], cwd=target, check=True)
@@ -65,7 +66,7 @@ def test_native_review_transition():
         home_path.mkdir(parents=True, exist_ok=True)
         profile_home = str(home_path)
         env = os.environ | {"HERMES_HOME": profile_home, "HERMES_KANBAN_BOARD": BOARD}
-        (home_path / "config.yaml").write_text("kanban:\n  default_reviewer_profile: gintary\n  review_dispatch: true\n")
+        (home_path / "config.yaml").write_text("kanban:\n  review_dispatch: true\n")
         run_hermes(env, "kanban", "init")
         run_hermes(env, "kanban", "boards", "create", BOARD)
         created = run_hermes(env, "kanban", "--board", BOARD, "create", "HARNESS-REVIEW-1 — transition", "--body", BODY, "--assignee", "ginb", "--workspace", f"dir:{target}", "--initial-status", "blocked", "--json")
@@ -81,8 +82,9 @@ def test_native_review_transition():
         metadata = {"verification_result": {"commit": baseline, "command": "make test", "result": "passed"}, "artifact_baseline": {"commit": baseline, "paths": ["docs/specs/HARNESS-REVIEW-1.md"]}}
         gate = load_gate()
         card = gate.load_card(task_id, board=BOARD)
-        assert gate.pre_tool_call("kanban_request_review", {"task_id": task_id, "metadata": metadata}, "", board=BOARD) is None
-        run_hermes(worker_env, "kanban", "--board", BOARD, "request-review", task_id, "--summary", "transition verified", "--metadata", json.dumps(metadata))
+        directive = gate.pre_tool_call("kanban_request_review", {"task_id": task_id, "metadata": metadata}, "", board=BOARD)
+        assert directive == {"action": "modify", "args": {"reviewer": "gintary"}}, directive
+        run_hermes(worker_env, "kanban", "--board", BOARD, "request-review", task_id, "--summary", "transition verified", "--reviewer", directive["args"]["reviewer"], "--metadata", json.dumps(metadata))
         reviewed = json.loads(run_hermes(env, "kanban", "--board", BOARD, "show", task_id, "--json").stdout)["task"]
         assert reviewed["status"] == "review"
         assert reviewed["assignee"] == "gintary"
