@@ -8,23 +8,15 @@ It is not a product application. Target repositories own product code, local rul
 
 Ginflow organizes large autonomous work around one stable Initiative: Discovery frames problem and boundaries; Shaping approves one artifact-first Execution Package v2; Execution authorizes immutable AFK Batches and isolated Work Units; Decision reconstructs context from exact evidence for human disposition. Integration success opens Decision, not completion. `approved_for_mr` completes Ginflow lifecycle; provider publication and merge remain separate.
 
-Pure core contracts are versioned independently as `initiative/v1`, `execution_batch/v1`, `review_cycle/v1`, `decision_projection/v1`, `notification/v1`, and `merge_request_intent/v1`. Legacy v2 packages/cards without explicit Initiative linkage remain compatible. Hermes owns identity/Kanban/lifecycle/persistence; target repos own product behavior/canonical verification; adapters own Git/check collection and future gateway/provider transport. Projections are bounded and redacted; raw logs, secrets, personal data, prompts, and transcripts are excluded.
+Pure core contracts are versioned independently as `initiative/v1`, `execution_batch/v1`, `review_cycle/v1`, `decision_projection/v1`, `notification/v1`, and `merge_request_intent/v1`. Hermes owns identity/Kanban/lifecycle/persistence; target repos own product behavior/canonical verification; adapters own Git/check collection and future gateway/provider transport. Projections are bounded and redacted; raw logs, secrets, personal data, prompts, and transcripts are excluded.
 
 TUI, direct Hermes DB access, gateway transport/subscription setup, and provider-specific MR publication remain deferred.
 
 ## Why Gin-harness exists
-ை
+
 Gin-harness is a wrapper around Hermes Kanban. It gives Hermes Kanban a practical blueprint for effective work: documents that define scope and evidence, routing that shapes work before execution, state-transition guidance, gates that prevent unsupported completion, and document extensions for project-specific context.
 
 For new initiatives, the four-phase lifecycle above is canonical: Discovery resolves ambiguity, Shaping approves artifacts, Execution dispatches blocked cards, and Decision awaits human disposition. Hermes Kanban remains lifecycle authority.
-
-**Legacy v1 compatibility only:** active cards created before artifact-first rollout may retain Clarification, Direct Work (XS/S), and Governed Work (M/L/XL or risky) routing until closure. This path does not apply to new initiatives and cannot bypass a selected `workflow_version: 2` package.
-
-- **Clarification:** legacy-v1 unresolved requirements stay read-only until clear.
-- **Direct Work:** legacy-v1 eligible localized reversible work may proceed without a card when every eligibility condition is affirmative.
-- **Governed Work:** legacy-v1 larger or risky work uses a complete Kanban card and evidence-backed completion.
-
-Do not use legacy labels to route new Initiative records.
 
 Ginflow does not replace Hermes Kanban. Hermes remains authority for cards, assignments, lifecycle states, and review transitions. Ginflow provides routing and worker guidance; `ginflow-gate` validates required evidence at native transitions; linked documents, `.ginflow.yaml`, and artifact baselines extend Kanban with the context needed to make work restartable and auditable.
 
@@ -32,9 +24,9 @@ The system architecture in [`docs/architecture/gin-harness-system.drawio`](docs/
 
 The derived four-phase flow in [`docs/architecture/ginflow-flow.md`](docs/architecture/ginflow-flow.md) records Decision as the human boundary after Integration; Draw.io remains canonical for the repository-wide system diagram.
 
-- **Clarification** keeps unresolved work read-only until the missing facts are known.
-- **Direct Work** allows affirmatively eligible, localized XS/S changes without a card.
-- **Governed Work** uses a complete Kanban card for larger, risky, coordinated, or artifact-requiring work.
+- **Discovery and Shaping** keep unresolved work read-only until one Execution Package is approved.
+- **Provider documents** hold one canonical governance record per Work Unit (`local` Markdown, GitHub Issue, or Linear Issue); Kanban cards stay concise and link to it.
+- **Execution** runs blocked-then-unblocked Work Unit cards until done or a defined Worker Exception; an Integration card verifies cross-unit behavior.
 - **Completion gates** validate card fields, verification evidence, linked artifacts, baseline commits, and drift.
 
 | Area | Purpose | Primary evidence |
@@ -44,7 +36,7 @@ The derived four-phase flow in [`docs/architecture/ginflow-flow.md`](docs/archit
 | `plugins/ginflow-gate/` | Hermes hooks, routing context, completion enforcement, feedback/recovery helpers | `plugins/ginflow-gate/plugin.yaml`, `plugins/ginflow-gate/*.py` |
 | `templates/` | Starter local rules and task/artifact templates for target projects | `templates/` |
 | `docs/architecture/` | Editable Draw.io diagrams and derived architecture explanations | `docs/architecture/` |
-| `docs/specs/`, `docs/plans/`, `docs/briefs/` | Governed work artifacts | `docs/{specs,plans,briefs}/` |
+| `docs/specs/`, `docs/plans/`, `docs/adrs/` | Governed work artifacts and decisions | `docs/{specs,plans,adrs}/` |
 | `scripts/` | Installation, setup, verification, and test helpers | `scripts/` |
 | `tests/` and component test scripts | Harness and integration verification | `Makefile` |
 
@@ -65,7 +57,6 @@ The repository does not require Hermes, a Hermes profile, or profile configurati
 2. Read the target project's `.hermes.md` (local, untracked) and any tracked `AGENTS.md`.
 3. Inspect Git state and Kanban progress before mutable work.
 4. For new governed/autonomous work, create or select one Initiative and follow Discovery → Shaping → Execution → Decision.
-5. For active legacy-v1 cards only, retain their recorded Clarification/Direct Work/Governed Work route; do not apply it to new Initiatives.
 6. Use the selected card's workspace, scope, acceptance, assignee, and linked artifacts.
 7. Run the target project's canonical verification command.
 8. Complete governed work with the native `kanban_complete` tool so `ginflow-gate` can validate the result.
@@ -96,11 +87,8 @@ The skill defines the workflow contract. Ginflow core provides reusable primitiv
 
 1. **Startup:** use the real target repository, read `AGENTS.md`/`.hermes.md`, inspect Git state, and read the selected card when governed work applies.
 2. **New Initiative routing:** use Discovery → Shaping → Execution → Decision; resolve ambiguity during Discovery/Shaping, not mid-execution.
-3. **Legacy v1 routing:** active pre-migration cards may retain Work Mode, Work Size, Clarification, Direct Work, and Governed Work until closure. These labels are compatibility guidance only.
 4. **Verification:** run the target project's canonical command and report setup-repository checks separately.
 5. **Review and completion:** workers submit governed work with native `kanban_request_review` after canonical verification and linked-artifact finalization. Hermes Kanban owns the `running -> review -> done` lifecycle and reviewer rework loop; reviewers either call native `kanban_complete` to finish valid work or `kanban_request_changes` with a minimal handoff (`reason`, `evidence`, `next_action`) to return it for rework. `ginflow-gate` validates Ginflow-specific evidence at the native transition points; it does not own lifecycle state machinery.
-
-New Initiative records must not use legacy routing as an execution bypass.
 
 Detailed routing and branch boundaries are in [`docs/architecture/ginflow-flow.md`](docs/architecture/ginflow-flow.md) and the normative contract in [`skills/ginflow/SKILL.md`](skills/ginflow/SKILL.md).
 
@@ -122,7 +110,7 @@ ginflow:
   trace: false
 ```
 
-Optional `ginflow.reviewer.profile` must name an installed Hermes profile; unknown or malformed values fail closed before governed card creation. When valid, `/ginflow` seeds Hermes `kanban.default_reviewer_profile` (`project_config.seed_default_reviewer`). When absent, the existing Hermes value is left unchanged. `kanban_request_review` never passes a reviewer; Hermes resolves its configured default.
+Optional `ginflow.reviewer.profile` must name an installed Hermes profile; unknown or malformed values fail closed before governed card creation. When valid, `ginflow-gate` injects it as the `reviewer` of native `kanban_request_review` (a `modify` directive) unless the caller passes one; Hermes has no default-reviewer setting. When absent, Hermes keeps the current assignee.
 
 `board` and `workspace` are required. Board resolution uses explicit runtime override, `HERMES_KANBAN_BOARD`, this file, then Hermes active board. Missing context sends work to `/ginflow`; malformed, incomplete, or workspace-mismatched context fails closed. Ordinary verification reads config but does not initialize or rewrite it. The optional `worker` block supplies governed-card dispatch defaults; explicit card values win.
 

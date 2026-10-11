@@ -18,7 +18,7 @@ Shared workflow, Kanban lifecycle, verification evidence, and optional handoff r
 ## Ginflow workflow
 - Load and follow `ginflow` for target-project startup, task shaping, execution, completion, and handoff. `ginflow` is an external skill: discover it through normal skill-discovery (scan available skills, read its SKILL.md) rather than expecting its instructions to be duplicated here.
 - If the `ginflow` skill cannot be located in the current environment, stop before any mutable target-project work and report this as a blocker. Do not proceed ungated.
-- Before mutable work, require one selected Kanban card (Hermes Kanban) with objective, scope, acceptance, workspace, status, assignee, and links. Stop when missing or incomplete.
+- Before mutable work, require one selected Kanban card (Hermes Kanban) with objective, scope, acceptance, workspace, status, assignee, and a link to its provider document. Stop when missing or incomplete.
 - If requirement is clear: build.
 - If cause is unclear: investigate first.
 - If requirement is unclear: shape options first.

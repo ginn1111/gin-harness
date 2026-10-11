@@ -1,6 +1,5 @@
 ---
 status: draft
-size: XS
 scope:
 owner:
 ---

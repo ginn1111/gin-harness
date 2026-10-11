@@ -18,7 +18,7 @@ project/
 
 Guidelines:
 - follow `artifact-content-guide.md` for artifact boundaries, authority, and content quality
-- put artifact metadata in YAML frontmatter at byte 0; use `status`, `size`, `scope`, and `owner` for specs and plans
+- put artifact metadata in YAML frontmatter at byte 0; use `status`, `scope`, and `owner` for specs and plans
 - keep lifecycle metadata in the header rather than duplicating `Status:` prose in the document body
 - keep the target-specific drift contract in `.hermes.md`: canonical command, local authorities, generated-file relationships, and remediation order
 

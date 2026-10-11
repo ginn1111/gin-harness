@@ -1,6 +1,5 @@
 ---
 status: completed
-size: M
 scope: Relocate shared harness validation core into the distributable Ginflow skill
 owner: ginb
 ---

@@ -1,6 +1,5 @@
 ---
 status: in_progress
-size: M
 scope: Standalone opt-in tracing package for Ginflow plugin function calls
 owner: ginb
 ---

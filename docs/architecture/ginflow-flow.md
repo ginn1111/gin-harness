@@ -26,7 +26,7 @@ One stable Initiative links all records. Phase metadata remains separate from He
 3. **Execution** authorizes one immutable `execution_batch/v1` attempt per run. Authorization binds canonical package digest, baseline commit, Ticket set, isolated workspaces, budget, stop conditions, and actor claim. Existing blocked Work Unit and Integration card creation remains the dispatch seam. Integration success opens Decision; it does not complete Initiative.
 4. **Decision** starts read-only. `review_cycle/v1` stores exact commits, evidence, findings, deviations, Change Groups, coverage, risks, actor, immutable revisions, and dispositions. Human outcomes are `approved_for_mr`, `enhancement_requested`, `rejected`, `resume_execution`, `reshape_required`, or `stopped`. Only `approved_for_mr` completes Ginflow lifecycle.
 
-Contracts: `initiative/v1`, `execution_batch/v1`, `review_cycle/v1`, `decision_projection/v1`, `notification/v1`, and `merge_request_intent/v1`. Legacy v2 packages and cards without explicit Initiative linkage retain current behavior; linkage is never inferred from titles or branches.
+Contracts: `initiative/v1`, `execution_batch/v1`, `review_cycle/v1`, `decision_projection/v1`, `notification/v1`, and `merge_request_intent/v1`. Initiative linkage is never inferred from titles or branches.
 
 ## Decision evidence and boundaries
 
@@ -45,7 +45,7 @@ Decision readiness requires immutable result state, terminal Ticket outcomes, ex
 | Product behavior and canonical verification | Target project |
 | Intent and human disposition | Human operator |
 
-New governed/autonomous work uses the four-phase Initiative lifecycle above. Legacy v1 cards may retain Direct Work and Clarification until closure; those routes are compatibility-only and never bypass a new Initiative record.
+All governed/autonomous work uses the four-phase Initiative lifecycle above.
 
 ## Provider-document architecture
 

@@ -1,6 +1,5 @@
 ---
 status: completed
-size: M
 scope: ginflow project-local Kanban context initialization
 owner: ginb
 ---

@@ -1,6 +1,5 @@
 ---
 status: completed
-size: S
 scope:
   - plugins/ginflow-gate/gate.py
   - completion-gate and artifact-guidance tests

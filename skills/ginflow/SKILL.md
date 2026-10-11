@@ -14,7 +14,7 @@ Use when any of these apply:
 - starting work in blank project
 - starting, executing, closing, or resuming target-project work
 - deciding where docs belong
-- deciding whether a Spec or Plan is needed
+- locating Execution Package artifacts
 - shaping Kanban task for selected execution profile
 - exporting an optional session handoff from Kanban
 - explaining setup-repo vs target-repo split
@@ -34,7 +34,7 @@ For large autonomous work, use one stable Initiative across Discovery, Shaping, 
 
 Decision consumes deterministic evidence and append-only `review_cycle/v1` revisions. Every changed path maps to a Change Group or justified generated/excluded bucket; every nontrivial claim references evidence. `decision_projection/v1` is bounded/redacted and excludes raw logs, secrets, personal data, prompts, and transcripts. Material outcomes use `notification/v1`; transport remains adapter-owned. Human dispositions are `approved_for_mr`, `enhancement_requested`, `rejected`, `resume_execution`, `reshape_required`, or `stopped`. Only `approved_for_mr` completes Ginflow lifecycle and yields provider-neutral `merge_request_intent/v1`; publication/merge remain separate.
 
-Hermes remains identity, Kanban, assignment, dispatch, persistence, and lifecycle authority. Target repositories remain product/canonical-verification authority. Legacy v2 packages and cards without explicit Initiative linkage retain current behavior. TUI, direct Hermes DB access, gateway transport/subscriptions, and provider-specific publication remain deferred.
+Hermes remains identity, Kanban, assignment, dispatch, persistence, and lifecycle authority. Target repositories remain product/canonical-verification authority. TUI, direct Hermes DB access, gateway transport/subscriptions, and provider-specific publication remain deferred.
 
 ## Doc layout
 
@@ -46,7 +46,7 @@ Put these in target repo when project needs them:
 | `AGENTS.md`  | team-shared rules; read-only for ginflow, never write ginflow instructions here |
 
 | `docs/specs/<CARD-ID>.md` | behavior/contract detail when needed |
-| `docs/plans/<CARD-ID>.md` | execution order for medium+ work |
+| `docs/plans/<CARD-ID>.md` | execution order |
 | `docs/handoffs/<CARD-ID>.md` | optional exported resume snapshot |
 | `docs/adrs/` | durable architectural decisions |
 
@@ -77,63 +77,21 @@ Never write `in_progress` to Hermes Kanban. `running` is active work. `todo`/`re
 
 ### New Initiative boundary
 
-New governed/autonomous work must use one `initiative/v1` record and the canonical Discovery → Shaping → Execution → Decision lifecycle. Discovery resolves ambiguity and records boundaries. Shaping approves the artifact-first Execution Package v2. Execution authorizes an immutable batch and creates blocked cards. Integration opens read-only Decision; only human `approved_for_mr` yields MR intent. Do not use Work Size, Direct Work, or conditional artifact selection to bypass this lifecycle.
+New governed/autonomous work must use one `initiative/v1` record and the canonical Discovery → Shaping → Execution → Decision lifecycle. Discovery resolves ambiguity and records boundaries. Shaping approves the artifact-first Execution Package v2. Execution authorizes an immutable batch and creates blocked cards. Integration opens read-only Decision; only human `approved_for_mr` yields MR intent.
 
 Hermes remains identity, Kanban, assignment, dispatch, persistence, and lifecycle authority. A selected card must contain ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing fields block governed execution.
 
-### Legacy v1 compatibility boundary
-
-Active cards created before artifact-first rollout may retain their recorded Work Mode, Work Size, Clarification, Direct Work, and Governed Work route until closure. The legacy route is read-only compatibility guidance; it cannot select or override a new Initiative and cannot weaken package, evidence, isolation, or Decision requirements. The following legacy rules apply only when the card is explicitly an active v1 card.
-
-- Before a legacy card exists, brainstorming and read-only clarification remain conversation-only.
-- Eligible legacy XS/S Direct Work may proceed without a card only when every existing eligibility factor is affirmative.
-- Legacy M/L/XL or risky work requires a complete card and its conditional Spec/Plan rules.
-- Stop and re-route legacy work if scope, risk, ownership, clarity, or verification changes.
-
-### Legacy v1 artifact reference
-
-| Legacy v1 case | Kanban card | Spec | Plan |
-| --- | ---: | ---: | ---: |
-| Direct Work — eligible XS/S | no | no | no |
-| Governed Work — M/L/XL or risky | required | conditional | conditional |
-| Clarification/read-only | no | no | no |
-
-New Initiative records never use this table.
-
-Rule: compatibility labels describe active legacy cards only; they are not current Initiative policy.
-
-### Choose artifact level (legacy v1 only)
-
-For an active legacy v1 card, choose Spec when behavior or contract can drift and Plan when ordering, investigation, rollback, coordination, or layered verification matters. New Initiatives always retain the approved package artifacts from Shaping.
-
-Selected card must contain: ID, title, objective, scope, acceptance, workspace, status, assignee, and links. Missing required fields block legacy governed execution until card repair.
-
 ### Routing guidance and feedback boundary
 
-When no selected/running card owns the workspace, new work routes to Discovery/Shaping rather than size classification. Legacy v1 routing may use the injected compatibility guidance only when the active card is explicitly identified as v1.
+When no selected/running card owns the workspace, new work routes to Discovery/Shaping.
 
 The plugin's candidate skill mapping remains deterministic advisory guidance, not authorization. Hermes must call `skill_view(name='...')`; the plugin never calls it, inspects skill contents, creates cards/artifacts, or mutates Kanban. Canonical output precedence is target-project rules, explicit Initiative/card contract, Ginflow matrix, selected skill, then skill defaults.
 
-Feedback v1 remains a pure legacy Governed Work lifecycle event contract. New Initiative Decision notifications use `notification/v1`; transport remains adapter-owned.
+Decision notifications use `notification/v1`; transport remains adapter-owned.
 
-- Before creating a legacy v1 plan, load and follow the `plan` skill.
-- Use the Initiative key and package artifact paths for new work; use the Kanban card ID across legacy artifacts.
+- Use the Initiative key and package artifact paths.
 - Follow linked artifact templates and project-local rules for content quality and boundaries.
-- All Ginflow Markdown artifacts use YAML frontmatter at byte 0 for metadata. Specs and plans use `status`, `size`, `scope`, and `owner`; keep lifecycle state in the header and do not duplicate it as body-only `Status:` metadata.
-
-### Legacy routing guidance and feedback boundary
-
-When an explicitly active v1 card has no selected/running owner, use injected routing guidance to evaluate Work Mode, Work Size, Risk Impact, and Direct Work Eligibility. New Initiative work routes through Discovery/Shaping instead.
-
-- affirmative legacy XS/S eligibility → Direct Work (`direct-no-card`);
-- known legacy M/L/XL size, actual Risk Impact, or artifact need → Governed Work;
-- unresolved legacy routing fact → Clarification with read-only investigation.
-
-Legacy Direct Work eligibility still requires clarity, known cause, genuine XS/S scope, localized reversible change, no actual Risk Impact, no artifact need, known verification, project permission, and an unowned workspace. These checks never authorize a new Initiative.
-
-The plugin's candidate skill mapping is deterministic guidance, not semantic similarity search or authorization. Hermes must call `skill_view(name='...')`; the plugin never calls it, inspects skill contents, creates cards/artifacts, or mutates Kanban. Canonical output precedence is target-project rules, explicit Initiative/card contract, Ginflow matrix, selected skill, then skill defaults. Adapt skill output into the selected canonical artifact rather than duplicating it.
-
-Feedback v1 is a pure legacy Governed Work lifecycle event contract. New Initiative Decision events use `notification/v1`; transport remains adapter-owned.
+- All Ginflow Markdown artifacts use YAML frontmatter at byte 0 for metadata. Specs and plans use `status`, `scope`, and `owner`; keep lifecycle state in the header and do not duplicate it as body-only `Status:` metadata.
 
 ### New Initiative artifact boundary
 
@@ -172,16 +130,16 @@ Before target-project work, determine whether the request is a new Initiative or
 1. Confirm workspace points at real target repo.
 2. Read local `.hermes.md`, then any team `AGENTS.md`.
 3. **Check Kanban board state:**
-   - If no Kanban cards exist → route a new request to Discovery/Shaping; active legacy work cannot be inferred.
+   - If no Kanban cards exist → route a new request to Discovery/Shaping.
    - If Kanban cards exist → read progress first (use `kanban_list`/`kanban_show` TOOLS in agent code), then resume selected/active card.
-4. For legacy governed work, require and read selected or assigned card. Stop if absent.
-5. For legacy governed work, confirm all required card fields and workspace. Stop if incomplete.
+4. Before execution, require and read selected or assigned card; Discovery and Shaping need no card. Stop if absent.
+5. Confirm all required card fields and workspace. Stop if incomplete.
 6. Read linked spec/plan when present.
 7. If selected card is completed, run linked-artifact drift gate before any project action.
 8. Inspect git state and run project baseline verification.
-9. For legacy governed work, run external ginflow harness against target repo and selected card; do not copy harness into target repo.
-10. Report project verification and Ginflow harness separately when legacy governed work applies.
-11. Follow routing context injected by `ginflow-gate`; it chooses legacy work mode only when an active v1 card exists.
+9. Run external ginflow harness against target repo and selected card; do not copy harness into target repo.
+10. Report project verification and Ginflow harness separately.
+11. Follow routing context injected by `ginflow-gate`.
 
 ### Kanban task notifications
 
@@ -211,7 +169,7 @@ Reviewer returns an invalid review with native `kanban_request_changes` using a 
 ## Execution contract
 
 - One active card per mutable workspace. Parallel cards are allowed only when each uses an isolated worktree or a different workspace. Hermes dispatcher claim remains the mechanical authority; no public `kanban_claim` tool exists for plugin interception, so atomic workspace-collision enforcement requires Hermes core.
-- New Initiative execution requires a selected package-derived card and immutable batch. Legacy v1 execution requires a selected complete card.
+- Execution requires a selected package-derived card and immutable batch.
 - Do not resume, hand off, or derive work from a completed card while its linked-artifact drift is unresolved. Unrelated cards and unlinked project work may continue.
 - Stay inside package/card scope and target workspace; preserve exact evidence.
 - Use project-native commands and local conventions.
@@ -225,7 +183,7 @@ Work is done only when:
 - [ ] Acceptance criteria are satisfied.
 - [ ] Relevant project checks ran and passed.
 - [ ] Changed files were reviewed against scope.
-- [ ] New Initiative records exact Decision/MR evidence; legacy governed work records verification on its Kanban card.
+- [ ] Initiative records exact Decision/MR evidence; each card records verification evidence.
 - [ ] Hermes lifecycle status is accurate.
 - [ ] Linked artifacts reflect completion or package state.
 - [ ] Repo is restartable from documented verification path.

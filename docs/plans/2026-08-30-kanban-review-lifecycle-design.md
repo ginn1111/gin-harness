@@ -1,6 +1,5 @@
 ---
 status: completed
-size: M
 scope: kanban-review-lifecycle
 owner: gintary
 ---

@@ -1,6 +1,5 @@
 ---
 status: in_progress
-size: M
 scope:
   - plugins/ginflow-gate/ block routing for kanban_task_blocked
   - skills/ginflow/lib/project_config.py notify.target validation

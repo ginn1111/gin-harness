@@ -3,8 +3,8 @@
   "evals": [
     {
       "id": 1,
-      "name": "medium-feature-artifacts",
-      "prompt": "In a target repo, shape card INV-21 for adding CSV export to an existing invoice list. Requirement is clear, size M, canonical verification is `make test`, workspace is `dir:/work/invoice-app`, and unrelated invoice creation must not change. Return proposed artifact paths and concise contents for every artifact needed for execution by current profile. Do not write code.",
+      "name": "feature-package-artifacts",
+      "prompt": "In a target repo, shape card INV-21 for adding CSV export to an existing invoice list. Requirement is clear, canonical verification is `make test`, workspace is `dir:/work/invoice-app`, and unrelated invoice creation must not change. Return proposed artifact paths and concise contents for every artifact needed for execution by current profile. Do not write code.",
       "expected_output": "A docs/plans plan and thin Kanban card with clear boundaries, observable acceptance, real workspace, and no unnecessary spec or ADR.",
       "files": [],
       "expectations": [
@@ -18,7 +18,7 @@
     {
       "id": 2,
       "name": "risky-contract-artifacts",
-      "prompt": "Shape SEC-9 for replacing session cookies with rotating refresh tokens across web and mobile clients. This is L/risky work. Requirements include backward-compatible migration, token theft detection, rollback, audit logging, and no forced logout during rollout. Workspace is `worktree`; canonical checks are `make verify`. No architecture owner has approved a storage strategy. Return artifact paths and concise content needed before build dispatch. Do not implement.",
+      "prompt": "Shape SEC-9 for replacing session cookies with rotating refresh tokens across web and mobile clients. This is risky work. Requirements include backward-compatible migration, token theft detection, rollback, audit logging, and no forced logout during rollout. Workspace is `worktree`; canonical checks are `make verify`. No architecture owner has approved a storage strategy. Return artifact paths and concise content needed before build dispatch. Do not implement.",
       "expected_output": "Spec, plan, proposed ADR, and thin card under docs/, covering contracts, failure/security/migration/rollback semantics without inventing architecture approval.",
       "files": [],
       "expectations": [
@@ -31,13 +31,13 @@
     },
     {
       "id": 3,
-      "name": "unknown-facts-investigation",
+      "name": "unknown-facts-shaping",
       "prompt": "Prepare PAY-42: make payment webhook processing idempotent. Provider, repository path, event identifier contract, retry response semantics, persistence technology, and canonical verification command are unknown. Gin asks whether this is ready for direct build and wants the smallest safe artifact set and next action. Return readiness decision, artifact paths, and artifact content. Do not invent missing facts.",
-      "expected_output": "Not-ready investigation-first response with no card or Governance Artifact while material facts are unknown; no invented provider/repo/commands/contracts.",
+      "expected_output": "Not-ready Shaping response with no card or package approval while material facts are unknown; no invented provider/repo/commands/contracts.",
       "files": [],
       "expectations": [
-        "Rejects direct build and routes investigation first",
-        "Creates no card or Governance Artifact during Clarification",
+        "Rejects direct build and keeps work in Discovery/Shaping",
+        "Creates no card or package approval during Shaping",
         "Marks unknown material facts as TBD with owner or blocking decision",
         "Does not invent repository paths, verification commands, provider behavior, or implementation technology",
         "Defines observable investigation outcomes and exact next action"
@@ -47,12 +47,12 @@
       "id": 4,
       "name": "missing-card-blocker",
       "prompt": "Start implementation in /work/app for a clear small bug. No Kanban card is selected. Decide what ginflow permits and report next action.",
-      "expected_output": "Block project work while still allowing pre-card routing, sizing, and card drafting.",
+      "expected_output": "Block project work while still allowing Discovery, Shaping, and card drafting.",
       "files": [],
       "expectations": [
-        "Evaluates Direct Work Eligibility before any mutation",
-        "Allows only read-only shaping while eligibility facts are unresolved",
-        "Routes known disqualifiers to Governed Work with a complete card"
+        "Blocks mutation until a selected, complete package-derived card exists",
+        "Allows only read-only Discovery/Shaping and card drafting",
+        "Routes the bug through Shaping to a complete blocked card before any mutation"
       ]
     },
     {

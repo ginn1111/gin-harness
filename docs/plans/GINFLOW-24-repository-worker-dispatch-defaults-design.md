@@ -1,6 +1,5 @@
 ---
 status: completed
-size: S
 scope: ginflow repository worker dispatch defaults
 owner: ginb
 ---

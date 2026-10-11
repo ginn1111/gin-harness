@@ -1,6 +1,5 @@
 ---
 status: in_progress
-size: XS
 scope:
   - skills/ginflow/references/trace-routing.md
   - skills/ginflow/SKILL.md pointer line

@@ -1,6 +1,5 @@
 ---
 status: completed
-size: M
 scope: project-local Ginflow validation and routing diagnostics
 owner: ginb
 ---

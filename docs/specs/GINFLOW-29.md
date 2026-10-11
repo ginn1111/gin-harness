@@ -1,6 +1,5 @@
 ---
 status: in_progress
-size: S
 scope:
   - plugins/ginflow-gate/ block routing for transient kind and test
 owner: ginb

@@ -6,7 +6,7 @@ Gin-harness is a setup and integration repository for Hermes Agent. It owns Ginf
 - Load and follow `ginflow` for target-project startup, task shaping, execution, completion, and handoff. The repo copy is `skills/ginflow/SKILL.md`; discover/load it through normal skill discovery.
 - If `ginflow` cannot be located, stop before mutable target-project work and report a blocker.
 - Do not use this setup repo as target-project workspace.
-- Before mutable target-project work, require a selected Kanban card with objective, scope, acceptance, workspace, status, assignee, and links. Direct Work is the explicit Ginflow exception only when every eligibility condition is affirmative.
+- Before mutable target-project work, require a selected Kanban card with objective, scope, acceptance, workspace, status, assignee, and links.
 
 ## Boundaries and layout
 - `skills/ginflow/` — workflow contract, templates, references, validator, tests

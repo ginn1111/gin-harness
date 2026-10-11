@@ -1,10 +1,3 @@
----
-status: completed
-size: M
-scope: Ginflow v2 artifact-first execution
-owner: gin
----
-
 # ADR 0001: Artifact-first execution packages
 
 ## Decision

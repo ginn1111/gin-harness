@@ -1,6 +1,5 @@
 ---
 status: completed
-size: S
 scope: Trace integration end-to-end (gate calls recorded under configured workspace)
 owner: ginb
 ---

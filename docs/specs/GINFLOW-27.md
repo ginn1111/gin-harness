@@ -1,6 +1,5 @@
 ---
 status: in_progress
-size: S
 scope:
   - plugins/ginflow-gate/ pre_tool_call guard for kanban_block and test
 owner: ginb

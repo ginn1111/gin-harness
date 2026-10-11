@@ -1,6 +1,5 @@
 ---
 status: in_progress
-size: S
 scope:
   - plugins/ginflow-gate/routing.py pre_llm_call context extension and test
 owner: ginb

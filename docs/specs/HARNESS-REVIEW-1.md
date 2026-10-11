@@ -1,6 +1,5 @@
 ---
 status: completed
-size: M
 scope:
   - Hermes Kanban integration-test harness
 owner: ginb

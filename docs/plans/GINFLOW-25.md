@@ -1,6 +1,5 @@
 ---
 status: completed
-size: M
 scope: Native Hermes implementation-review lifecycle integration test and evidence report
 owner: ginb
 ---

@@ -10,7 +10,7 @@ Keep this boundary intact: do not use this repository as a target-project worksp
 
 ## Architecture
 
-- `skills/ginflow/` is the normative operational contract. It defines work-mode/size/risk routing, Kanban card shape and lifecycle handoff, artifact layout, startup/completion rules, and the external harness validator.
+- `skills/ginflow/` is the normative operational contract. It defines the Discovery → Shaping → Execution → Decision lifecycle, Execution Package and provider-document rules, Kanban card shape and lifecycle handoff, artifact layout, startup/completion rules, and the external harness validator.
 - `core/ginflow-core/` contains reusable routing and execution-package primitives. Shared logic must stay independent of Hermes runtime details where possible.
 - `plugins/ginflow-gate/` integrates with native Hermes hooks and enforces governed completion evidence. It supplies bounded routing context and validates card fields, verification metadata, linked artifacts, baseline commits, and drift; Hermes remains lifecycle authority.
 - `plugins/ginflow-trace/` provides optional trace logging. Tracing is off by default and writes under the target workspace's `.ginflow/` paths when enabled.
@@ -22,7 +22,7 @@ Hermes owns profiles, tools, Kanban state, assignments, and lifecycle transition
 
 ## Workflow constraints
 
-Load and follow `skills/ginflow/SKILL.md` for target-project startup, task shaping, execution, completion, handoff, and setup-repo versus target-repo decisions. Before mutable target-project work, require a complete selected Kanban card unless all Direct Work eligibility conditions are affirmative. Governed artifacts belong in the target repository and use the card's stable ID in their paths.
+Load and follow `skills/ginflow/SKILL.md` for target-project startup, task shaping, execution, completion, handoff, and setup-repo versus target-repo decisions. Before mutable target-project work, require a complete selected Kanban card from an approved Execution Package. Governed artifacts belong in the target repository and use the card's stable ID in their paths.
 
 Read `INSTALL.md` before profile installation. Preserve profile-owned identity, secrets, authentication, memories, sessions, and runtime data. Do not edit generated/local state such as `.hermes/`, `.codegraph/`, `.ginflow/`, trace logs, or Python caches.
 
