@@ -8,26 +8,12 @@ import { bearerAuth } from "../auth/middleware.js";
 import { PairingManager } from "../pairing/manager.js";
 import { createMcpServer } from "../mcp/server.js";
 import { createMcpHttpHandler } from "../mcp/http.js";
-import { CloudflaredQuickTunnel } from "../tunnel/cloudflared.js";
-import { CloudflaredNamedTunnel } from "../tunnel/cloudflared-named.js";
+import { NgrokTunnel } from "../tunnel/ngrok.js";
 import type { TunnelProvider } from "../tunnel/provider.js";
-import { namedTunnelBinding, readTunnelState } from "../tunnel/state.js";
 import { Logger, nullLogger } from "../logger/index.js";
 import { DEFAULT_HOST, DEFAULT_PORT } from "../config/paths.js";
 import { SERVICE_NAME, VERSION } from "../version.js";
 import { writeRuntimeState, clearRuntimeState, type RuntimeState } from "./runtime.js";
-
-function tunnelForWorkspace(workspaceId: string, logger: Logger): TunnelProvider {
-  const binding = namedTunnelBinding(readTunnelState(workspaceId));
-  if (binding) {
-    return new CloudflaredNamedTunnel({
-      tunnelName: binding.tunnelName,
-      hostname: binding.hostname,
-      logger,
-    });
-  }
-  return new CloudflaredQuickTunnel(logger);
-}
 
 export interface BridgeOptions {
   workspaceRoot: string;
@@ -89,7 +75,7 @@ export async function startBridge(opts: BridgeOptions): Promise<Bridge> {
 
   const authStore = new AuthStore(workspace.id, { file: opts.authStoreFile });
   const pairing = new PairingManager(workspace.id, { ttlMs: opts.pairingTtlMs });
-  const tunnel = opts.tunnelProvider ?? tunnelForWorkspace(workspace.id, logger);
+  const tunnel = opts.tunnelProvider ?? new NgrokTunnel(logger);
   const adminToken = `c2c_admin_${randomBytes(24).toString("base64url")}`;
 
   let publicBaseUrl: string | null = null;
@@ -141,7 +127,7 @@ export async function startBridge(opts: BridgeOptions): Promise<Bridge> {
     // Defense in depth: reject anything that arrived through a proxy/tunnel.
     const remote = req.socket.remoteAddress ?? "";
     const isLoopback = remote === "127.0.0.1" || remote === "::1" || remote === "::ffff:127.0.0.1";
-    const viaProxy = Boolean(req.headers["cf-connecting-ip"] || req.headers["x-forwarded-for"]);
+    const viaProxy = Boolean(req.headers["x-forwarded-for"]);
     const header = req.headers.authorization ?? "";
     const token = header.toLowerCase().startsWith("bearer ") ? header.slice(7).trim() : "";
     if (!isLoopback || viaProxy || token !== adminToken) {

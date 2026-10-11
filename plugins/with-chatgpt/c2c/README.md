@@ -42,7 +42,7 @@ Detailed docs below are in English · 详细中文文档见 **[README.zh-CN.md](
 所有事情你自己做：
 
 1. 环境自检：需要 git 和 Node.js ≥ 20，缺什么就自动安装
-  （macOS 用 Homebrew，Windows 用 winget），同时安装 cloudflared。
+  （macOS 用 Homebrew，Windows 用 winget），同时安装 ngrok 并配置 authtoken（`ngrok config add-authtoken <token>`）。
 2. 下载：把 Hermes with ChatGPT 仓库克隆到
    ~/hermes-with-chatgpt（已存在就 git pull 更新）。
 3. 构建：在该目录里执行 corepack pnpm install 和 corepack pnpm build。
@@ -51,7 +51,7 @@ Detailed docs below are in English · 详细中文文档见 **[README.zh-CN.md](
 5. 首次配置：按 SKILL.md 里的 first-time setup 流程执行
   （运行 c2c setup，用内置浏览器打开 ChatGPT 配置连接器并输入配对码）。
    全程只用内置浏览器，禁止打开任何第三方浏览器。
-6. 只有遇到需要我登录（ChatGPT / Cloudflare）、验证码或两步验证时才叫我，
+6. 只有遇到需要我登录（ChatGPT / ngrok）、验证码或两步验证时才叫我，
    而且一次只告诉我一个动作。
 7. 完成后给我看 ✓ 清单，并确认文件读取测试通过。我不懂 MCP、OAuth、
    Tunnel、端口这些词，不要向我解释；出了问题先自己修。
@@ -67,7 +67,7 @@ I am a non-technical user — do everything yourself:
 
 1. Check the environment: git and Node.js >= 20 must be available. Install
    anything missing yourself (macOS: Homebrew, Windows: winget). Also install
-   cloudflared.
+   ngrok (and run `ngrok config add-authtoken <token>`).
 2. Download the Hermes with ChatGPT checkout into
    ~/hermes-with-chatgpt (if it already exists, update it in place).
 3. Build: inside that folder run `corepack pnpm install` then `corepack pnpm build`.
@@ -77,7 +77,7 @@ I am a non-technical user — do everything yourself:
 5. First-time setup: follow the SKILL.md "first-time setup" workflow
    (run c2c setup, configure the ChatGPT connector in the BUILT-IN browser,
    enter the pairing code). Never open a third-party browser.
-6. Only interrupt me for logins (ChatGPT / Cloudflare), CAPTCHAs or 2FA —
+6. Only interrupt me for logins (ChatGPT / ngrok), CAPTCHAs or 2FA —
    and give me exactly ONE action at a time.
 7. When done, show me the ✓ checklist and confirm the file-read test passed.
    I don't know what MCP, OAuth, tunnels or ports are. Don't explain them.
@@ -122,20 +122,16 @@ Hermes with ChatGPT",
 Ready.
 ```
 
-The only steps that may need you: logging into ChatGPT or Cloudflare, plus
+The only steps that may need you: logging into ChatGPT or ngrok, plus
 confirmation before consequential browser actions. Existing workspace
 connectors and resumable C2C checkpoints are reused; no conversation or
 connector is silently replaced.
 
-### Optional stable hostname
+### Public address
 
-The default public address is a temporary Cloudflare URL. It can change when
+The public address is an ngrok ephemeral HTTPS URL. It can change when
 the bridge restarts. Doctor reports connector repair explicitly; it never
 silently churns a healthy connector.
-
-Named tunnels remain optional. If you choose one, Cloudflare authorization
-happens only through the explicit external workflow. Credentials stay in the
-OS app state directory, not in the project.
 
 ## How it works
 
@@ -151,7 +147,7 @@ OS app state directory, not in the project.
              ┌─────────────────────┐
              │      C2C Bridge     │   loopback-only HTTP server
              │  read-only MCP      │   OAuth 2.1 + one-time pairing code
-             │  OAuth + Pairing    │   Cloudflare Quick Tunnel
+             │  OAuth + Pairing    │   ngrok ephemeral tunnel
              │  Tunnel Manager     │
              └──────────┬──────────┘
                         │  read-only
@@ -212,9 +208,10 @@ c2c sandbox-allow   # explicit legacy compatibility command (macOS + Windows)
 c2c status / doctor / pair / unpair / logs / stop
 ```
 
-Requirements: Node.js >= 20, git. `cloudflared` for the public connection
-(auto-detected; the Skill installs it for you). If QUIC is blocked, set
-`C2C_TUNNEL_PROTOCOL=http2` and restart the bridge.
+Requirements: Node.js >= 20, git, and `ngrok` with an authtoken for the public
+connection (auto-detected; `brew install ngrok` / `winget install ngrok.ngrok`,
+then `ngrok config add-authtoken <token>`). Override the binary with
+`C2C_NGROK_PATH`.
 
 Docs: [architecture](docs/architecture.md) · [protocol](docs/protocol.md) ·
 [security](docs/security.md) · [troubleshooting](docs/troubleshooting.md)
@@ -228,7 +225,7 @@ src/
   auth/       OAuth 2.1 (PKCE, DCR, refresh rotation, revocation)
   pairing/    one-time pairing codes (CSPRNG, TTL, rate limits)
   workspace/  path containment, sensitive-file policy, search, git
-  tunnel/     TunnelProvider abstraction + Cloudflare Quick/Named Tunnel
+  tunnel/     TunnelProvider abstraction + ngrok ephemeral tunnel
   execution/  execution records for the review loop
   process/    daemon lifecycle
   cli/        the c2c CLI

@@ -42,6 +42,7 @@ hermes with-chatgpt disable --session-id <id>
 hermes with-chatgpt status --session-id <id> --json
 hermes with-chatgpt pair --workspace <path> --json
 hermes with-chatgpt stop --workspace <path>
+hermes with-chatgpt c2c <any c2c args>   # raw passthrough, e.g. c2c logs --json
 ```
 
-`setup` checks Node/build/dependencies and external `terminal-browser`; it does not install browser tooling or mutate Codex configuration. `doctor` is read-only unless explicit `--repair` is passed.
+`setup` checks Node/build/dependencies, `ngrok` (public tunnel; install with `brew install ngrok` or `winget install ngrok.ngrok`, then `ngrok config add-authtoken <token>`), and external `terminal-browser`; it does not install browser tooling or mutate Codex configuration. `doctor` is read-only unless explicit `--repair` is passed.

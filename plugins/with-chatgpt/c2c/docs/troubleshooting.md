@@ -45,16 +45,6 @@ Fixed ChatGPT pages for first-time setup and later repair (do not hunt the UI):
 Same as above: `c2c doctor`, then Delete + recreate THIS workspace's
 connector if `chatgptRepair.needed`. Mint a pairing code with `c2c pair` only
 when the Authorize form is on screen.
-If this workspace uses a stable hostname, doctor sets `namedRepair` instead —
-re-login to Cloudflare (`c2c tunnel login`) and doctor again. Do not Delete
-the connector; the address did not change.
-
-### I have a Cloudflare domain and want a stable hostname
-During first-time setup (or the next coding session, once), say you have a
-Cloudflare account and give the domain. Hermes opens a browser for Cloudflare
-login, then keeps `c2c-<project>.your-domain.com`. To stay on the temporary
-address, say you do not have a domain. Switching later: tell Hermes you want
-the stable hostname; it runs `c2c tunnel choose --mode named --zone <domain>`.
 
 ### "Pairing code invalid or expired"
 Pairing codes are one-time and expire after ~5 minutes. Generate one only
@@ -66,24 +56,19 @@ c2c pair
 
 Older codes become invalid immediately. Do not mint a code during `c2c doctor`.
 
-### Temporary address keeps dropping on a UDP-filtered network
-cloudflared defaults to QUIC. If the tunnel reconnects over and over on a
-corporate network, set `C2C_TUNNEL_PROTOCOL=http2` and restart the bridge.
-Leave it unset to keep cloudflared's default.
-
 ### ChatGPT gets 401 on every tool call
 The access token expired and refresh failed (e.g. after `c2c unpair` or a
 long offline period). Delete THIS workspace's connector if the address also
 changed; otherwise run Authorize again in ChatGPT and enter a fresh pairing
 code. Never use Reconnect when the public address has been replaced.
 
-### cloudflared is not installed
-macOS: `brew install cloudflared`
-Windows: `winget install Cloudflare.cloudflared`
-Linux: see Cloudflare's package instructions.
-The Skill installs this automatically during setup.
-If cloudflared is installed in a custom location that is not on `PATH`, set
-`C2C_CLOUDFLARED_PATH` to the executable's absolute path before running `c2c`.
+### ngrok is not installed
+macOS: `brew install ngrok`
+Windows: `winget install ngrok.ngrok`
+Linux: see ngrok's package instructions.
+Then add your authtoken: `ngrok config add-authtoken <token>` (from dashboard.ngrok.com).
+If ngrok is installed in a custom location that is not on `PATH`, set
+`C2C_NGROK_PATH` to the executable's absolute path before running `c2c`.
 
 ### Legacy: Codex sandbox cannot write the state directory
 Hermes setup and doctor never touch Codex configuration. If you still run C2C
@@ -95,20 +80,6 @@ platform application-data path).
 Handled automatically: an existing healthy bridge for the same workspace is
 reused; anything else makes the bridge pick a free port. Configuration follows
 automatically.
-
-### Fixed hostname is configured, but the Named Tunnel does not start on Windows
-`cert.pem` and the Named Tunnel credential are different files. `cert.pem`
-proves that `cloudflared` has an account certificate; the tunnel still needs
-`%USERPROFILE%\.cloudflared\<TUNNEL-UUID>.json` (or the file selected by
-`TUNNEL_CRED_FILE`) to run. `c2c doctor --json` reports whether the certificate
-is missing, the credential is missing or unreadable, the JSON is invalid, or
-the saved Tunnel ID does not match. It never prints credential contents or
-repairs the file automatically.
-
-When the diagnostic says the credential is missing, recover the credential for
-the existing Tunnel with `cloudflared tunnel token --cred-file` and then run
-`c2c doctor` again. Do not paste the generated credential into ChatGPT or a
-project file.
 
 ### Reading a file returns ACCESS_DENIED_SENSITIVE_FILE
 Working as intended: `.env`, keys, credentials and anything matched by

@@ -26,7 +26,6 @@ import { runGit } from "../src/workspace/git.js";
 import { findRipgrep, resetRipgrepCache, searchWorkspace } from "../src/workspace/search.js";
 import { Workspace } from "../src/workspace/manager.js";
 import { findBinary } from "../src/tunnel/detect.js";
-import { ProcessCloudflaredAccount } from "../src/tunnel/named-provision.js";
 
 describe("Windows background subprocess windowsHide: true (RED verification)", () => {
   let tmpDir: string;
@@ -78,25 +77,13 @@ describe("Windows background subprocess windowsHide: true (RED verification)", (
   });
 
   it("4. findBinary in src/tunnel/detect.ts passes windowsHide: true for binary probe", () => {
-    findBinary("cloudflared");
+    findBinary("ngrok");
     const probeCall = spawnSyncCalls.find((c) => Array.isArray(c.args) && c.args[0] === "--version");
     expect(probeCall).toBeDefined();
     expect(probeCall?.options).toHaveProperty("windowsHide", true);
   });
 
-  it("5. ProcessCloudflaredAccount.run in src/tunnel/named-provision.ts passes windowsHide: true", async () => {
-    const account = new ProcessCloudflaredAccount("fake-cloudflared");
-    try {
-      await account.listTunnels();
-    } catch {
-      // Expected to fail execution, but spawnSync should record call
-    }
-    const provisionCall = spawnSyncCalls.find((c) => c.file === "fake-cloudflared");
-    expect(provisionCall).toBeDefined();
-    expect(provisionCall?.options).toHaveProperty("windowsHide", true);
-  });
-
-  it("6. src/cli/index.ts update-check runGit passes windowsHide: true", () => {
+  it("5. src/cli/index.ts update-check runGit passes windowsHide: true", () => {
     const cliSource = fs.readFileSync(path.resolve("src/cli/index.ts"), "utf8");
     // Verify runGit under update-check in cli/index.ts includes windowsHide: true
     const updateCheckSection = cliSource.slice(cliSource.indexOf("// ---------------------------------------------------------------- update-check"));

@@ -7,8 +7,8 @@ const COMMON_DIRS = [
   "/usr/local/bin",
   "/usr/bin",
   path.join(process.env.HOME ?? "", ".local", "bin"),
-  "C:\\Program Files\\cloudflared",
-  "C:\\Program Files (x86)\\cloudflared",
+  "C:\\Program Files\\ngrok",
+  "C:\\Program Files (x86)\\ngrok",
 ];
 
 function accessibleFile(candidate: string): string | null {
@@ -25,8 +25,8 @@ function accessibleFile(candidate: string): string | null {
 /** Locate a binary on PATH or in common install locations. */
 export function findBinary(name: string): string | null {
   const exe = process.platform === "win32" ? `${name}.exe` : name;
-  if (name === "cloudflared" && process.env.C2C_CLOUDFLARED_PATH?.trim()) {
-    const configured = accessibleFile(process.env.C2C_CLOUDFLARED_PATH.trim());
+  if (name === "ngrok" && process.env.C2C_NGROK_PATH?.trim()) {
+    const configured = accessibleFile(process.env.C2C_NGROK_PATH.trim());
     if (configured) return configured;
   }
   try {
@@ -45,16 +45,4 @@ export function findBinary(name: string): string | null {
     if (configured) return configured;
   }
   return null;
-}
-
-export interface TunnelBinaries {
-  cloudflared: string | null;
-  wrangler: string | null;
-}
-
-export function detectTunnelBinaries(): TunnelBinaries {
-  return {
-    cloudflared: findBinary("cloudflared"),
-    wrangler: findBinary("wrangler"),
-  };
 }

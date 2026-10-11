@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import importlib
 import json
@@ -120,6 +121,14 @@ assert not offenders, f"unintended Chinese text in active surfaces: {offenders}"
 from with_chatgpt import cli
 # Setup reports bridge/tunnel/pairing readiness read-only; unknown stays distinct.
 _saved = (cli._node_version, cli._package_check, cli._browser_check, cli._c2c_json)
+_saved_ngrok = cli._ngrok_check
+cli._ngrok_check = lambda: (False, "ngrok executable not found; install it (brew install ngrok)")
+cli._node_version = lambda: (True, "v22")
+cli._package_check = lambda: (True, "ok")
+cli._browser_check = lambda: (True, "ok")
+_no_ngrok = cli._setup_result()
+assert not _no_ngrok["ok"] and not _no_ngrok["ngrok"]["ok"] and "brew install ngrok" in _no_ngrok["ngrok"]["detail"]
+cli._ngrok_check = lambda: (True, "/usr/local/bin/ngrok")
 cli._node_version = lambda: (True, "v22")
 cli._package_check = lambda: (True, "ok")
 cli._browser_check = lambda: (True, "ok")
@@ -135,7 +144,22 @@ try:
     assert ready["ready"] and ready["pairing"]["paired"] and not ready["next_steps"]
 finally:
     cli._node_version, cli._package_check, cli._browser_check, cli._c2c_json = _saved
+    cli._ngrok_check = _saved_ngrok
 
 failed = cli._parse_json_output(subprocess.CompletedProcess([], 1, stdout="", stderr="timeout"))
 assert failed["ok"] is False and failed["error"] == "timeout"
+_saved_run = cli._run_c2c
+_calls = []
+cli._run_c2c = lambda a, **_k: (_calls.append(a), subprocess.CompletedProcess([], 0, stdout="", stderr=""))[1]
+try:
+    _parser = argparse.ArgumentParser()
+    cli.setup_parser(_parser)
+    try:
+        cli.handle_command(_parser.parse_args(["c2c", "logs", "--json"]), None)
+    except SystemExit as exit_:
+        assert exit_.code == 0
+    assert _calls == [["logs", "--json"]], _calls
+finally:
+    cli._run_c2c = _saved_run
+
 print("with-chatgpt plugin tests passed")

@@ -7,6 +7,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -47,6 +48,13 @@ def _node_version() -> tuple[bool, str]:
 def _browser_check() -> tuple[bool, str]:
     browser = shutil.which("terminal-browser")
     return (True, browser) if browser else (False, "terminal-browser executable not found; install it separately")
+
+
+def _ngrok_check() -> tuple[bool, str]:
+    ngrok = shutil.which("ngrok")
+    if ngrok:
+        return True, ngrok
+    return False, "ngrok executable not found; install it (macOS: brew install ngrok; Windows: winget install ngrok.ngrok) and run `ngrok config add-authtoken <token>`"
 
 
 def _package_check() -> tuple[bool, str]:
@@ -140,11 +148,13 @@ def _setup_result(workspace: str | None = None) -> dict[str, Any]:
     node_ok, node_detail = _node_version()
     package_ok, package_detail = _package_check()
     browser_ok, browser_detail = _browser_check()
-    prerequisites_ok = node_ok and package_ok and browser_ok
+    ngrok_ok, ngrok_detail = _ngrok_check()
+    prerequisites_ok = node_ok and package_ok and browser_ok and ngrok_ok
     result: dict[str, Any] = {
         "ok": prerequisites_ok,
         "action": "setup",
         "node": {"ok": node_ok, "detail": node_detail},
+        "ngrok": {"ok": ngrok_ok, "detail": ngrok_detail},
         "c2c": {"ok": package_ok, "detail": package_detail},
         "terminal_browser": {"ok": browser_ok, "detail": browser_detail},
         "repair_required": False,
@@ -177,17 +187,30 @@ def _setup_result(workspace: str | None = None) -> dict[str, Any]:
     return result
 
 def setup_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("action", choices=["setup", "doctor", "enable", "disable", "status", "pair", "stop"])
+    parser.add_argument("action", choices=["setup", "doctor", "enable", "disable", "status", "pair", "stop", "c2c"])
     parser.add_argument("--session-id")
     parser.add_argument("--workspace")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--repair", action="store_true")
+    parser.add_argument("c2c_args", nargs=argparse.REMAINDER, help="args forwarded verbatim to c2c (with `c2c` action)")
 
 
 def handle_command(args: argparse.Namespace, ctx: Any) -> None:
     action = args.action
     if args.repair and action != "doctor":
         raise ValueError("--repair is only valid with doctor")
+    if action == "c2c":
+        # Raw passthrough: c2c owns its own subcommands and flags; may mutate (start, stop, pair...).
+        try:
+            completed = _run_c2c(args.c2c_args, timeout=120)
+        except RuntimeError as error:
+            print(error, file=sys.stderr)
+            raise SystemExit(1)
+        sys.stdout.write(completed.stdout)
+        sys.stderr.write(completed.stderr)
+        raise SystemExit(completed.returncode)
+    if args.c2c_args:
+        raise ValueError("extra arguments are only valid with the c2c action")
     if action == "enable":
         session = _session_id(args)
         enable_session(ctx.state, session)

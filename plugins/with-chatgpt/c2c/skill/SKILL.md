@@ -52,9 +52,6 @@ whatever data it needs by itself.
    Follow **In-app browser (ChatGPT)** below. NEVER Computer Use (no
    screenshot-click). NEVER launch or control a third-party/external browser
    (Chrome, Safari, Edge…), and never use `open <url>` to hand off to one.
-   - The ONLY exception: the user explicitly says the Cloudflare login must use
-     their own browser session — that single Cloudflare login step may go through
-     their browser; everything else stays in the built-in browser.
    - If the user asks to run ChatGPT in their own browser, refuse politely and
      explain: "Hermes must repeatedly call ChatGPT and configure the connection, which frequently
      operates the page and may interfere with normal browser use. ChatGPT can only
@@ -87,8 +84,6 @@ whatever data it needs by itself.
    - sandbox / state-dir write failed (EPERM)
    - this workspace used to have a public URL and the tunnel is down
    - `chatgptRepair.needed` is true (fix the connector first, then doctor again)
-   - `namedRepair.needed` is true (user must log in to Cloudflare, then doctor again.
-     Do not Delete the ChatGPT connector — the address did not change)
    - `report.bridge` says status cannot be confirmed: the local bridge may still be running.
      Do not `c2c start`, do not Delete the connector, do not treat it as
      `chatgptRepair`. Wait and run doctor again.
@@ -192,9 +187,9 @@ that close the tab, hide the window, or stall on the settings page.
   `corepack pnpm install && corepack pnpm build` inside it.
 - For commands that act on the user's project (`setup`, `doctor`, `session`,
   `restart`, `start`, `stop`, `status`, `pair`, `unpair`, `logs`, `workspace`,
-  `record`, `tunnel status`, `tunnel choose`), pass `-w <workspace root>`
+  `record`), pass `-w <workspace root>`
   (the project the user is working on, NOT the c2c repo).
-- Do not add `-w` to machine-wide commands: `prefs`, `tunnel login`. Legacy
+- Do not add `-w` to machine-wide commands: `prefs`. Legacy
   `sandbox-allow` remains explicit compatibility tooling; do not run it during
   normal Hermes setup or doctor.
 
@@ -212,35 +207,14 @@ Inside the checkout directory (see Locations):
 4. Run `c2c doctor --json`; pass `--repair` only when repair is intentional.
 5. Tell the user "✓ Updated to the latest version", then resume the requested task.
 
-## Connection choice (once per workspace)
-
-Ask this **before** the public address exists (`c2c setup` / first `doctor --repair`
-that starts a tunnel). Do not mention tunnels, wrangler, DNS, or hostnames.
-Speak only of temporary address / fixed domain / Cloudflare login.
-
-1. `c2c tunnel status -w <workspace> --json`
-2. If `needsChoice` is false: do not ask again.
-3. If `needsChoice` is true: tell the user exactly `userPrompt` and wait.
-   - No account / no domain / temporary / neither →
-     `c2c tunnel choose -w <ws> --mode quick --json`
-   - I have a domain (for example, example.com)→ first tell them `loginPrompt`, then
-     `c2c tunnel choose -w <ws> --mode named --zone <domain> --json`.
-     This may open the user's own browser (the Cloudflare exception in
-     Golden rule 5). Wait until the command finishes.
-     If they said they have an account but gave no domain: ask once for the
-     domain. If the command returns `need: "zone"`, ask once and retry.
-     If `fallback` is true: tell them `userMessage` and continue on the
-     temporary address. Do not retry named unless they ask.
-4. Never put connection credentials in the project. The CLI stores them in
-   the C2C state directory.
-
 ## Workflow: first-time setup ("Complete initial Hermes with ChatGPT setup")
 
-1. Detect prerequisites yourself: `node --version` (>= 20), and check `cloudflared`.
-   - If cloudflared is missing on macOS run `brew install cloudflared`; on Windows use
-     `winget install Cloudflare.cloudflared`. Do this yourself; don't ask.
+1. Detect prerequisites yourself: `node --version` (>= 20), and check `ngrok`.
+   - If ngrok is missing on macOS run `brew install ngrok`; on Windows use
+     `winget install ngrok.ngrok`. Then the user must add an authtoken
+     (`ngrok config add-authtoken <token>`; from dashboard.ngrok.com) — ask once.
 2. If the c2c repo has no `node_modules`, run `pnpm install && pnpm build` in it.
-3. Run `c2c doctor --json`, then **Connection choice**, then
+3. Run `c2c doctor --json`, then
    `c2c setup -w <workspace> --json`.
    Setup must not mutate Hermes configuration. It returns
    `{ mcpUrl, pairingCode, workspaceName, connectorName, ... }`.
@@ -307,7 +281,7 @@ Hermes with ChatGPT
 Ready.
 ```
 
-If a login wall appears (ChatGPT, Cloudflare): stop, tell the user the ONE thing
+If a login wall appears (ChatGPT, ngrok): stop, tell the user the ONE thing
 to do ("Please log in to ChatGPT, then tell me “done”"), then continue.
 
 ### Guided manual ChatGPT setup
@@ -500,13 +474,9 @@ Do not invent `STATE: RESUME`. If the original chat is gone, send HANDOFF.
 All control messages start with `[C2C]`. Keep Hermes→ChatGPT messages under 1 KB.
 ChatGPT's replies are expected to be substantive (see step 3). Docs: `docs/protocol.md`.
 
-0. `c2c tunnel status -w <workspace> --json`. If `needsChoice`, follow
-   **Connection choice** first (existing installs: ask once, then remember).
-   Then `c2c doctor -w <workspace> --json`. **Doctor gate:** if local is not green,
+0. `c2c doctor -w <workspace> --json`. **Doctor gate:** if local is not green,
    do not open ChatGPT and do not send INIT. If
-   `namedRepair.needed` is true, tell the user `namedRepair.userMessage`, run
-   `c2c tunnel login --json` (their browser; Cloudflare exception), then doctor
-   again. If `chatgptRepair.needed` is true, tell the user `chatgptRepair.userMessage`
+   `chatgptRepair.needed` is true, tell the user `chatgptRepair.userMessage`
    (one paragraph, no internals), run **Workflow: reconnect after address
    reclaim**, then doctor again and only continue when the gate is green.
    Generate task id: `c2c_` + 4 random hex chars — unless a checkpoint already
@@ -710,11 +680,9 @@ the previous public address is gone. Doctor already started a new one.
 
 1. `c2c doctor -w <workspace> --json`. Doctor gate: do not open ChatGPT / send
    `[C2C]` until local is green, except reconnect settings pages.
-2. If `namedRepair.needed`, tell the user `namedRepair.userMessage`, run
-   `c2c tunnel login --json`, then doctor again. Do not Delete the connector.
-3. If `chatgptRepair.needed`, follow **reconnect after address reclaim**, then
+2. If `chatgptRepair.needed`, follow **reconnect after address reclaim**, then
    doctor again.
-4. Otherwise apply the recovery map. Only involve the user for login / 2FA /
+3. Otherwise apply the recovery map. Only involve the user for login / 2FA /
    CAPTCHA — one action.
 
 ## Recovery map
@@ -722,13 +690,13 @@ the previous public address is gone. Doctor already started a new one.
 | Symptom | Action |
 | --- | --- |
 | Bridge not running | Run `c2c doctor --json`; pass `--repair` to start it explicitly. |
-| Tunnel dead / URL unreachable / connection expired after everything was closed | `c2c doctor` → if `namedRepair.needed`, login to Cloudflare and doctor again (do not Delete). If `chatgptRepair.needed`, tell the user the message, then **Delete** THIS workspace's connector only (`connectorName`) and create it again. Never Reconnect. After recreate, re-check `workspace_info` in the saved chat; if it still fails, new chat in the same Project (or long-chat switch) + HANDOFF. |
+| Tunnel dead / URL unreachable / connection expired after everything was closed | `c2c doctor` → if `chatgptRepair.needed`, tell the user the message, then **Delete** THIS workspace's connector only (`connectorName`) and create it again. Never Reconnect. After recreate, re-check `workspace_info` in the saved chat; if it still fails, new chat in the same Project (or long-chat switch) + HANDOFF. |
 | Collection page shows only Retry | Same iab tab: Retry once, then open the last working chat and click its Project link. Do not write INIT/EXECUTED waiting checkpoints until the message is visible. |
 | ChatGPT says tool call failed / 401 | token expired or revoked → re-pair (new pairing code + authorize) |
 | Pairing code rejected/expired | `c2c pair --json` for a fresh code |
 | Same explicit ChatGPT setup/reconnect browser configuration step fails twice after repair | Stop automating ChatGPT settings and use **Guided manual ChatGPT setup fallback**. Do not count browser/js timeout, loading/generating, or login/2FA waiting as failures. |
 | Port conflict | handled automatically; never surface to the user |
 | Every new chat cannot write local state | Run `c2c doctor --json`; if repair is intentional, rerun with `--repair`. |
-| cloudflared missing | install it yourself (brew/winget), then retry |
+| ngrok missing | install it yourself (brew/winget), add the authtoken, then retry |
 | Sidebar has no “Projects” | Ask the user to hover “Chats”, click the …, and choose “Organize by project” |
 | Collection page is the wrong Project | Ask the user to open the named collection and say "found", or accept long-chat |

@@ -26,7 +26,7 @@ Agent（Codex），然后去倒杯咖啡：
 所有事情你自己做：
 
 1. 环境自检：需要 git 和 Node.js ≥ 20，缺什么就自动安装
-  （macOS 用 Homebrew，Windows 用 winget），同时安装 cloudflared。
+  （macOS 用 Homebrew，Windows 用 winget），同时安装 ngrok 并配置 authtoken（`ngrok config add-authtoken <token>`）。
 2. 下载：把 https://github.com/XiaoDuoYa/codex-with-chatgpt 克隆到
    ~/codex-with-chatgpt（已存在就 git pull 更新）。
 3. 构建：在该目录里执行 corepack pnpm install 和 corepack pnpm build。
@@ -37,7 +37,7 @@ Agent（Codex），然后去倒杯咖啡：
 5. 首次配置：按 SKILL.md 里的 first-time setup 流程执行
   （运行 c2c setup，用内置浏览器打开 ChatGPT 配置连接器并输入配对码）。
    全程只用内置浏览器，禁止打开任何第三方浏览器。
-6. 只有遇到需要我登录（ChatGPT / Cloudflare）、验证码或两步验证时才叫我，
+6. 只有遇到需要我登录（ChatGPT / ngrok）、验证码或两步验证时才叫我，
    而且一次只告诉我一个动作。
 7. 完成后给我看 ✓ 清单，并确认文件读取测试通过。我不懂 MCP、OAuth、
    Tunnel、端口这些词，不要向我解释；出了问题先自己修。
@@ -75,15 +75,11 @@ Codex with ChatGPT
 Ready.
 ```
 
-唯一可能需要你动手的步骤：登录 ChatGPT（如果要用固定域名，再登录一次 Cloudflare）。**新仓库**还会请你在 ChatGPT 里建一次项目（合集）：名字用仓库名，记忆选「仅限项目记忆」。侧栏如果没有「项目」，把鼠标放在「聊天」上，点右边三个点，选「按项目整理」。之后对话都从合集页开，不用回首页。已经在用的仓库默认还是原来的一条长对话，除非你说要改成 Project。
+唯一可能需要你动手的步骤：登录 ChatGPT（以及 ngrok，如果尚未配置 authtoken）。**新仓库**还会请你在 ChatGPT 里建一次项目（合集）：名字用仓库名，记忆选「仅限项目记忆」。侧栏如果没有「项目」，把鼠标放在「聊天」上，点右边三个点，选「按项目整理」。之后对话都从合集页开，不用回首页。已经在用的仓库默认还是原来的一条长对话，除非你说要改成 Project。
 
-### 可选的固定域名
+### 公网地址
 
-默认公网地址是临时的，桥重启后会变。Codex 会删掉这个项目的 ChatGPT 插件再按新地址加回去。
-
-如果你有 Cloudflare 账号，并且域名已经加在 Cloudflare 上，首次配置时（老用户则在下一次编码时问一次）会问你要不要用固定域名，例如 `c2c-<项目>.你的域名`。选是的话，浏览器里授权一次 Cloudflare 即可。之后重启一般不用再改插件。没有账号、不想用、登录失败：继续用临时地址，功能一样，只是修复更慢。
-
-凭证放在系统目录，不进项目。
+公网地址是 ngrok 临时 HTTPS 地址，桥重启后会变。Doctor 会明确报告需要修复连接器，不会悄悄替换健康的连接器。
 
 ## 工作原理
 
@@ -99,7 +95,7 @@ Ready.
              ┌─────────────────────┐
              │      C2C Bridge     │   仅监听本机回环地址
              │  只读 MCP           │   OAuth 2.1 + 一次性配对码
-             │  OAuth + 配对       │   Cloudflare Quick Tunnel
+             │  OAuth + 配对       │   ngrok 临时隧道
              │  Tunnel 管理        │
              └──────────┬──────────┘
                         │  只读
@@ -154,9 +150,9 @@ c2c sandbox-allow   # 把本地设置目录加入 Codex 沙箱白名单（macOS 
 c2c status / doctor / pair / unpair / logs / stop
 ```
 
-环境要求：Node.js >= 20、git；公网连接需要 `cloudflared`
-（自动检测，Skill 会替你安装）。如果 QUIC 被拦截，设置
-`C2C_TUNNEL_PROTOCOL=http2` 后重启 Bridge。
+环境要求：Node.js >= 20、git；公网连接需要 `ngrok` 及 authtoken
+（自动检测；`brew install ngrok` / `winget install ngrok.ngrok`，
+再运行 `ngrok config add-authtoken <token>`）。可用 `C2C_NGROK_PATH` 指定二进制。
 
 文档：[架构](docs/architecture.md) · [协议](docs/protocol.md) ·
 [安全](docs/security.md) · [故障排查](docs/troubleshooting.md)
@@ -170,7 +166,7 @@ src/
   auth/       OAuth 2.1（PKCE、动态注册、refresh 轮换、吊销）
   pairing/    一次性配对码（CSPRNG、TTL、限速）
   workspace/  路径收敛、敏感文件策略、搜索、git
-  tunnel/     TunnelProvider 抽象 + Cloudflare Quick Tunnel
+  tunnel/     TunnelProvider 抽象 + ngrok 临时隧道
   execution/  审查闭环所需的执行记录
   process/    守护进程生命周期
   cli/        c2c 命令行

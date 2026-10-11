@@ -10,21 +10,21 @@ import {
 
 describe("connectorAction", () => {
   it("creates on the first successful URL", () => {
-    expect(connectorAction(null, "https://a.trycloudflare.com/mcp")).toBe("create");
+    expect(connectorAction(null, "https://a.ngrok-free.app/mcp")).toBe("create");
   });
 
   it("is a no-op when the URL is unchanged", () => {
-    expect(connectorAction("https://a.trycloudflare.com/mcp", "https://a.trycloudflare.com/mcp/")).toBe("none");
+    expect(connectorAction("https://a.ngrok-free.app/mcp", "https://a.ngrok-free.app/mcp/")).toBe("none");
   });
 
   it("updates when the old address was reclaimed", () => {
-    expect(connectorAction("https://old.trycloudflare.com/mcp", "https://new.trycloudflare.com/mcp")).toBe("update");
+    expect(connectorAction("https://old.ngrok-free.app/mcp", "https://new.ngrok-free.app/mcp")).toBe("update");
     expect(reclaimUserMessage("Hermes with ChatGPT")).toContain("Delete");
     expect(reclaimUserMessage("Hermes with ChatGPT")).not.toContain("Reconnect");
   });
 
   it("does nothing without a next URL", () => {
-    expect(connectorAction("https://a.trycloudflare.com/mcp", null)).toBe("none");
+    expect(connectorAction("https://a.ngrok-free.app/mcp", null)).toBe("none");
   });
 });
 
@@ -63,8 +63,8 @@ describe("connectorNameFor", () => {
 
 describe("mcpUrlFromPublic", () => {
   it("appends /mcp and folds case/slash variants", () => {
-    expect(mcpUrlFromPublic("https://A.trycloudflare.com/")).toBe("https://a.trycloudflare.com/mcp");
-    expect(mcpUrlFromPublic("https://a.trycloudflare.com/mcp")).toBe("https://a.trycloudflare.com/mcp");
-    expect(normalizePublicUrl("https://A.trycloudflare.com/")).toBe("https://a.trycloudflare.com");
+    expect(mcpUrlFromPublic("https://A.ngrok-free.app/")).toBe("https://a.ngrok-free.app/mcp");
+    expect(mcpUrlFromPublic("https://a.ngrok-free.app/mcp")).toBe("https://a.ngrok-free.app/mcp");
+    expect(normalizePublicUrl("https://A.ngrok-free.app/")).toBe("https://a.ngrok-free.app");
   });
 });

@@ -8,24 +8,8 @@ import { findBridgeObservation, findLiveBridge, type RuntimeState } from "../bri
 import { adminFetch, ensureBridge, stopBridge } from "../process/daemon.js";
 import { Workspace } from "../workspace/manager.js";
 import { AuthStore } from "../auth/store.js";
-import { detectTunnelBinaries } from "../tunnel/detect.js";
-import {
-  chooseQuickTunnel,
-  hasCloudflaredCert,
-  inspectNamedTunnelCredentials,
-  namedTunnelCredentialRepairMessage,
-  ProcessCloudflaredAccount,
-  provisionNamedTunnel,
-} from "../tunnel/named-provision.js";
-import { parseZoneInput, suggestedNamedHostname } from "../tunnel/hostname.js";
-import {
-  isNamedTunnelReady,
-  NAMED_LOGIN_PROMPT,
-  NAMED_REPAIR_MESSAGE,
-  needsTunnelChoice,
-  readTunnelState,
-  TUNNEL_CHOICE_PROMPT,
-} from "../tunnel/state.js";
+import { findBinary } from "../tunnel/detect.js";
+import { NGROK_INSTALL_HINT } from "../tunnel/ngrok.js";
 import { Logger } from "../logger/index.js";
 import { getStateDir } from "../config/paths.js";
 import { ensureSandboxAllowlist, getCodexConfigPath, isStateDirAllowlisted } from "../config/sandbox-allow.js";
@@ -139,24 +123,6 @@ function persistWorkspaceEndpoint(opts: {
   return connectorName;
 }
 
-function tunnelChoicePayload(workspace: Workspace, zoneHint?: string): Record<string, unknown> {
-  const state = readTunnelState(workspace.id);
-  const zone = parseZoneInput(zoneHint ?? "") ?? state.zone ?? null;
-  return {
-    ok: true,
-    needsChoice: needsTunnelChoice(state),
-    preference: state.preference,
-    loggedIn: hasCloudflaredCert(),
-    namedReady: isNamedTunnelReady(state),
-    zone,
-    hostname: state.hostname ?? null,
-    suggestedHostname: zone ? suggestedNamedHostname(zone, workspace.name, workspace.id) : null,
-    userPrompt: needsTunnelChoice(state) ? TUNNEL_CHOICE_PROMPT : undefined,
-    loginPrompt: NAMED_LOGIN_PROMPT,
-    fallbackReason: state.fallbackReason,
-  };
-}
-
 function trySandboxAllow():
   | { ok: true; added: boolean; alreadyAllowed: boolean; stateDir: string; configPath: string }
   | { ok: false; added: false; alreadyAllowed: false; error: string } {
@@ -200,12 +166,7 @@ async function ensureBridgeAndTunnel(
   let info = await adminFetch<AdminInfo>(runtime, "GET", "/admin/info");
   let mcpUrl: string | null = info.publicUrl ? `${info.publicUrl}/mcp` : null;
   if (opts.tunnel && !info.publicUrl) {
-    const binaries = detectTunnelBinaries();
-    if (!binaries.cloudflared) {
-      throw new Error(
-        "NEED_CLOUDFLARED: cloudflared is not installed. Install it first (macOS: brew install cloudflared)."
-      );
-    }
+    if (!findBinary("ngrok")) throw new Error(`NEED_NGROK: ${NGROK_INSTALL_HINT}`);
     const result = await adminFetch<TunnelStartResponse>(runtime, "POST", "/admin/tunnel/start", 90_000);
     if (!result.url) throw new Error(result.message ?? "Tunnel start failed");
     info = await adminFetch<AdminInfo>(runtime, "GET", "/admin/info");
@@ -313,7 +274,6 @@ program
             hadEndpointBefore: Boolean(readLastEndpoint(info.workspaceId)),
           });
       const pairingResult = await adminFetch<PairingResponse>(runtime, "POST", "/admin/pairing");
-      const tunnelState = readTunnelState(info.workspaceId);
       if (opts.json) {
         say(
           JSON.stringify({
@@ -325,11 +285,7 @@ program
             local: mcpUrl === null,
             pairingCode: pairingResult.code,
             pairingExpiresAt: pairingResult.expiresAt,
-            tunnel: {
-              mode: isNamedTunnelReady(tunnelState) ? "named" : "quick",
-              hostname: tunnelState.hostname ?? null,
-              fallback: Boolean(tunnelState.fallbackReason),
-            },
+            tunnel: { provider: "ngrok" },
           })
         );
         return;
@@ -433,6 +389,8 @@ program
     // Node
     const nodeMajor = parseInt(process.versions.node.split(".")[0], 10);
     report.node = { ok: nodeMajor >= 20, detail: `v${process.versions.node}` };
+    const ngrokPath = findBinary("ngrok");
+    report.ngrok = ngrokPath ? { ok: true, detail: ngrokPath } : { ok: false, detail: NGROK_INSTALL_HINT };
 
     // Hermes setup and doctor never inspect or mutate Codex configuration.
     report.sandbox = { ok: true, detail: "not applicable; Hermes does not use Codex sandbox settings" };
@@ -495,11 +453,6 @@ program
           hadEndpointBefore: Boolean(lastEndpoint),
         })
       : "Hermes with ChatGPT";
-    const tunnelState = workspace ? readTunnelState(workspace.id) : null;
-    const namedReady = tunnelState ? isNamedTunnelReady(tunnelState) : false;
-    const namedCredential = namedReady ? inspectNamedTunnelCredentials(tunnelState?.tunnelId) : null;
-    const namedCredentialFailure = Boolean(namedCredential && namedCredential.status !== "ready");
-    let namedRepair: { needed: boolean; userMessage?: string } = { needed: false };
     let chatgptRepair: {
       needed: boolean;
       reason?: string;
@@ -530,18 +483,7 @@ program
 
     if (runtime) {
       let info = await adminFetch<AdminInfo>(runtime, "GET", "/admin/info");
-      if (namedReady && !namedCredentialFailure && opts.repair && info.tunnel.provider !== "cloudflare-named") {
-        await stopBridge(root);
-        await new Promise((resolve) => setTimeout(resolve, 400));
-        try {
-          runtime = (await ensureBridge(root)).runtime;
-          info = await adminFetch<AdminInfo>(runtime, "GET", "/admin/info");
-          results.push("Switched to named tunnel");
-        } catch (error) {
-          report.tunnel = { ok: false, detail: (error as Error).message };
-        }
-      }
-      const expectedPublic = Boolean(lastEndpoint?.publicUrl) || namedReady;
+      const expectedPublic = Boolean(lastEndpoint?.publicUrl);
       let currentUrl = info.publicUrl ?? info.tunnel.url;
       let healthy = false;
       if (currentUrl) {
@@ -553,11 +495,10 @@ program
         }
       }
 
-      if ((!currentUrl || !healthy) && !namedCredentialFailure && opts.repair && (expectedPublic || info.tunnel.running)) {
+      if ((!currentUrl || !healthy) && opts.repair && (expectedPublic || info.tunnel.running)) {
         try {
-          const binaries = detectTunnelBinaries();
-          if (!binaries.cloudflared) {
-            report.tunnel = { ok: false, detail: "NEED_CLOUDFLARED" };
+          if (!findBinary("ngrok")) {
+            report.tunnel = { ok: false, detail: `NEED_NGROK: ${NGROK_INSTALL_HINT}` };
           } else {
             const started = await adminFetch<TunnelStartResponse>(runtime, "POST", "/admin/tunnel/start", 90_000);
             if (started.url) {
@@ -575,15 +516,7 @@ program
         }
       }
 
-      if (namedCredentialFailure && namedCredential) {
-        report.tunnel = {
-          ok: false,
-          detail: `NAMED_TUNNEL_CREDENTIAL_${namedCredential.status.toUpperCase()}`,
-        };
-        namedRepair = {
-          needed: true,
-          userMessage: namedTunnelCredentialRepairMessage(namedCredential.status),
-        };
+      if (currentUrl && healthy) {
       } else if (currentUrl && healthy) {
         report.tunnel = { ok: true, detail: currentUrl };
         const nextMcp = mcpUrlFromPublic(currentUrl);
@@ -618,9 +551,6 @@ program
         if (action === "update") {
           results.push(`Public connection changed; update connector '${boundName}'.`);
         }
-      } else if (namedReady) {
-        report.tunnel = report.tunnel ?? { ok: false, detail: "NAMED_TUNNEL_DOWN" };
-        namedRepair = { needed: true, userMessage: NAMED_REPAIR_MESSAGE };
       } else if (expectedPublic) {
         report.tunnel = report.tunnel ?? { ok: false, detail: "Public connection did not recover" };
         chatgptRepair = {
@@ -639,18 +569,6 @@ program
       }
     } else if (bridgeUnknown) {
       report.tunnel = report.tunnel ?? { ok: false, detail: "Bridge state is unknown; connector repair skipped" };
-    } else if (namedCredentialFailure && namedCredential) {
-      report.tunnel = {
-        ok: false,
-        detail: `NAMED_TUNNEL_CREDENTIAL_${namedCredential.status.toUpperCase()}`,
-      };
-      namedRepair = {
-        needed: true,
-        userMessage: namedTunnelCredentialRepairMessage(namedCredential.status),
-      };
-    } else if (namedReady) {
-      report.tunnel = { ok: false, detail: "NAMED_TUNNEL_DOWN" };
-      namedRepair = { needed: true, userMessage: NAMED_REPAIR_MESSAGE };
     } else if (lastEndpoint?.publicUrl) {
       report.tunnel = { ok: false, detail: "Secure connection is not running" };
       chatgptRepair = {
@@ -664,9 +582,9 @@ program
     }
 
     if (opts.json) {
-      say(JSON.stringify({ report, repairs: results, chatgptRepair, namedRepair }));
+      say(JSON.stringify({ report, repairs: results, chatgptRepair }));
       const hasFailures =
-        Object.values(report).some((value) => !value.ok) || chatgptRepair.needed || namedRepair.needed;
+        Object.values(report).some((value) => !value.ok) || chatgptRepair.needed;
       if (hasFailures) process.exitCode = 1;
       return;
     }
@@ -692,10 +610,6 @@ program
     }
     for (const repair of results) say(`· ${repair}`);
     say("");
-    if (namedRepair.needed && namedRepair.userMessage) {
-      say(namedRepair.userMessage);
-      say("");
-    }
     if (chatgptRepair.needed && chatgptRepair.userMessage) {
       say(chatgptRepair.userMessage);
       if (chatgptRepair.mcpUrl) say(`New connection URL: ${chatgptRepair.mcpUrl}`);
@@ -703,15 +617,13 @@ program
       say("");
     }
     say(
-      allOk && !chatgptRepair.needed && !namedRepair.needed
+      allOk && !chatgptRepair.needed
         ? "Everything looks good."
         : chatgptRepair.needed
           ? "Local state is ready; update the existing ChatGPT connector explicitly."
-          : namedRepair.needed
-            ? "Named tunnel needs the repair action shown above."
-            : "Some checks still fail; use an explicit `c2c restart --tunnel` if needed."
+          : "Some checks still fail; use an explicit `c2c restart --tunnel` if needed."
     );
-    if (!allOk || namedRepair.needed) process.exitCode = 1;
+    if (!allOk) process.exitCode = 1;
   });
 
 // ---------------------------------------------------------------- pair / unpair
@@ -1164,127 +1076,14 @@ program
     }
   );
 
-const tunnelCmd = program.command("tunnel").description("Choose or inspect the public connection for this workspace");
-
-tunnelCmd
-  .command("status", { isDefault: true })
-  .description("Show whether this workspace still needs a one-time connection choice")
-  .option("-w, --workspace <path>")
-  .option("--zone <domain>", "optional domain, used to preview the stable hostname")
-  .option("--json", "machine-readable output", false)
-  .action((opts: { workspace?: string; zone?: string; json: boolean }) => {
-    try {
-      const workspace = new Workspace(resolveWorkspace(opts.workspace));
-      const payload = tunnelChoicePayload(workspace, opts.zone);
-      if (opts.json) {
-        say(JSON.stringify(payload));
-        return;
-      }
-      if (payload.needsChoice) say(TUNNEL_CHOICE_PROMPT);
-      else if (payload.namedReady) check(`Named tunnel: ${payload.hostname}`);
-      else say("Using a quick tunnel.");
-    } catch (error) {
-      handleCliError(error, opts.json);
-    }
-  });
-
-tunnelCmd
-  .command("choose")
-  .description("Remember quick vs named, and provision a named hostname when asked")
-  .requiredOption("--mode <mode>", "quick or named")
-  .option("-w, --workspace <path>")
-  .option("--zone <domain>", "Cloudflare domain for a named hostname")
-  .option("--hostname <hostname>", "override the default c2c-<project>.<zone>")
-  .option("--json", "machine-readable output", false)
-  .action(async (opts: { mode: string; workspace?: string; zone?: string; hostname?: string; json: boolean }) => {
-    const root = resolveWorkspace(opts.workspace);
-    try {
-      const workspace = new Workspace(root);
-      const mode = opts.mode.trim().toLowerCase();
-      const previous = readTunnelState(workspace.id);
-      if (mode === "quick") {
-        const state = chooseQuickTunnel(workspace.id);
-        if (await findLiveBridge(workspace.id)) {
-          if (previous.preference === "named") await stopBridge(root);
-        }
-        const payload = { ...tunnelChoicePayload(workspace), state };
-        if (opts.json) say(JSON.stringify(payload));
-        else check("Selected quick tunnel");
-        return;
-      }
-      if (mode !== "named") {
-        throw new Error("mode must be quick or named");
-      }
-      const zone = parseZoneInput(opts.zone ?? "");
-      if (!zone) {
-        const payload = {
-          ok: false,
-          need: "zone",
-          userMessage: "Provide the Cloudflare domain already configured, for example example.com.",
-          loginPrompt: NAMED_LOGIN_PROMPT,
-        };
-        if (opts.json) {
-          say(JSON.stringify(payload));
-          return;
-        }
-        say(payload.userMessage);
-        return;
-      }
-      if (!opts.json) say(NAMED_LOGIN_PROMPT);
-      const result = await provisionNamedTunnel({
-        workspaceId: workspace.id,
-        workspaceName: workspace.name,
-        zone,
-        hostname: opts.hostname,
-      });
-      if (await findLiveBridge(workspace.id)) await stopBridge(root);
-      const payload = {
-        ...tunnelChoicePayload(workspace),
-        ok: true,
-        fallback: result.fallback,
-        userMessage: result.userMessage,
-        error: result.error,
-        state: result.state,
-      };
-      if (opts.json) {
-        say(JSON.stringify(payload));
-        return;
-      }
-      if (result.fallback) say(result.userMessage ?? "");
-      else check(`Named tunnel ready: ${result.state.hostname}`);
-    } catch (error) {
-      handleCliError(error, opts.json);
-    }
-  });
-
-acceptUnusedWorkspaceOption(
-  tunnelCmd
-    .command("login")
-    .description("Open the Cloudflare login window used by a named hostname")
-    .option("--json", "machine-readable output", false)
-)
-  .action(async (opts: { json: boolean }) => {
-    try {
-      if (!opts.json) say(NAMED_LOGIN_PROMPT);
-      const account = new ProcessCloudflaredAccount();
-      await account.login();
-      const payload = { ok: true, loggedIn: hasCloudflaredCert() };
-      if (opts.json) say(JSON.stringify(payload));
-      else check("Cloudflare login complete");
-    } catch (error) {
-      handleCliError(error, opts.json);
-    }
-  });
-
 function handleCliError(error: unknown, json: boolean): void {
   const message = error instanceof Error ? error.message : String(error);
   if (json) {
     say(JSON.stringify({ ok: false, error: message }));
-  } else if (message.startsWith("NEED_CLOUDFLARED")) {
+  } else if (message.startsWith("NEED_NGROK")) {
     say("One setup step is required:");
     say("");
-    say("cloudflared is not installed.");
-    say("macOS: brew install cloudflared");
+    say(NGROK_INSTALL_HINT);
     say("Run the command, then retry.");
   } else {
     cross(message);
