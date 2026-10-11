@@ -1,5 +1,5 @@
 ---
-status: draft
+status: completed
 size: L
 scope: core/ginflow-core provider-document builder, local provider, package/card/gate integration
 owner: ginb
