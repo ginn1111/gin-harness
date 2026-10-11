@@ -34,12 +34,17 @@ def ok(message: str) -> None:
     print(f"✅ {message}")
 
 
+# Names copy_tree skips; also skipped when hashing so build output created after install is not a conflict.
+SKIP_NAMES = {"__pycache__", ".git", ".DS_Store", "node_modules", "dist", ".tooling"}
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     if path.is_dir():
         for item in sorted(path.rglob("*")):
-            if item.is_file() and "__pycache__" not in item.parts and item.suffix != ".pyc":
-                digest.update(str(item.relative_to(path)).encode())
+            rel = item.relative_to(path)
+            if item.is_file() and not SKIP_NAMES.intersection(rel.parts) and item.suffix != ".pyc":
+                digest.update(str(rel).encode())
                 digest.update(item.read_bytes())
     else:
         digest.update(path.read_bytes())
@@ -129,18 +134,19 @@ def install(profile_names: list[str]) -> None:
         for profile in profiles
         for plugin in plugin_names
     ]
-    for _, destination, _ in targets:
+    for key, destination, _ in targets:
         if destination.exists() and not destination.is_dir():
             fail(f"managed destination is not a directory: {destination}")
         destination.parent.mkdir(parents=True, exist_ok=True)
-        if backup_path(destination).exists():
+        if key != "skill" and backup_path(destination).exists():
             fail(f"backup already exists; resolve before install: {backup_path(destination)}")
 
     manifest: dict[str, Any] = {"version": VERSION, "source_root": str(ROOT), "skill": {}, "plugins": {}}
     rollback: list[tuple[Path, str | None]] = []
     try:
         for key, destination, source in targets:
-            backup = backup_existing(destination)
+            # Skill is a plain copy of repo source; overwrite without backup.
+            backup = None if key == "skill" else backup_existing(destination)
             rollback.append((destination, backup))
             if destination.exists() or destination.is_symlink():
                 remove_path(destination)
@@ -188,13 +194,14 @@ def managed_entries(manifest: dict[str, Any]) -> list[tuple[str, Path, str, str 
     entries: list[tuple[str, Path, str, str | None]] = []
     skill = manifest.get("skill")
     if skill:
-        entries.append(("skill", Path(skill["path"]), skill["hash"], skill.get("backup")))
+        entries.append(("skill", Path(skill["path"]), skill["hash"], None))  # skill is never backed up
     for name, item in manifest.get("plugins", {}).items():
         entries.append((name, Path(item["path"]), item["hash"], item.get("backup")))
     for name, item in manifest.get("profiles", {}).items():  # legacy v1
         for key in ("skill", "plugin"):
             if key in item:
-                entries.append((f"{name}:{key}", Path(item[key]), item[f"{key}_hash"], item.get(f"{key}_backup")))
+                backup = item.get(f"{key}_backup") if key == "plugin" else None
+                entries.append((f"{name}:{key}", Path(item[key]), item[f"{key}_hash"], backup))
     return entries
 
 
