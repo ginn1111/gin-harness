@@ -1,6 +1,9 @@
 version: 2
 
 secret:
+  ignored_paths:
+    - core/c2c/tests/execution-output.test.ts
+    - core/ginflow-core/test_decision.py
   ignored_matches:
     - match: 0430646a916b5289892a4f98897fbfe0ca9ae3494fa23da3bdb00b3f2fcea8e1
       name: Fake bearer token in c2c sanitizer regression test
