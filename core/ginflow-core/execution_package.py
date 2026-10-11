@@ -29,6 +29,33 @@ def _utc(value: Any) -> bool:
     return parsed.tzinfo is not None
 
 
+def _document_errors(units: Sequence[Any]) -> list[str]:
+    """Validate provider-neutral `document` refs; legacy packages without any pass."""
+    mappings = [u for u in units if isinstance(u, Mapping) and _text(u.get("key"))]
+    if not any("document" in u for u in mappings):
+        return []
+    errors: list[str] = []
+    seen: set[tuple[str, str]] = set()
+    for unit in mappings:
+        key = str(unit["key"])
+        ref = unit.get("document")
+        if ref is None:
+            errors.append(f"unit {key}.document is required")
+            continue
+        if not isinstance(ref, Mapping) or set(ref) != {"provider", "id", "path_or_url"} or not all(
+            _text(value) for value in ref.values()
+        ):
+            errors.append(f"unit {key}.document must be one {{provider, id, path_or_url}} reference")
+            continue
+        pair = (ref["provider"], ref["id"])
+        if pair in seen:
+            errors.append(f"unit {key}.document duplicates another unit's document")
+        seen.add(pair)
+        if ref["provider"] == "local" and (ref["id"] != key or not ref["path_or_url"].endswith(f"/{key}.md")):
+            errors.append(f"unit {key}.document does not match unit")
+    return errors
+
+
 def shape_package(
     initiative_key: str,
     contract: Mapping[str, Any],
@@ -181,6 +208,8 @@ def validate_package(package: Mapping[str, Any]) -> dict[str, Any]:
             errors.append(f"plan {key}.state must be approved")
         if plan.get("unit_key") not in unit_keys:
             errors.append(f"plan {key}.unit_key must reference a unit")
+
+    errors.extend(_document_errors(units))
 
     for key, deps in dependencies.items():
         for dep in deps:
