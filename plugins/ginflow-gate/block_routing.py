@@ -14,6 +14,8 @@ import subprocess
 from pathlib import Path
 
 CRITICAL_KINDS = frozenset({"needs_input", "capability"})
+VALID_KINDS = ("needs_input", "capability", "transient", "dependency")
+_REQUIRED_ACTION = re.compile(r"(?im)^\s*required_action:[ \t]*(\S.*)$")
 MAX_BODY = 800
 logger = logging.getLogger(__name__)
 
@@ -53,12 +55,35 @@ def _load_task(task_id: str, board: str | None) -> dict:
     return task
 
 
+def guard_block(args: dict, task_id: str = "", **_: object) -> dict | None:
+    """pre_tool_call guard for kanban_block (trace on only). Inactive on lookup errors."""
+    try:
+        selected = str(args.get("task_id") or task_id or os.environ.get("HERMES_KANBAN_TASK") or "").strip()
+        board = args.get("board") or os.environ.get("HERMES_KANBAN_BOARD")
+        workspace = str(_load_task(selected, board).get("workspace_path") or "")
+        if not workspace or not _trace_on(Path(workspace)):
+            return None
+    except Exception as exc:
+        logger.warning("ginflow block guard inactive: %s", exc)
+        return None
+    kind = args.get("kind")
+    if kind not in VALID_KINDS:
+        return {"action": "block", "message": (
+            f"ginflow-gate: kanban_block requires kind, one of: {', '.join(VALID_KINDS)} (got {kind!r})")}
+    if kind in CRITICAL_KINDS and not _REQUIRED_ACTION.search(str(args.get("reason") or "")):
+        return {"action": "block", "message": (
+            f"ginflow-gate: kanban_block kind={kind} requires a `required_action:` line in reason "
+            "stating what the human must do")}
+    return None
+
+
 def build_message(task_id: str, reason: object, profile: object, run_id: object) -> str:
-    # ponytail: required_action is the raw reason until #28 parses it.
+    match = _REQUIRED_ACTION.search(str(reason or ""))
+    action = _sanitize(match.group(1)) if match else ""
     reason = _sanitize(reason) or "(no reason given)"
     return _sanitize(
         f"Ginflow block: task {task_id} needs a human. Reason: {reason}. "
-        f"Required action: {reason}. Worker: {_sanitize(profile) or 'unknown'}. Run: {run_id}."
+        f"Required action: {action or reason}. Worker: {_sanitize(profile) or 'unknown'}. Run: {run_id}."
     )
 
 
@@ -87,5 +112,10 @@ def on_task_blocked(task_id: str = "", board: str | None = None, assignee: str |
         logger.warning("ginflow block routing failed: %s", exc)
 
 
+def _pre_tool_call(tool_name: str, args: dict, task_id: str = "", **kwargs: object) -> dict | None:
+    return guard_block(args, task_id) if tool_name == "kanban_block" else None
+
+
 def register(ctx) -> None:
+    ctx.register_hook("pre_tool_call", _pre_tool_call)
     ctx.register_hook("kanban_task_blocked", on_task_blocked)
