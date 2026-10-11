@@ -1,100 +1,58 @@
 # Gin-harness
 
-Gin-harness is a standalone artifact repository for safer agent work. It provides the shared **Ginflow** workflow, reusable routing and validation primitives, an optional `ginflow-gate` adapter, target-project starter context, and deterministic integration checks.
+[![test](https://github.com/ginn1111/gin-harness/actions/workflows/test.yml/badge.svg)](https://github.com/ginn1111/gin-harness/actions/workflows/test.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-It is not a product application. Target repositories own product code, local rules, tests, and canonical product verification. Runtime-specific integrations, including Hermes skill/plugin loading, remain optional consumers of these artifacts.
+**Ginflow: a workflow, routing, and completion-gate layer around [Hermes Agent](https://hermes-agent.nousresearch.com/) Kanban.** It makes autonomous agent work scoped, restartable, and evidence-backed.
 
-## Four-phase Initiative lifecycle
+> **Status: early.** Contracts are versioned `v1` and may change.
 
-Ginflow organizes large autonomous work around one stable Initiative: Discovery frames problem and boundaries; Shaping approves one artifact-first Execution Package v2; Execution authorizes immutable AFK Batches and isolated Work Units; Decision reconstructs context from exact evidence for human disposition. Integration success opens Decision, not completion. `approved_for_mr` completes Ginflow lifecycle; provider publication and merge remain separate.
+Hermes is an agent runtime with profiles and a native Kanban board. Ginflow adds shared documents, routing, and gates so a card cannot be completed without proof.
 
-Pure core contracts are versioned independently as `initiative/v1`, `execution_batch/v1`, `review_cycle/v1`, `decision_projection/v1`, `notification/v1`, and `merge_request_intent/v1`. Hermes owns identity/Kanban/lifecycle/persistence; target repos own product behavior/canonical verification; adapters own Git/check collection and future gateway/provider transport. Projections are bounded and redacted; raw logs, secrets, personal data, prompts, and transcripts are excluded.
+## Features
 
-TUI, direct Hermes DB access, gateway transport/subscription setup, and provider-specific MR publication remain deferred.
+- **Four-phase lifecycle** that settles ambiguity before code is touched.
+- **Provider documents**: one canonical governance record per Work Unit (local Markdown, GitHub Issue, or Linear Issue); Kanban cards stay short and link to it.
+- **Completion gates** (`ginflow-gate`) check card fields, verification evidence, linked artifacts, baseline commits, and drift at native Hermes transitions.
+- **Reusable core** (`core/ginflow-core/`): routing and Execution Package primitives, independent of Hermes.
+- **Optional tracing** (`ginflow-trace`), off by default.
 
-## Why Gin-harness exists
+| Phase | Outcome |
+|---|---|
+| Discovery | Read-only problem framing: outcome, constraints, non-goals |
+| Shaping | One approved, artifact-first Execution Package |
+| Execution | Isolated Work Units run as Kanban cards, then an Integration card |
+| Decision | Human disposition from exact evidence; only `approved_for_mr` completes the lifecycle |
 
-Gin-harness is a wrapper around Hermes Kanban. It gives Hermes Kanban a practical blueprint for effective work: documents that define scope and evidence, routing that shapes work before execution, state-transition guidance, gates that prevent unsupported completion, and document extensions for project-specific context.
+Hermes stays the authority for cards, assignments, and lifecycle state. Target repositories keep their own code, rules, and canonical verification.
 
-For new initiatives, the four-phase lifecycle above is canonical: Discovery resolves ambiguity, Shaping approves artifacts, Execution dispatches blocked cards, and Decision awaits human disposition. Hermes Kanban remains lifecycle authority.
-
-Ginflow does not replace Hermes Kanban. Hermes remains authority for cards, assignments, lifecycle states, and review transitions. Ginflow provides routing and worker guidance; `ginflow-gate` validates required evidence at native transitions; linked documents, `.ginflow.yaml`, and artifact baselines extend Kanban with the context needed to make work restartable and auditable.
-
-The system architecture in [`docs/architecture/gin-harness-system.drawio`](docs/architecture/gin-harness-system.drawio) shows this boundary: Hermes Kanban carries work state, while Ginflow supplies the routing, documents, guidance, verification, and gates around it.
-
-The derived four-phase flow in [`docs/architecture/ginflow-flow.md`](docs/architecture/ginflow-flow.md) records Decision as the human boundary after Integration; Draw.io remains canonical for the repository-wide system diagram.
-
-- **Discovery and Shaping** keep unresolved work read-only until one Execution Package is approved.
-- **Provider documents** hold one canonical governance record per Work Unit (`local` Markdown, GitHub Issue, or Linear Issue); Kanban cards stay concise and link to it.
-- **Execution** runs blocked-then-unblocked Work Unit cards until done or a defined Worker Exception; an Integration card verifies cross-unit behavior.
-- **Completion gates** validate card fields, verification evidence, linked artifacts, baseline commits, and drift.
-
-| Area | Purpose | Primary evidence |
-|---|---|---|
-| `skills/ginflow/` | Normative workflow vocabulary, routing/output rules, startup, completion, artifact layout, and distributed harness validation | `skills/ginflow/SKILL.md`, `skills/ginflow/lib/harness_core.py` |
-| `core/ginflow-core/` | Reusable routing primitives | `core/ginflow-core/routing.py` |
-| `plugins/ginflow-gate/` | Hermes hooks, routing context, completion enforcement, feedback/recovery helpers | `plugins/ginflow-gate/plugin.yaml`, `plugins/ginflow-gate/*.py` |
-| `templates/` | Starter local rules and task/artifact templates for target projects | `templates/` |
-| `docs/architecture/` | Editable Draw.io diagrams and derived architecture explanations | `docs/architecture/` |
-| `docs/specs/`, `docs/plans/`, `docs/adrs/` | Governed work artifacts and decisions | `docs/{specs,plans,adrs}/` |
-| `scripts/` | Installation, setup, verification, and test helpers | `scripts/` |
-| `tests/` and component test scripts | Harness and integration verification | `Makefile` |
-
-Read [`INSTALL.md`](INSTALL.md) for prerequisites, validation, artifact consumption, optional Hermes integration, and troubleshooting.
-
-For this repository, run:
+## Quick start
 
 ```bash
-make lint
-make test
+curl -fsSL https://raw.githubusercontent.com/ginn1111/gin-harness/main/install.sh | bash
+hermes plugins enable ginflow-gate     # then restart Hermes sessions
 ```
 
-The repository does not require Hermes, a Hermes profile, or profile configuration. Consume optional Hermes adapters separately when a runtime needs them.
+Needs `git`, `python3`, `make`, and Hermes with at least one installed profile. The installer clones to `~/.gin-harness`, installs the skill to `~/.agents/skills/ginflow`, and installs `ginflow-gate` and `ginflow-trace` into each profile. It never edits profile config, identity, secrets, or sessions.
+
+```bash
+PROFILES="a b" curl -fsSL .../install.sh | bash   # limit to selected profiles
+```
+
+Full walkthrough, with a read-before-run option, update, uninstall, and troubleshooting: [docs/guides/getting-started.md](docs/guides/getting-started.md).
 
 ## Usage
 
-1. Work from the real target repository, not the setup repository.
-2. Read the target project's `.hermes.md` (local, untracked) and any tracked `AGENTS.md`.
-3. Inspect Git state and Kanban progress before mutable work.
-4. For new governed/autonomous work, create or select one Initiative and follow Discovery → Shaping → Execution → Decision.
-6. Use the selected card's workspace, scope, acceptance, assignee, and linked artifacts.
-7. Run the target project's canonical verification command.
-8. Complete governed work with the native `kanban_complete` tool so `ginflow-gate` can validate the result.
+In your target repository (not this one):
 
-The setup checks and target-project checks are separate evidence. Ginflow does not replace the target project's canonical verification.
-
-## Architecture
-
-```text
-User intent
-    │
-    ▼
-Hermes runtime ── loads ──> Ginflow skill
-    │                         │
-    │                         ├─ workflow vocabulary
-    │                         └─ output contract
-    │
-    └─ invokes ginflow-gate ──> routing context and completion gate
-
-Ginflow core ── reusable routing and validation primitives
-
-Target project ── product code, local rules, tests, canonical verification
+```bash
+cp ~/.gin-harness/templates/hermes.md .hermes.md
+echo .hermes.md >> .git/info/exclude
 ```
 
-The skill defines the workflow contract. Ginflow core provides reusable primitives. The optional plugin supplies bounded routing context and completion enforcement. The consuming runtime owns execution and lifecycle details. The target project owns product behavior and its canonical verification.
+Set the project's canonical verification command in `.hermes.md`, open Hermes there, and run `/ginflow`. It creates `.ginflow.yaml` and walks Discovery → Shaping → Execution → Decision. Workers finish with `kanban_request_review`; `ginflow-gate` validates evidence there and at `kanban_complete`.
 
-## Further reading
-
-1. **Startup:** use the real target repository, read `AGENTS.md`/`.hermes.md`, inspect Git state, and read the selected card when governed work applies.
-2. **New Initiative routing:** use Discovery → Shaping → Execution → Decision; resolve ambiguity during Discovery/Shaping, not mid-execution.
-4. **Verification:** run the target project's canonical command and report setup-repository checks separately.
-5. **Review and completion:** workers submit governed work with native `kanban_request_review` after canonical verification and linked-artifact finalization. Hermes Kanban owns the `running -> review -> done` lifecycle and reviewer rework loop; reviewers either call native `kanban_complete` to finish valid work or `kanban_request_changes` with a minimal handoff (`reason`, `evidence`, `next_action`) to return it for rework. `ginflow-gate` validates Ginflow-specific evidence at the native transition points; it does not own lifecycle state machinery.
-
-Detailed routing and branch boundaries are in [`docs/architecture/ginflow-flow.md`](docs/architecture/ginflow-flow.md) and the normative contract in [`skills/ginflow/SKILL.md`](skills/ginflow/SKILL.md).
-
-## Project context and evidence
-
-Each target project keeps optional Ginflow context in `.ginflow.yaml` at its repository root:
+Minimal `.ginflow.yaml` (written for you; shown for reference):
 
 ```yaml
 version: 1
@@ -103,83 +61,46 @@ ginflow:
   workspace: /absolute/path/to/project
   worker:
     profile: <worker Hermes profile>
-    provider: <provider name>
-    model: <model name>
-  reviewer:
-    profile: <installed Hermes profile>   # optional
-  trace: false
 ```
 
-Optional `ginflow.reviewer.profile` must name an installed Hermes profile; unknown or malformed values fail closed before governed card creation. When valid, `ginflow-gate` injects it as the `reviewer` of native `kanban_request_review` (a `modify` directive) unless the caller passes one; Hermes has no default-reviewer setting. When absent, Hermes keeps the current assignee.
+More options and the evidence rules: [docs/guides/project-config.md](docs/guides/project-config.md).
 
-`board` and `workspace` are required. Board resolution uses explicit runtime override, `HERMES_KANBAN_BOARD`, this file, then Hermes active board. Missing context sends work to `/ginflow`; malformed, incomplete, or workspace-mismatched context fails closed. Ordinary verification reads config but does not initialize or rewrite it. The optional `worker` block supplies governed-card dispatch defaults; explicit card values win.
+## How it works
 
-Set `ginflow.trace: true` to enable optional `ginflow-trace` logging under `<workspace>/.ginflow/logs/` (errors under `.ginflow/errors/`). `GINFLOW_LOG=1` enables tracing for one process; any other set value disables it. Trace defaults off and never falls back to setup-repo paths.
+| Path | Role |
+|---|---|
+| `skills/ginflow/` | Normative workflow contract and harness validator |
+| `core/ginflow-core/` | Routing and Execution Package primitives |
+| `plugins/ginflow-gate/` | Hermes hooks: routing context and completion enforcement |
+| `plugins/ginflow-trace/` | Optional trace logging |
+| `templates/` | Starter target-project rules and artifact templates |
+| `scripts/` | Install, setup, verify, and test helpers |
 
-Completion evidence stays split:
+## Not yet supported
 
-- **Project verification:** target repo's exact canonical command, such as `make verify` or `./verify.sh`, run from target root. This proves product behavior and blocks completion when unavailable or failing.
-- **Ginflow harness:** external setup/deployed-skill check against target and selected card. It validates card fields, workspace, acceptance, completion evidence, linked paths, `artifact_baseline`, and linked-artifact drift. Report result separately; harness unavailability does not replace project verification.
-- **Profile installation:** setup-repo `make verify`, when checking installed profile wiring.
+- TUI for Decision review
+- Gateway notification transport and subscriptions
+- Provider-specific merge request publication
 
-For completed cards, baseline metadata records one Git commit plus exact linked artifact paths. `ginflow-gate` validates this metadata and drift during native `kanban_request_review` and `kanban_complete`; later edits, missing paths, unavailable commits, or path-list mismatch block affected lifecycle use. It does not silently repair drift or replace target verification.
+## Documentation
 
-## Dependencies and limits
+- [Getting started](docs/guides/getting-started.md)
+- [Project config and evidence](docs/guides/project-config.md)
+- [Workflow contract](skills/ginflow/SKILL.md)
+- [Ginflow flow](docs/architecture/ginflow-flow.md)
+- [System diagram](docs/architecture/gin-harness-system.drawio) and [reference architecture](docs/architecture/gin-harness-reference.md)
+- [Glossary](GLOSSARY.md)
 
-The repository intentionally has a small setup-layer implementation. It uses Python standard-library modules, POSIX shell tools, Make, Git, and Draw.io XML documents. No committed `pyproject.toml`, `package.json`, `go.mod`, `Cargo.toml`, or requirements file was found, so exact third-party/transitive versions are environment-specific and are not invented here.
+## Contributing
 
-Runtime and external boundaries include:
-
-- Hermes Agent and its native Kanban/tools/profile runtime;
-- the active Hermes profile configuration and installed plugin/skill wiring;
-- optional CodeGraph/MCP tooling, which is advisory and must not block core work; and
-- each target project's own language/toolchain and canonical verification.
-
-Consequently, Gin-harness cannot guarantee Hermes internals, target-project behavior, deployment topology, production SLOs, or exact environment versions. Those are explicit boundaries or unknowns, not hidden guarantees.
-
-## Strengths and trade-offs
-
-**Strengths**
-
-- Makes ambiguity, risk, ownership, and completion evidence explicit.
-- Reuses one workflow across multiple target repositories.
-- Separates Hermes runtime authority from Ginflow guidance and plugin enforcement.
-- Keeps optional developer tooling advisory instead of making it a hidden blocker.
-- Provides deterministic setup, lint, test, and artifact-drift checks.
-
-**Trade-offs**
-
-- Governed work has more ceremony than a quick prompt-and-edit flow.
-- Users must understand the relationship between Hermes physical states and Ginflow logical routes.
-- Documentation and implementation evidence span skill, core, plugin, templates, scripts, and target projects.
-- Target verification is necessarily project-specific, so setup and product checks may both be required.
-- Strict completion validation rejects missing links, drift, or weak evidence instead of repairing them silently.
-
-## Install and verify
-
-Read [`INSTALL.md`](INSTALL.md) before installing shared profile integrations. Do not copy secrets or modify profile identity without explicit approval.
-
-For this setup repository:
+Open an issue on [GitHub Issues](https://github.com/ginn1111/gin-harness/issues) before large changes. Before a pull request:
 
 ```bash
-make lint
-make test
+make lint && make test
 ```
 
-`make test` runs the canonical lint, setup, harness-core, artifact-guidance, Kanban-harness, and `ginflow-gate` checks. For a target project, run that repository's declared canonical command as a separate verification result; Ginflow does not substitute setup checks for product checks.
+Keep diffs narrow. This repository holds setup and integration code only; target-project artifacts belong in the target repository.
 
-## Architecture and further reading
+## License
 
-- [Reference architecture, dependencies, gaps, and trade-offs](docs/architecture/gin-harness-reference.md)
-- [Editable Draw.io architecture](docs/architecture/gin-harness-system.drawio)
-- [Derived Ginflow flow](docs/architecture/ginflow-flow.md)
-- [Ginflow workflow contract](skills/ginflow/SKILL.md)
-- [`ginflow-gate` plugin](plugins/ginflow-gate/)
-- [Reusable Ginflow core](core/ginflow-core/)
-- [Target-project setup template](templates/hermes.md)
-
-## Project rules
-
-See [`AGENTS.md`](AGENTS.md) for repository boundaries, verification order, generated-file handling, and completion rules.
-
-_Gin-harness documents the workflow around execution; it does not replace Hermes Agent or the target project._
+[MIT](LICENSE)

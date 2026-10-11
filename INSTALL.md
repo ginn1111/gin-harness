@@ -73,7 +73,7 @@ make uninstall
 
 Uninstall restores installer backups and refuses to delete paths changed after installation. Resolve reported conflicts manually, then rerun `make uninstall`.
 
-`make apply` edits native profile config only and no longer links the skill or plugins; run `make install` for those. Setup requires existing profiles. It adds only:
+`scripts/setup.sh --apply <profile>` edits native profile config only and does not link the skill or plugins; run `make install` for those. Setup requires existing profiles. It adds only:
 
 - setup-repo and optional community skill directories
 - `ginflow-gate` plugin enablement (files come from `make install`)

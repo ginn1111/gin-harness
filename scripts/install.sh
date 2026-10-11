@@ -118,7 +118,7 @@ def install(profile_names: list[str]) -> None:
         info("existing Ginflow installation found; cleaning it before reinstall")
         uninstall()
     source_skill = ROOT / "skills/ginflow"
-    plugin_names = ("with-chatgpt", "ginflow-gate", "ginflow-trace")
+    plugin_names = ("ginflow-gate", "ginflow-trace")
     core_routing = ROOT / "core/ginflow-core/routing.py"
     if not source_skill.is_dir() or not core_routing.is_file() or not all((ROOT / "plugins" / n).is_dir() for n in plugin_names):
         fail("setup-repo skill, routing core, or plugin source directory is missing")
