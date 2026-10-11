@@ -82,6 +82,16 @@ def _comment(task_id: str, board: str | None, message: str) -> None:
     subprocess.run(command, text=True, capture_output=True, timeout=30)
 
 
+def _route_repairable(task_id: str, board: str | None, profile: object, run_id: object, reason: object) -> None:
+    """Transient block: origin=worker comment, assign gintary, unblock."""
+    _comment(task_id, board, _sanitize(
+        f"[ginflow] origin=worker profile={_sanitize(profile) or 'unknown'} run={run_id} "
+        f"kind=transient reason={_sanitize(reason) or '(no reason given)'}"))
+    base = ["hermes", "kanban"] + (["--board", board] if board else [])
+    for step in (["assign", task_id, "gintary"], ["unblock", task_id]):
+        subprocess.run(base + step, text=True, capture_output=True, timeout=30)
+
+
 def guard_block(args: dict, task_id: str = "", **_: object) -> dict | None:
     """pre_tool_call guard for kanban_block (trace on only). Inactive on lookup errors."""
     try:
@@ -119,10 +129,14 @@ def on_task_blocked(task_id: str = "", board: str | None = None, assignee: str |
     try:
         task = _load_task(task_id, board)
         workspace = str(task.get("workspace_path") or "")
-        if not workspace or task.get("block_kind") not in CRITICAL_KINDS:
+        kind = task.get("block_kind")
+        if not workspace or kind not in CRITICAL_KINDS | {"transient"}:
             return
         path = Path(workspace)
         if not _trace_on(path):
+            return
+        if kind == "transient":
+            _route_repairable(task_id, board, assignee or task.get("assignee"), run_id, reason)
             return
         error = _config.context_error(path)
         if error:

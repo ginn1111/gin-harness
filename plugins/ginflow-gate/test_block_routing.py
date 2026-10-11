@@ -127,10 +127,26 @@ def main():
         got = fire(tid, "r")
         br._load_task = real_load
         assert len(got) == before, got[before:]
-        for kind in (None, "transient"):
-            t = block(kind, "r")
-            got = fire(t, "r")
-            assert len(got) == before, (kind, got[before:], status(t))
+        t = block(None, "r")
+        assert len(fire(t, "r")) == before and status(t) == "blocked"
+
+        # transient: origin comment, assigned gintary, unblocked, no send
+        def show(tid):
+            return json.loads(hermes(env, "kanban", "--board", BOARD, "show", tid, "--json"))
+
+        t = block("transient", "flaky net\nretry")
+        assert len(fire(t, "flaky net\nretry")) == before
+        data = show(t)
+        note = [c["body"] for c in data["comments"] if c["body"].startswith("[ginflow]")]
+        assert len(note) == 1 and all(x in note[0] for x in (
+            "origin=worker", "profile=ginb", "run=7", "kind=transient", "flaky net retry")), note
+        assert data["task"]["assignee"] == "gintary" and data["task"]["status"] in ("ready", "todo"), data["task"]
+        # trace off: native, no assignment
+        write_config("")
+        t = block("transient", "r")
+        fire(t, "r")
+        assert show(t)["task"]["assignee"] == "ginb" and status(t) == "blocked"
+        write_config("  trace: true\n  notify:\n    target: telegram:123\n")
 
         # invalid notify.target: no send
         for bad in ("  notify:\n    target: ''\n", "  notify:\n    target: 5\n", "  notify:\n    other: 1\n"):

@@ -1,5 +1,5 @@
 ---
-status: in_progress
+status: completed
 scope:
   - plugins/ginflow-gate/ block routing for transient kind and test
 owner: ginb
@@ -21,7 +21,7 @@ With trace on, a `transient` worker block is annotated as worker-origin, assigne
 
 ## Acceptance criteria
 
-- [ ] `transient` block writes the origin comment with profile, run ID, kind, reason
-- [ ] Task assigned to `gintary` and unblocked
-- [ ] Trace off: native behavior, no assignment
-- [ ] `make lint && make test` pass
+- [x] `transient` block writes the origin comment with profile, run ID, kind, reason
+- [x] Task assigned to `gintary` and unblocked
+- [x] Trace off: native behavior, no assignment
+- [x] `make lint && make test` pass
