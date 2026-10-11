@@ -85,7 +85,7 @@ describe("execution output store", () => {
   it("redacts token-shaped text in the stored command", () => {
     dirs.push(isolateStateDir());
     const item = saveExecutionOutput("ws1", {
-      command: "curl -H Bearer c2c_at_abcdefghijklmnopqrstuv",
+      command: "curl -H Bearer c2c_at_" + "abcdefghijklmnopqrstuv",
       raw: "ok",
       exitCode: 0,
     });

@@ -110,9 +110,10 @@ def format_work_guidance(
 ) -> str:
     """Render bounded, advisory routing guidance for Hermes.
 
-    This formatter deliberately does not decide eligibility, create records, call
-    ``skill_view``, or inspect the selected skill.  Hermes supplies the facts and
-    makes the affirmative Direct Work decision.
+    This formatter is retained only for explicitly active legacy v1 cards. It
+    deliberately does not decide eligibility, create records, call ``skill_view``,
+    or inspect the selected skill. Hermes supplies the facts and makes the
+    affirmative Direct Work decision. New Initiative work never uses this route.
     """
     mode = work_mode if work_mode in WORK_MODES else "clarification"
     skill = WORK_MODE_SKILLS[mode]
@@ -254,6 +255,18 @@ def _route(tasks: list[dict[str, Any]], explicit_id: str | None = None) -> dict[
     return _route_policy(tasks, Path.cwd(), explicit_id)
 
 
+def _is_legacy_v1_card(task: dict[str, Any]) -> bool:
+    """Recognize explicit pre-migration metadata, never infer legacy from absence."""
+    metadata = task.get("metadata")
+    if not isinstance(metadata, dict):
+        return False
+    if metadata.get("workflow_version") == 1:
+        return True
+    if metadata.get("ginflow_version") == 1:
+        return True
+    return metadata.get("legacy_v1") is True
+
+
 def _project_config_route(current: Path) -> tuple[str, str] | None:
     """Return a mutation-blocking route when project context is unusable."""
     error = _context_error(current)
@@ -290,6 +303,10 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
     tasks = _load_tasks()
     explicit_id = os.environ.get("HERMES_KANBAN_TASK") or None
     route = _route(tasks, explicit_id)
+    selected_task = next(
+        (task for task in tasks if task.get("id") == route.get("id")),
+        None,
+    )
     route_name = route["route"]
     candidates = route.get("candidates", [])
     candidate_ids = [item["id"] if isinstance(item, dict) else item for item in candidates]
@@ -307,19 +324,24 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
     if route_name == "no_cards_for_workspace":
         context += (
             "Report workspace to orchestrator; no Kanban card exists for workspace. "
-            "Choose work mode: investigation when cause is unclear, implementation when "
-            "requirements are clear, or brainstorming when requirements are unclear. "
-            "Then choose artifact level, shape work, or create a card. Load and follow "
-            "the `plan` skill before creating a plan."
+            "For new governed/autonomous work, create or select one initiative/v1 record "
+            "and follow Discovery → Shaping → Execution → Decision. Discovery resolves "
+            "ambiguity; Shaping approves the artifact-first package; do not mutate product "
+            "code or dispatch cards before approved Shaping. Legacy Work Mode/Work Size "
+            "guidance applies only when an explicitly active pre-migration v1 card is "
+            "identified."
         )
-        context += " " + format_work_guidance(
-            work_mode="clarification",
-            work_size=None,
-            size_rationale=None,
-            eligibility="unknown",
-            risk_impact="unknown",
-            output_overrides=_configured_output_overrides(),
-        )
+        if selected_task and _is_legacy_v1_card(selected_task):
+            context += " " + format_work_guidance(
+                work_mode="clarification",
+                work_size=None,
+                size_rationale=None,
+                eligibility="unknown",
+                risk_impact="unknown",
+                output_overrides=_configured_output_overrides(),
+            )
+        else:
+            context += " Legacy compatibility guidance is withheld because no active v1 card was identified."
     elif route_name == "needs_card_selection":
         details = "; ".join(f"{item['id']}: {item['title']}" for item in candidates)
         context += f"Report candidates to orchestrator; ask orchestrator to select one card from candidates ({details}); Do not select or implement."
@@ -351,6 +373,18 @@ def _routing_context(**kwargs: Any) -> dict[str, str] | str | None:
         context += "Resume implementation only within validated workspace and scope."
     else:
         context += "Do not implement; report route to orchestrator."
+    if selected_task and _is_legacy_v1_card(selected_task) and route_name in {
+        "validate_card_docs",
+        "ready_to_start",
+    }:
+        context += " " + format_work_guidance(
+            work_mode="clarification",
+            work_size=None,
+            size_rationale=None,
+            eligibility="unknown",
+            risk_impact="unknown",
+            output_overrides=_configured_output_overrides(),
+        )
     return {"context": context + "]"}
 
 

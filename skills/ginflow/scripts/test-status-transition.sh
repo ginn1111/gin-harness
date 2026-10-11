@@ -16,7 +16,7 @@ cleanup() {
 trap cleanup EXIT
 
 mkdir -p "$TARGET/docs/specs"
-cp "$ROOT/templates/hermes.md" "$TARGET/.hermes.md"
+cp "$ROOT/templates/AGENTS.md" "$TARGET/AGENTS.md"
 printf '# Transition spec\n' > "$TARGET/docs/specs/TRANSITION-1.md"
 printf '#!/usr/bin/env bash\nset -eu\nprintf "verify ok\\n"\n' > "$TARGET/verify.sh"
 chmod +x "$TARGET/verify.sh"
@@ -24,7 +24,7 @@ chmod +x "$TARGET/verify.sh"
 git init -q "$TARGET"
 git -C "$TARGET" config user.name 'Ginflow Test'
 git -C "$TARGET" config user.email 'ginflow-test@example.invalid'
-git -C "$TARGET" add docs/specs/TRANSITION-1.md verify.sh
+git -C "$TARGET" add AGENTS.md docs/specs/TRANSITION-1.md verify.sh
 git -C "$TARGET" commit -qm 'initial test fixture'
 BODY=$(printf 'Objective: Validate startup before claim\nScope:\n- routing\nAcceptance:\n- valid docs reach running\nLinks:\n- docs/specs/TRANSITION-1.md')
 TASK_JSON=$(hermes kanban create 'TRANSITION-1 — validated startup transition' --body "$BODY" --assignee ginb --workspace "dir:$TARGET" --initial-status blocked --json)
