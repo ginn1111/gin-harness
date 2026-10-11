@@ -6,6 +6,11 @@
 - **Execution Package** — artifact-first Ginflow v2 contract containing approved contract/spec, Tickets, plans, dependencies, workspaces, and baseline verification.
 - **Execution Batch** — immutable AFK attempt bound to one package digest, artifact baseline, Ticket set, workspaces, budget, stop conditions, and actor authorization.
 - **Work Unit** — one Ticket execution card. Parallel mutation requires isolated worktrees or workspaces.
+- **Work Package** — normalized, provider-neutral content of one Work Unit (Contract, Spec, Plan, acceptance, verification, dependencies, risks); rendered into its provider document.
+- **Provider document** — the single canonical governance record per Work Unit, hosted by `local` Markdown, a GitHub Issue, or a Linear Issue. Hermes Kanban cards link to it and stay lifecycle authority.
+- **Document reference** — provider-neutral `{provider, stable ID, path or URL}` pointing at a provider document.
+- **Document baseline** — `document_baseline` integrity evidence: normalized content hash plus Git commit (local) or provider, stable ID, URL, and fresh fetch time ≤ 5 minutes (remote).
+- **Tracker status sync** — mapped GitHub/Linear Issue workflow-status update made before a Hermes transition, then re-fetched; never touches provider document content or other provider fields.
 - **Integration** — dedicated card and terminal outcome that combines Work Units and verifies the result. Success opens Decision; it does not complete Initiative.
 - **Change Group** — behavior-oriented review unit mapping Tickets, acceptance, and changed paths.
 - **Decision** — read-only human context recovery and disposition phase after successful or blocked Integration.

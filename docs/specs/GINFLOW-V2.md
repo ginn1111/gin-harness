@@ -106,7 +106,7 @@ Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional a
 - Define **Plan** as the ordered implementation and local verification description for one Work Unit.
 - Define **Execution Package** as one approved Work Contract, one approved Spec, the complete Work Unit split, one approved Plan per Work Unit, dependency graph, workspace allocation, verification strategy, and final Integration Card.
 - Require one stable user-provided `WORK-KEY` for the initiative and one shaping-time `UNIT-KEY` per Work Unit. Hermes internal task IDs remain runtime identifiers and do not determine artifact names.
-- Use repository-local Markdown artifacts. Version 2 does not support externally hosted Work Contracts. External support may be reconsidered later with immutable revisions and reliable retrieval.
+- Use one canonical **provider document** per Work Unit, hosted by exactly one provider: `local` (consolidated Markdown record), `github` (GitHub Issue), or `linear` (Linear Issue). Contract, Spec, and Plan are semantic sections of the normalized **Work Package**, not separate stored artifacts. Supersedes the earlier repository-local-only decision; see ADR 0001 and "Provider documents" below.
 - Require one explicit user approval for the complete package. The Work Contract records approver identity and RFC3339 UTC approval time. Spec and Plans inherit approval through the committed package baseline.
 - Create Kanban cards after work splitting, with complete future links and blocked initial state. Create all cards before execution begins.
 - Bind every card to the same committed package baseline. Store the baseline in Kanban/package-validation evidence rather than self-referencing it from inside the commit.
@@ -162,7 +162,10 @@ Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional a
 
 ## Out of Scope
 
-- Supporting external or remote Work Contracts in version 2.
+- Provider types other than `local`, `github`, and `linear`; GitHub Discussions, pull requests, repository files, or Linear documents as provider formats.
+- Silent fallback to another provider, fuzzy adoption, or overwriting existing records.
+- Provider credentials in core modules, project configuration, or the completion gate.
+- Synchronizing provider fields other than mapped tracker Issue workflow status (assignment, labels, milestones, cycles, dependencies).
 - Deriving package approval from chat history without an approved repository artifact and committed baseline.
 - Automatic product implementation during Shaping.
 - Allowing workers to expand objective, scope, acceptance, dependencies, specified behavior, security boundaries, or verification contracts without reapproval.
@@ -181,3 +184,19 @@ Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional a
 - “Run until done or exception” is the central worker design constraint. New prompts or pauses should not be added for decisions already delegated by the approved package.
 - The documentation migration is a first-class Work Unit, not cleanup after implementation. Release cannot complete while current and version 2 workflow descriptions conflict.
 - Rollout order: implement explicit version 2, run one real pilot initiative, fix package/worker friction, make version 2 default for new work, allow active legacy cards to close, then remove legacy routing.
+
+## Provider documents
+
+Architecture alignment for GitHub #18/#19. Runtime implementation (setup resolution, adapters, migration, compatibility removal) is out of scope here.
+
+- **Provider document** — the single canonical governance record for one Work Unit, hosted by `local` (consolidated Markdown, frontmatter metadata), `github` (Issue), or `linear` (Issue; hidden machine metadata marker for remote providers). **Work Package** is the normalized, provider-neutral content (Contract, Spec, Plan, acceptance, verification, dependencies, risks) rendered into it.
+- **Document reference** — provider-neutral `{provider, stable ID, path or URL}` replacing local-file-specific package links. Human-readable link lives in the card; structured reference in package/task metadata.
+- **`document_baseline`** — one model for every provider; always includes normalized content hash. Hash covers rendered title plus body after newline, trailing-space, and final-newline normalization only; comments, labels, assignees, milestones, cycles, and provider status are excluded.
+  - Local evidence: committed content plus Git commit.
+  - Remote evidence: provider, stable ID, canonical URL, content hash, and fetch time. Adapter re-fetches before review and completion; evidence older than 5 minutes fails. `ginflow-gate` validates supplied evidence and freshness and holds no provider credentials.
+  - Inaccessible, deleted, provider-mismatched, stale, or drifted records block transition (fail closed).
+- **Provider resolution** — setup stores a strict project-local documentation block (`adaptive`, `local`, `github`, `linear`). Adaptive resolves from exact directives: project-portable agent instructions, then Hermes-specific, then linked agent docs, then existing canonical references; conflicts stop for user choice. Tool availability never selects policy. Targets use stable identities (GitHub repository; Linear team and optional project).
+- **Creation and adoption** — a pure provider-document builder renders and hashes; adapters perform side effects. Remote writes need explicit approval. External records are created before Hermes cards; provider failure creates no card. Local flow keeps blocked-card-first safety. Exactly one metadata match may be adopted with confirmation; multiple matches block; title-only matches only warn. No silent fallback to another provider; no overwrite of conflicting content.
+- **Authority** — Hermes Kanban stays lifecycle authority (status, assignment, workspace, dependencies, review, completion). Cards stay concise (Objective, Scope, Acceptance, Verification, dispatch dependencies, document link). Provider records carry no Hermes task backlink in v1; stable Work Unit key enables cross-search. Content freezes when the card starts running; later change needs explicit re-baseline and approval. Project-native verification remains behavior authority.
+- **Tracker status sync (github/linear only)** — applies only to Issue workflow status via explicit setup-resolved mappings; local provider has none; provider document content/frontmatter is not rewritten. Workers sync start, block, resume, review-request; reviewers sync request-changes and successful completion. Provider update happens before the Hermes transition completes, then the adapter re-fetches fresh evidence. Missing/invalid mapping, update failure, or re-fetch mismatch fails closed with no partial-success claim. Assignment, labels, milestones, cycles, dependencies are never synced.
+- **Newest schema only** — installed contract is authoritative; users do not select workflow versions. Setup performs previewed, approved, backed-up (timestamped, in ignored migration state) one-way config migration. Outdated or malformed config permits read-only inspection but blocks governed creation. Only unfinished work migrates: replacement blocked cards are created, validated, cross-linked, then old cards archived; old authority stays until every step succeeds; old local artifacts are marked superseded and deleted only by separate approval. Completed and archived history is untouched. Legacy runtime paths and `workflow_version` selection are removed after migration tooling exists; this supersedes the pilot/version-selector rollout above.

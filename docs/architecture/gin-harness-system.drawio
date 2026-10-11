@@ -374,8 +374,93 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="ginflow-fast-legend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=14;fontFamily=Architects Daughter;" value="LEGEND&#xa;Green = four-phase Initiative flow&#xa;Yellow = bounded legacy v1 compatibility&#xa;Grey = conversation-only&#xa;Red = stop and escalate" vertex="1">
-          <mxGeometry height="120" width="320" x="2050" y="720" as="geometry" />
+        <mxCell id="ginflow-fast-legend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;fontSize=14;fontFamily=Architects Daughter;" value="LEGEND&#xa;Green = four-phase Initiative flow&#xa;Yellow = bounded legacy v1 compatibility&#xa;Grey = conversation-only&#xa;Red = stop and escalate&#xa;Bottom lane = provider-document architecture" vertex="1">
+          <mxGeometry height="140" width="320" x="2050" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-title" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;fontFamily=Architects Daughter;" value="Provider-document lane — one canonical provider document per Work Unit (local · github · linear)" vertex="1">
+          <mxGeometry height="40" width="1100" x="0" y="940" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-pkg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Architects Daughter;" value="Shaping: normalized Work Package&lt;div&gt;Contract · Spec · Plan sections&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="180" x="0" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-resolve" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Architects Daughter;" value="Provider resolution (setup)&lt;div&gt;adaptive → exact directives → concrete provider&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="180" x="220" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-build" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Architects Daughter;" value="Provider-document builder (pure)&lt;div&gt;title · body · metadata · content hash&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="180" x="440" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-preview" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Architects Daughter;" value="Preview + explicit approval&lt;div&gt;github / linear writes need approval&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="180" x="660" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-adapter" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Architects Daughter;" value="Adapter: create or adopt&lt;div&gt;exact metadata match only · multiple matches block&lt;/div&gt;" vertex="1">
+          <mxGeometry height="70" width="180" x="880" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-card" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Architects Daughter;" value="Hermes blocked card&lt;div&gt;concise body + document link&lt;/div&gt;&lt;b&gt;Ownership: Hermes Kanban&lt;/b&gt;" vertex="1">
+          <mxGeometry height="70" width="180" x="1100" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-baseline" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Architects Daughter;" value="document_baseline&lt;div&gt;local: Git commit + hash&lt;/div&gt;&lt;div&gt;remote: id · URL · hash · fresh fetch ≤ 5 min&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="180" x="1100" y="1180" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-sync" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Architects Daughter;" value="Tracker status sync (github/linear only)&lt;div&gt;explicit mapping · provider update → re-fetch · before Hermes transition&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="180" x="880" y="1180" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-gate" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Architects Daughter;" value="ginflow-gate validates evidence&lt;div&gt;no provider credentials · freshness · hash · drift&lt;/div&gt;&lt;b&gt;Ownership: plugin&lt;/b&gt;" vertex="1">
+          <mxGeometry height="80" width="180" x="660" y="1180" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-complete" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Architects Daughter;" value="kanban_request_review / kanban_complete&lt;div&gt;canonical project verification still required&lt;/div&gt;&lt;b&gt;Ownership: Hermes Kanban&lt;/b&gt;" vertex="1">
+          <mxGeometry height="80" width="180" x="440" y="1180" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-stop" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;fontFamily=Architects Daughter;" value="Stop, fail closed&lt;div&gt;conflict · no access · missing mapping · stale / drifted / missing record · no local fallback&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="180" x="220" y="1180" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-migrate" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Architects Daughter;" value="Newest schema only&lt;div&gt;setup migrates unfinished work via approved replacement blocked cards; history untouched&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="180" x="0" y="1180" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e1" edge="1" parent="1" source="pd-pkg" target="pd-resolve" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e2" edge="1" parent="1" source="pd-resolve" target="pd-build" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e3" edge="1" parent="1" source="pd-build" target="pd-preview" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e4" edge="1" parent="1" source="pd-preview" target="pd-adapter" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e5" edge="1" parent="1" source="pd-adapter" target="pd-card" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;" value="record exists first">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e6" edge="1" parent="1" source="pd-card" target="pd-baseline" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e7" edge="1" parent="1" source="pd-baseline" target="pd-sync" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e8" edge="1" parent="1" source="pd-sync" target="pd-gate" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;" value="fresh evidence">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e9" edge="1" parent="1" source="pd-gate" target="pd-complete" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;" value="valid">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e10" edge="1" parent="1" source="pd-gate" target="pd-stop" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;dashed=1;" value="invalid">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="750" y="1290" />
+              <mxPoint x="310" y="1290" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pd-e11" edge="1" parent="1" source="pd-resolve" target="pd-stop" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;dashed=1;" value="conflict / no access">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pd-e12" edge="1" parent="1" source="pd-migrate" target="pd-resolve" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;dashed=1;" value="setup">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="90" y="1100" />
+              <mxPoint x="310" y="1100" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

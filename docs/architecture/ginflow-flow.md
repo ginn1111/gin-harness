@@ -47,6 +47,20 @@ Decision readiness requires immutable result state, terminal Ticket outcomes, ex
 
 New governed/autonomous work uses the four-phase Initiative lifecycle above. Legacy v1 cards may retain Direct Work and Clarification until closure; those routes are compatibility-only and never bypass a new Initiative record.
 
+## Provider-document architecture
+
+Canonical diagram lane: bottom of page **Gin-harness system** (cells `pd-*`). Each Work Unit has one canonical **provider document** (`local`, `github`, or `linear`).
+
+1. Setup resolves the provider from exact directives (never tool availability); conflicts or no access stop with no fallback.
+2. Shaping's normalized Work Package is rendered by a pure builder (title, body, metadata, content hash); remote writes need approval.
+3. An adapter creates or adopts the record (single exact metadata match only) before Hermes creates the blocked card with a concise body and document link.
+4. `document_baseline`: local = Git commit + hash; remote = provider, ID, URL, hash, fresh fetch ≤ 5 minutes. Content freezes when the card runs.
+5. For github/linear, mapped tracker Issue status updates before each Hermes transition (workers: start, block, resume, review-request; reviewers: request-changes, completion), then re-fetch. Missing mapping or failure fails closed.
+6. `ginflow-gate` validates evidence without provider credentials; canonical project verification is still required.
+7. Newest schema only: setup migrates config and unfinished work via approved replacement blocked cards; history untouched.
+
+Hermes Kanban remains lifecycle authority throughout. Details: [`GINFLOW-V2.md`](../specs/GINFLOW-V2.md#provider-documents), [ADR 0001](../adrs/0001-artifact-first-execution-packages.md).
+
 ## Derived flow
 
 ```mermaid
