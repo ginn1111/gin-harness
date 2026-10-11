@@ -111,7 +111,7 @@ make with-chatgpt-test
 
 #### Step-by-step: install and use for an agent
 
-Prerequisites: Node.js 20 or newer, `terminal-browser` installed separately, an existing Hermes profile. Steps 1-4 and 8 are safe for an agent to run. Steps 5-7 start services or change session state; run them only when the user asks. Live ChatGPT, `terminal-browser`, and `cloudflared` flows are not covered by repository tests.
+Prerequisites: Node.js 20 or newer, `ngrok` with an authtoken (`brew install ngrok`, then `ngrok config add-authtoken <token>`), `terminal-browser` installed separately, an existing Hermes profile. Steps 1-4 and 8 are safe for an agent to run. Steps 5-7 start services or change session state; run them only when the user asks. Live ChatGPT, `terminal-browser`, and `ngrok` flows are not covered by repository tests.
 
 1. Install (repo root). Skill goes to `~/.agents/skills/ginflow`; plugins (`with-chatgpt`, `ginflow-gate`, `ginflow-trace`) go to all Hermes profiles. Add `PROFILES="<profile>"` to limit the plugin:
 
@@ -259,7 +259,7 @@ Use the repository directories directly or copy the required artifacts into anot
 - `plugins/ginflow-gate/` — optional Hermes-compatible completion gate
 - `skills/ginflow/scripts/` — portable validation and test helpers
 
-For a target project, copy `templates/AGENTS.md` into the target repository and adapt its local commands, boundaries, and canonical verification path.
+For a target project, copy `templates/hermes.md` to `<target>/.hermes.md` and add `.hermes.md` to `<target>/.git/info/exclude` (never commit it, never write ginflow rules into `AGENTS.md`/`CLAUDE.md`, which teammates share). Adapt its local commands, boundaries, and canonical verification path.
 
 ## Optional Hermes integration
 
@@ -280,7 +280,7 @@ Do not implement product work in this repository. Agents should use the Ginflow 
 The target project owns:
 
 - product code and tests;
-- local `AGENTS.md` / `.hermes.md` rules;
+- local `.hermes.md` rules (untracked) and any team `AGENTS.md`;
 - Kanban-linked Spec, Plan, ADR, and Handoff artifacts; and
 - product verification and delivery decisions.
 

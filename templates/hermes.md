@@ -1,5 +1,7 @@
 # Project rules
 
+Local-only file: keep it in .git/info/exclude; never commit it and never copy these rules into AGENTS.md or CLAUDE.md (shared with teammates).
+
 This project uses globally installed Hermes profiles sourced from your setup repo.
 Global profile behavior lives there. Local project behavior lives here.
 Shared workflow, Kanban lifecycle, verification evidence, and optional handoff rules come from `ginflow`.

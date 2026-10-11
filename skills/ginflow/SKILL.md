@@ -34,8 +34,8 @@ Put these in target repo when project needs them:
 
 | Artifact     | Purpose                                   |
 | ------------ | ----------------------------------------- |
-| `AGENTS.md`  | local project rules, cross-agent portable |
-| `.hermes.md` | Hermes-specific project rules             |
+| `.hermes.md` | local Hermes project rules incl. ginflow routing; untracked via `.git/info/exclude` |
+| `AGENTS.md`  | team-shared rules; read-only for ginflow, never write ginflow instructions here |
 
 | `docs/specs/<CARD-ID>.md` | behavior/contract detail when needed |
 | `docs/plans/<CARD-ID>.md` | execution order for medium+ work |
@@ -48,7 +48,8 @@ Do not store artifacts in setup repo unless task explicitly changes global profi
 
 Starter local context:
 
-- copy `templates/AGENTS.md` from setup repo into target repo
+- copy `templates/hermes.md` from setup repo to `<target>/.hermes.md`, then add `.hermes.md` to `<target>/.git/info/exclude` (local-only; never `.gitignore`, never commit)
+- never write ginflow instructions into `AGENTS.md` or `CLAUDE.md`: teammates share them
 
 ## Task shaping
 
@@ -134,7 +135,7 @@ Before creating a governed card, `/ginflow` checks the configured worker block. 
 Before target-project work, determine whether the request is Direct Work, Governed Work, or Clarification. The card and Kanban checks below apply to Governed Work; Direct Work still requires affirmative eligibility, project-local permission, and known canonical verification.
 
 1. Confirm workspace points at real target repo.
-2. Read local `AGENTS.md` / `.hermes.md`.
+2. Read local `.hermes.md`, then any team `AGENTS.md`.
 3. **Check Kanban board state:**
    - If no Kanban cards exist → route to work shaping/sizing (investigation/brainstorming/implementation choice, artifact level, draft card).
    - If Kanban cards exist → read progress first (use `kanban_list`/`kanban_show` TOOLS in agent code), then resume from selected/active card.
@@ -297,7 +298,7 @@ The live harness reads from the current board. `--card <json-file>` remains avai
 
 | Subsystem    | Ginflow implementation                                                                              |
 | ------------ | --------------------------------------------------------------------------------------------------- |
-| Instructions | profile distribution chooses whether to route to `ginflow`; target `AGENTS.md` stores local context |
+| Instructions | profile distribution chooses whether to route to `ginflow`; target `.hermes.md` stores local context |
 | State        | Hermes Kanban card and linked artifacts                                                             |
 | Verification | project-native canonical command and card evidence                                                  |
 | Scope        | card objective, scope, acceptance, workspace, and one active card per mutable workspace             |
@@ -354,8 +355,8 @@ Rule:
 
 If user starts in blank project:
 
-1. inspect repo for `AGENTS.md` / `.hermes.md`
-2. if missing and setup template is available, copy setup repo `templates/AGENTS.md` before project-specific edits
+1. inspect repo for `.hermes.md` (and `AGENTS.md`, read-only)
+2. if `.hermes.md` missing and setup template is available, copy setup repo `templates/hermes.md` to `.hermes.md` and add it to `.git/info/exclude` before project-specific edits; do not touch `AGENTS.md` or `CLAUDE.md`
 3. add build/test/lint/run commands if known
 4. add forbidden areas / deploy rules if known
 5. if commands are unknown, leave placeholders and mark them missing
@@ -366,7 +367,7 @@ If user starts in blank project:
 
 Minimum local setup:
 
-- `AGENTS.md` or `.hermes.md`
+- `.hermes.md` (local, untracked)
 - install/dev/build/test/lint commands
 - key directories
 - forbidden/sensitive paths
@@ -407,4 +408,4 @@ Stop and clarify when:
 - `templates/spec.md`
 - `templates/kanban-task.md`
 - `templates/session-handoff.md`
-- setup repo `templates/AGENTS.md`
+- setup repo `templates/hermes.md`

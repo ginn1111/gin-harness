@@ -20,7 +20,7 @@ def main():
     drift = (SKILL / "references/drift-detect.md").read_text()
     workspace_warnings = (SKILL / "references/workspace-health-warnings.md").read_text()
     evals = json.loads((SKILL / "evals/evals.json").read_text())["evals"]
-    agents_template = (ROOT / "templates/AGENTS.md").read_text()
+    agents_template = (ROOT / "templates/hermes.md").read_text()
 
     artifact_paths = (
         "Target Spec artifact",
@@ -110,7 +110,7 @@ def main():
         if "\nname: ginflow\n" in f"\n{candidate.read_text()}\n":
             duplicate_snapshots.append(str(candidate.relative_to(ROOT)))
     assert not duplicate_snapshots, f"evaluation snapshots must not shadow live ginflow skill: {duplicate_snapshots}"
-    require(agents_template, (*target_drift_contract, "artifact_baseline", "blocks use of that card", "Unrelated work remains unblocked"), "templates/AGENTS.md")
+    require(agents_template, (*target_drift_contract, "artifact_baseline", "blocks use of that card", "Unrelated work remains unblocked"), "templates/hermes.md")
 
     for template in ("spec.md", "plan.md", "kanban-task.md", "session-handoff.md"):
         text = (SKILL / "templates" / template).read_text()

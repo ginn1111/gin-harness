@@ -18,7 +18,7 @@ Purpose:
 
 ### What the target project documents
 
-Keep the project-specific drift contract in target-repo `AGENTS.md` or `.hermes.md`. It must name:
+Keep the project-specific drift contract in target-repo `.hermes.md`. It must name:
 
 - the canonical verification command and required working directory
 - the authoritative local rules and task artifacts it checks
@@ -32,7 +32,7 @@ Example target-local section:
 ```markdown
 ## Drift detection
 - Run `make verify` from the repository root.
-- Treat `AGENTS.md`, the selected card, and its linked spec/plan as authorities.
+- Treat `.hermes.md`, the selected card, and its linked spec/plan as authorities.
 - Regenerate `api/generated/` after changing `api/schema.yaml`.
 - Resolve authority conflicts before implementation; record unresolved drift on the selected card.
 ```

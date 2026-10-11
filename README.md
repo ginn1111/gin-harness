@@ -50,7 +50,7 @@ The repository does not require Hermes, a Hermes profile, or profile configurati
 ## Usage
 
 1. Work from the real target repository, not the setup repository.
-2. Read the target project's `AGENTS.md` or `.hermes.md`.
+2. Read the target project's `.hermes.md` (local, untracked) and any tracked `AGENTS.md`.
 3. Inspect Git state and Kanban progress before mutable work.
 4. Route the request to Clarification, Direct Work, or Governed Work.
 5. For Governed Work, use the selected card's workspace, scope, acceptance, assignee, and linked artifacts.
@@ -81,7 +81,7 @@ The skill defines the workflow contract. Ginflow core provides reusable primitiv
 
 ## Further reading
 
-1. **Startup:** use the real target repository, read `AGENTS.md`/`.hermes.md`, inspect Git state, and read the selected card when governed work applies.
+1. **Startup:** use the real target repository, read `.hermes.md` and any `AGENTS.md`, inspect Git state, and read the selected card when governed work applies.
 2. **Routing:** evaluate Work Mode separately from Work Size and Risk Impact.
 3. **Clarification:** if requirements, target, cause, risk, ownership, artifact need, or verification are unknown, inspect read-only and ask for clarity; do not mutate project state.
 4. **Direct Work:** proceed without a card only when every eligibility factor is affirmatively established: clear target, known cause where relevant, genuine XS/S scope, localized reversible change, no actual Risk Impact, no governance artifact need, known verification, project permission, and an unowned single-worker workspace.
@@ -171,7 +171,7 @@ make test
 - [Ginflow workflow contract](skills/ginflow/SKILL.md)
 - [`ginflow-gate` plugin](plugins/ginflow-gate/)
 - [Reusable Ginflow core](core/ginflow-core/)
-- [Target-project setup template](templates/AGENTS.md)
+- [Target-project setup template](templates/hermes.md)
 
 ## Project rules
 

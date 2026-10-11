@@ -3,8 +3,8 @@
 If user starts in blank project, inspect local context first.
 
 ## Check for
-- `AGENTS.md`
-- `.hermes.md`
+- `.hermes.md` (local, untracked)
+- `AGENTS.md` (team-shared; read only)
 - `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `Makefile`, or equivalent
 - test/lint/build scripts
 - repo structure clues
@@ -12,7 +12,9 @@ If user starts in blank project, inspect local context first.
 ## If missing
 Help user create minimum local setup:
 
-- copy setup repo `templates/AGENTS.md` first when available
+- copy setup repo `templates/hermes.md` to `.hermes.md` first when available
+- add `.hermes.md` to `.git/info/exclude` (not `.gitignore`; never commit it)
+- never write ginflow instructions into `AGENTS.md` or `CLAUDE.md`: teammates share them
 - retain its routing line to `ginflow`
 
 - project summary
