@@ -1,5 +1,5 @@
 ---
-status: draft
+status: completed
 size: L
 scope: skills/ginflow/lib/project_config.py documentation-provider config, adaptive resolution, migration preview/backup
 owner: ginb
