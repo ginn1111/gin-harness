@@ -44,7 +44,6 @@ Put these in target repo when project needs them:
 | ------------ | ----------------------------------------- |
 | `.hermes.md` | local Hermes project rules incl. ginflow routing; untracked via `.git/info/exclude` |
 | `AGENTS.md`  | team-shared rules; read-only for ginflow, never write ginflow instructions here |
-
 | `docs/specs/<CARD-ID>.md` | behavior/contract detail when needed |
 | `docs/plans/<CARD-ID>.md` | execution order |
 | `docs/handoffs/<CARD-ID>.md` | optional exported resume snapshot |
@@ -152,12 +151,13 @@ Stop when any required input is missing and risk is material.
 The `ginflow-gate` completion policy is integrated with native `kanban_request_review` and `kanban_complete` tool calls:
 
 - `pre_tool_call` blocks malformed review requests and completions, linked local spec/plan documents that are not marked completed, mismatched verification/artifact commits, and linked-artifact drift.
+- If `ginflow-gate` is not installed, fail closed: report blocker, make no completion claim, record verification evidence and artifact baseline on the card by hand.
 - The blocking message lists incomplete linked documents and tells the agent to finalize and commit them before retrying. Documents are never mutated after the card is done.
 
 **Syntax:**
 
 ```
-kanban_request_review(task_id='<card-id>', summary='<short review request>',
+kanban_request_review(task_id='<hermes-task-id, e.g. t_ab12>', summary='<short review request>',
   metadata={'verification_result': {'commit': '<commit>', 'command': 'make test', 'result': 'passed'},
             'artifact_baseline': {'commit': '<commit>', 'paths': ['docs/specs/<CARD-ID>.md']}})
 ```
@@ -234,7 +234,7 @@ A task for current profile should answer:
 - how done is judged
 - what not to touch
 
-If any missing and risk is material, keep card blocked and ask Gin.
+If any missing and risk is material, keep card blocked and ask the user.
 
 ## Session close and restart
 
@@ -291,7 +291,7 @@ The live harness reads from current board. `--card <json-file>` remains availabl
 
 | Subsystem | Ginflow implementation |
 | --- | --- |
-| Instructions | profile distribution chooses whether to route to `ginflow`; target `AGENTS.md` stores local context |
+| Instructions | profile distribution chooses whether to route to `ginflow`; target `.hermes.md` stores local context (`AGENTS.md` read-only) |
 | State | Hermes Kanban card and Initiative artifacts |
 | Verification | project-native canonical command and Decision/card evidence |
 | Scope | package/card objective, scope, acceptance, workspace, and isolation |
@@ -301,17 +301,17 @@ The live harness reads from current board. `--card <json-file>` remains availabl
 
 ## Optional session handoff export
 
-Use `/hermes handoff export` only when Gin wants a portable Markdown snapshot. Export never replaces Kanban.
+Use `/hermes handoff export` only when the user wants a portable Markdown snapshot. Export never replaces Kanban.
 
 Flow:
 
-1. Ask Gin which Kanban card to export. Never auto-select.
+1. Ask the user which Kanban card to export. Never auto-select.
 2. Read selected card and only cards explicitly linked from it. Do not recurse.
 3. Read spec/plan links recorded on selected card.
 4. In target repo, read `git config user.name` and `git config user.email`.
 5. Render `templates/session-handoff.md` preview.
 6. Use `Not recorded on Kanban card.` for missing card data and `Not linked from selected Kanban card.` for missing artifact links. Use `Not configured in Git.` for missing Git identity.
-7. Ask Gin to approve content and output path. Use target project's local convention.
+7. Ask the user to approve content and output path. Use target project's local convention.
 8. Write only after approval.
 
 Never infer missing facts from status, chat, OS identity, commit history, or unrelated cards. Never mutate card status, assignee, links, or content during export.
