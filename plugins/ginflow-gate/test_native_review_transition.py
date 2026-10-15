@@ -65,7 +65,7 @@ def test_native_review_transition():
         home_path = Path(home) / "profiles" / "test"
         home_path.mkdir(parents=True, exist_ok=True)
         profile_home = str(home_path)
-        env = os.environ | {"HERMES_HOME": profile_home, "HERMES_KANBAN_BOARD": BOARD}
+        env = os.environ | {"HERMES_HOME": profile_home, "HERMES_KANBAN_HOME": str(Path(home) / "kanban-home"), "HERMES_KANBAN_BOARD": BOARD}
         (home_path / "config.yaml").write_text("kanban:\n  review_dispatch: true\n")
         run_hermes(env, "kanban", "init")
         run_hermes(env, "kanban", "boards", "create", BOARD)
@@ -76,6 +76,7 @@ def test_native_review_transition():
         old_home = os.environ.get("HERMES_HOME")
         old_board = os.environ.get("HERMES_KANBAN_BOARD")
         os.environ["HERMES_HOME"] = profile_home
+        os.environ["HERMES_KANBAN_HOME"] = env["HERMES_KANBAN_HOME"]
         os.environ["HERMES_KANBAN_BOARD"] = BOARD
         os.environ["HERMES_KANBAN_TASK"] = task_id
         os.environ["HERMES_KANBAN_RUN_ID"] = worker_env["HERMES_KANBAN_RUN_ID"]

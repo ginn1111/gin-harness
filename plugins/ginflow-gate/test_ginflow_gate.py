@@ -243,7 +243,7 @@ def test_live_tmp_project_card():
         (target / "docs/specs/TMP-1.md").write_text("# Temporary brief\n")
         profile_home = Path(home) / "profiles" / "test"
         profile_home.mkdir(parents=True)
-        env = os.environ | {"HERMES_HOME": str(profile_home), "HERMES_TUI_SKILLS": "ginflow", "HERMES_KANBAN_BOARD": TEST_BOARD}
+        env = os.environ | {"HERMES_HOME": str(profile_home), "HERMES_KANBAN_HOME": str(Path(home) / "kanban-home"), "HERMES_TUI_SKILLS": "ginflow", "HERMES_KANBAN_BOARD": TEST_BOARD}
         subprocess.run(["hermes", "kanban", "init"], env=env, check=True, capture_output=True, text=True)
         subprocess.run(
             ["hermes", "kanban", "boards", "create", TEST_BOARD],
@@ -291,7 +291,7 @@ def test_live_tmp_next_card_docs():
         subprocess.run(["git", "commit", "-qm", "baseline"], cwd=target, check=True)
         profile_home = Path(home) / "profiles" / "test"
         profile_home.mkdir(parents=True)
-        env = os.environ | {"HERMES_HOME": str(profile_home), "HERMES_KANBAN_BOARD": TEST_BOARD}
+        env = os.environ | {"HERMES_HOME": str(profile_home), "HERMES_KANBAN_HOME": str(Path(home) / "kanban-home"), "HERMES_KANBAN_BOARD": TEST_BOARD}
         subprocess.run(["hermes", "kanban", "init"], env=env, check=True, capture_output=True, text=True)
         subprocess.run(
             ["hermes", "kanban", "boards", "create", TEST_BOARD],

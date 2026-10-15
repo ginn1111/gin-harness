@@ -72,6 +72,7 @@ def test_full_kanban_lifecycle_traced():
         profile_home.mkdir(parents=True)
         env = os.environ | {
             "HERMES_HOME": str(profile_home),
+            "HERMES_KANBAN_HOME": str(Path(home) / "kanban-home"),
             "HERMES_KANBAN_BOARD": TEST_BOARD,
         }
         subprocess.run(["hermes", "kanban", "init"], env=env, check=True, capture_output=True, text=True)
@@ -102,12 +103,13 @@ def test_full_kanban_lifecycle_traced():
         old = {
             key: os.environ.get(key)
             for key in ("GINFLOW_LOG", "HERMES_SESSION_WORKER_ID", "HERMES_KANBAN_TASK",
-                        "HERMES_HOME", "HERMES_KANBAN_BOARD")
+                        "HERMES_HOME", "HERMES_KANBAN_HOME", "HERMES_KANBAN_BOARD")
         }
         os.environ["GINFLOW_LOG"] = "1"
         os.environ["HERMES_SESSION_WORKER_ID"] = session
         os.environ["HERMES_KANBAN_TASK"] = task_id
         os.environ["HERMES_HOME"] = str(profile_home)
+        os.environ["HERMES_KANBAN_HOME"] = env["HERMES_KANBAN_HOME"]
         os.environ["HERMES_KANBAN_BOARD"] = TEST_BOARD
         old_config_start = decorator.CONFIG_START
         decorator.CONFIG_START = lambda: target

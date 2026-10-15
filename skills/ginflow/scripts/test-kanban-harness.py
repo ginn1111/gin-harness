@@ -208,7 +208,7 @@ def main():
         assert required["pass"] is False
 
         with tempfile.TemporaryDirectory(prefix="ginflow-kanban-home-") as hermes_home:
-            env = os.environ | {"HERMES_HOME": hermes_home}
+            env = os.environ | {"HERMES_HOME": hermes_home, "HERMES_KANBAN_HOME": hermes_home + "/kanban-home"}
             task_id = create_live_card(env, target, kanban_show["task"]["body"])
             live_card = run(target, task_id=task_id, env=env)
             assert live_card.returncode == 0, live_card.stdout + live_card.stderr
@@ -235,7 +235,7 @@ def main():
         git(target, "commit", "-qm", "complete TEST-1")
         completion_commit = git(target, "rev-parse", "HEAD")
         with tempfile.TemporaryDirectory(prefix="ginflow-kanban-home-") as hermes_home:
-            env = os.environ | {"HERMES_HOME": hermes_home}
+            env = os.environ | {"HERMES_HOME": hermes_home, "HERMES_KANBAN_HOME": hermes_home + "/kanban-home"}
             task_id = create_live_card(env, target, kanban_show["task"]["body"])
             candidate = run(
                 target,

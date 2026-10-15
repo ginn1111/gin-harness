@@ -63,7 +63,7 @@ def main():
         home.mkdir(parents=True)
         env = os.environ | {
             "PATH": f"{tmp / 'bin'}{os.pathsep}{os.environ['PATH']}",
-            "HERMES_HOME": str(home), "HERMES_KANBAN_BOARD": BOARD, "STUB_LOG": str(log), "STUB_FAIL": str(tmp / "fail"),
+            "HERMES_HOME": str(home), "HERMES_KANBAN_HOME": str(tmp / "kanban-home"), "HERMES_KANBAN_BOARD": BOARD, "STUB_LOG": str(log), "STUB_FAIL": str(tmp / "fail"),
         }
         env.pop("GINFLOW_LOG", None)
         # Isolate from any outer Hermes session (delegated child, kanban worker).
