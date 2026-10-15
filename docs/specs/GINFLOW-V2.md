@@ -90,7 +90,7 @@ Ginflow v2 removes Work Size, Direct Work, size-based routing, and conditional a
 
 ## Implementation Decisions
 
-- Introduce `workflow_version: 2` as the explicit selector for artifact-first initiatives. A linked version 2 Work Contract selects the new flow.
+- Treat the currently installed Ginflow contract as authoritative. Users do not select or preserve workflow versions; outdated or malformed configuration remains readable but cannot authorize governed creation.
 - Replace pre-execution route selection with **Shaping**. Shaping includes brainstorming, feedback, read-only repository investigation, artifact drafting, work splitting, dependency design, and package approval.
 - Permit artifact creation before Kanban cards exist. Prohibit product-code mutation, implementation dispatch, and execution commands during Shaping.
 - Define **Work Contract** as the initiative authority for objective, boundaries, exclusions, global acceptance, and verification strategy.
