@@ -17,6 +17,8 @@ def _lines(values: Any) -> str:
 
 
 def _links(package: Mapping[str, Any], unit: Mapping[str, Any] | None = None) -> list[str]:
+    if unit and isinstance(unit.get("document"), Mapping):
+        return [unit["document"]["path_or_url"]]  # document replaces Contract/Spec/Plan links
     links = package.get("links", {})
     result = []
     if isinstance(links, Mapping):
@@ -94,7 +96,8 @@ def create_execution_cards(
             "goal_mode": True,
             "goal_max_turns": unit.get("goal_max_turns", 20),
             "parents": dependency_ids,
-            "metadata": {"unit_key": key, "package_baseline": baseline["commit"]},
+            "metadata": {"unit_key": key, "package_baseline": baseline["commit"],
+                         **({"document": dict(unit["document"])} if "document" in unit else {})},
         }
         card = create_card(args)
         card_id = card.get("id")

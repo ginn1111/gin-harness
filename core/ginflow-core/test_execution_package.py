@@ -77,7 +77,23 @@ def test_package_rejects_cycle_deterministically():
     assert "unit dependencies must be acyclic" in result["errors"]
 
 
+REF = {"provider": "local", "id": "UNIT-1", "path_or_url": "docs/work-units/UNIT-1.md"}
+
+
+def with_ref(ref):
+    return {**PACKAGE, "units": [{**PACKAGE["units"][0], "document": ref}]}
+
+
+def test_document_reference_validation():
+    assert validate_package(with_ref(REF))["valid"] is True
+    for bad in ({**REF, "id": "OTHER"}, {"provider": "local", "id": "UNIT-1"}, {**REF, "path_or_url": " "}, "x", [REF]):
+        result = validate_package(with_ref(bad))
+        assert result["valid"] is False and any("document" in e for e in result["errors"]), bad
+    assert validate_package(with_ref(None))["valid"] is False
+
+
 if __name__ == "__main__":
+    test_document_reference_validation()
     test_minimal_package_is_valid()
     test_package_rejects_cycle_deterministically()
     print("execution package tests passed")
