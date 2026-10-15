@@ -89,8 +89,7 @@ export GINFLOW_INSTALL_MANIFEST="$TMP/.ginflow-install.json"
 # Failure mid-install restores every prior path; conflicts and profile state survive.
 if [[ "$(id -u)" != "0" ]]; then
   A="$PROFILES/alpha"
-  mkdir -p "$SKILL" "$A/plugins/ginflow-trace" "$A/sessions" "$A/memories"
-  printf 'prior-skill\n' > "$SKILL/prior.txt"
+  mkdir -p "$A/plugins/ginflow-trace" "$A/sessions" "$A/memories"
   printf 'prior-plugin\n' > "$A/plugins/ginflow-trace/prior.txt"
   printf 'secret\n' > "$A/.env"
   printf 'auth\n' > "$A/auth.json"
@@ -105,7 +104,6 @@ if [[ "$(id -u)" != "0" ]]; then
   fi
   chmod 755 "$PROFILES/beta/plugins"
   [[ ! -e "$GINFLOW_INSTALL_MANIFEST" ]]
-  [[ "$(cat "$SKILL/prior.txt")" == "prior-skill" ]]
   [[ "$(cat "$A/plugins/ginflow-trace/prior.txt")" == "prior-plugin" ]]
   [[ ! -e "$SKILL/SKILL.md" && ! -e "$A/plugins/ginflow-trace/plugin.yaml" ]]
   [[ ! -e "$PROFILES/beta/plugins/ginflow-trace" ]]
@@ -121,7 +119,6 @@ if [[ "$(id -u)" != "0" ]]; then
   [[ -f "$A/plugins/ginflow-trace/extra.txt" && -f "$GINFLOW_INSTALL_MANIFEST" ]]
   rm "$A/plugins/ginflow-trace/extra.txt"
   bash "$ROOT/scripts/install.sh" uninstall >/dev/null
-  [[ "$(cat "$SKILL/prior.txt")" == "prior-skill" ]]
   [[ "$(cat "$A/plugins/ginflow-trace/prior.txt")" == "prior-plugin" ]]
   [[ "$(cat "$A/.env")" == "secret" && "$(cat "$A/auth.json")" == "auth" ]]
   [[ "$(cat "$A/sessions/s.txt")" == "session" && "$(cat "$A/memories/m.md")" == "memory" ]]
