@@ -91,6 +91,10 @@ More options and the evidence rules: [docs/guides/project-config.md](docs/guides
 - [System diagram](docs/architecture/gin-harness-system.drawio) and [reference architecture](docs/architecture/gin-harness-reference.md)
 - [Glossary](GLOSSARY.md)
 
+## References
+
+- `codex-with-chatgpt`: inspiration for the vendored c2c CLI in `core/c2c/` (ChatGPT plans and reviews, the agent executes). Adapted here for Hermes.
+
 ## Contributing
 
 Open an issue on [GitHub Issues](https://github.com/ginn1111/gin-harness/issues) before large changes. Before a pull request:

@@ -16,6 +16,7 @@ import importlib.util
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -432,5 +433,48 @@ def _load_tasks() -> list[dict[str, Any]]:
     return [task for task in tasks if isinstance(task, dict)]
 
 
+_ORIGIN = re.compile(r"\[ginflow\] origin=worker profile=(\S+) run=(\S+) kind=(\S+) reason=(.*)", re.S)
+_ORIGIN_MAX = 300
+
+
+def _origin_context(**kwargs: Any) -> str | None:
+    """Bounded error-origin line for the repair worker's task; None unless env task has one."""
+    task_id = (os.environ.get("HERMES_KANBAN_TASK") or "").strip()
+    if not task_id:
+        return None
+    try:
+        board = os.environ.get("HERMES_KANBAN_BOARD")
+        command = ["hermes", "kanban"] + (["--board", board] if board else []) + ["show", task_id, "--json"]
+        result = subprocess.run(command, text=True, capture_output=True, timeout=15)
+        if result.returncode:
+            return None
+        data = json.loads(result.stdout)
+        if (data.get("task") or {}).get("id") != task_id:
+            return None
+        for comment in reversed(data.get("comments") or []):
+            match = _ORIGIN.match(str(comment.get("body") or ""))
+            if match:
+                profile, run, kind, reason = (
+                    " ".join(re.sub(r"[\x00-\x1f\x7f\[\]]", " ", g).split())[:_ORIGIN_MAX]
+                    for g in match.groups()
+                )
+                return (f"[ginflow origin: error came from worker; profile={profile}; "
+                        f"run={run}; kind={kind}; reason={reason}]")
+    except Exception as exc:
+        logger.warning("ginflow-gate routing: origin context unavailable: %s", exc)
+    return None
+
+
+def _pre_llm_call(**kwargs: Any) -> dict[str, str] | None:
+    parts = []
+    base = _routing_context(**kwargs)
+    if base:
+        parts.append(base["context"] if isinstance(base, dict) else str(base))
+    origin = _origin_context(**kwargs)
+    if origin:
+        parts.append(origin)
+    return {"context": "\n".join(parts)} if parts else None
+
+
 def register(ctx) -> None:
-    ctx.register_hook("pre_llm_call", _routing_context)
+    ctx.register_hook("pre_llm_call", _pre_llm_call)
