@@ -197,3 +197,16 @@ describe("ngrok install guidance", () => {
     }
   });
 });
+
+describe("ngrok-only config", () => {
+  it("leaves no Cloudflare tunnel code, state choices or config in src", () => {
+    const walk = (dir: string): string[] =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+        e.isDirectory() ? walk(`${dir}/${e.name}`) : [`${dir}/${e.name}`]
+      );
+    const offenders = walk(new URL("../src", import.meta.url).pathname).filter((f) =>
+      /cloudflare|cloudflared|trycloudflare/i.test(fs.readFileSync(f, "utf8"))
+    );
+    expect(offenders).toEqual([]);
+  });
+});
