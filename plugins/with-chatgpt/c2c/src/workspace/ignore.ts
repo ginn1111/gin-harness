@@ -33,7 +33,6 @@ export const SENSITIVE_PATTERNS: string[] = [
   ".git-credentials",
   "*.keychain",
   "*.keychain-db",
-  ".cloudflared/",
   "credentials.json",
   "service-account*.json",
   "secrets.json",
