@@ -124,9 +124,26 @@ def context_error(workspace: Path) -> str | None:
     except (OSError, TypeError, ValueError):
         return "project config has an invalid workspace"
     actual = Path(workspace).expanduser().resolve()
-    if expected != actual:
+    if expected != actual and not _same_repository(expected, actual):
         return f"project config workspace {expected} does not match {actual}"
     return notify_error(context)
+
+
+def _same_repository(a: Path, b: Path) -> bool:
+    """True when both paths share one .git dir: a git worktree is the same workspace as its main checkout."""
+    common = _git_common_dir(a)
+    return common is not None and common == _git_common_dir(b)
+
+
+def _git_common_dir(path: Path) -> Path | None:
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(path), "rev-parse", "--path-format=absolute", "--git-common-dir"],
+            text=True, capture_output=True, timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return Path(out.stdout.strip()).resolve() if out.returncode == 0 and out.stdout.strip() else None
 
 
 def notify_error(context: Mapping[str, Any]) -> str | None:

@@ -76,6 +76,7 @@ lifecycle-test:
 	python3 skills/ginflow/scripts/test-ginflow-lifecycle.py
 	python3 skills/ginflow/scripts/test-project-reviewer.py
 	python3 skills/ginflow/scripts/test-document-config.py
+	python3 skills/ginflow/scripts/test-worktree-context.py
 
 install-test:
 	bash scripts/test-install.sh
