@@ -1,4 +1,4 @@
-.PHONY: install uninstall install-test verify verify-strict doctor doctor-deps community-update clean lint test lifecycle-test plugin-test trace-test c2c
+.PHONY: install uninstall install-test verify verify-strict doctor doctor-deps community-update clean lint test lifecycle-test plugin-test trace-test c2c herdr-plan-test
 
 # === Pre-flight ===
 doctor:
@@ -52,6 +52,7 @@ lint:
 	@if compgen -G 'scripts/*.py' >/dev/null; then python3 -m py_compile scripts/*.py; fi
 	bash -n skills/ginflow/scripts/*.sh
 	python3 -m py_compile skills/ginflow/scripts/*.py
+	python3 -m py_compile plugins/herdr-hermes-plans/*.py
 	@echo "lint ok"
 
 ## Run deterministic repository tests
@@ -81,7 +82,10 @@ lifecycle-test:
 install-test:
 	bash scripts/test-install.sh
 
-plugin-test:
+herdr-plan-test:
+	python3 plugins/herdr-hermes-plans/test_picker.py
+
+plugin-test: herdr-plan-test
 	python3 plugins/with-chatgpt/test_plugin.py
 	hermes plugins validate plugins/with-chatgpt
 	python3 plugins/ginflow-gate/test_ginflow_gate.py
