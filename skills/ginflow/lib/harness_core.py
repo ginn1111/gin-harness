@@ -30,8 +30,13 @@ def check(name, tests, exercised=True):
             row["details"], row["resolution"] = context
         rows.append(row)
     failed = [row for row in rows if not row["pass"]]
-    status = "blocker" if any(
-        row["severity"] == "blocker" for row in failed) else "warning" if failed else "pass"
+    status = (
+        "blocker"
+        if any(row["severity"] == "blocker" for row in failed)
+        else "warning"
+        if failed
+        else "pass"
+    )
     return {"status": status, "checks": rows}
 
 
@@ -45,7 +50,8 @@ def parse_card_body(body):
     for raw_line in str(body or "").splitlines():
         line = raw_line.strip()
         heading = re.match(
-            r"^(?:#{1,6}\s*)?(Objective|Scope|Acceptance|Links):\s*(.*)$", line, re.I)
+            r"^(?:#{1,6}\s*)?(Objective|Scope|Acceptance|Links):\s*(.*)$", line, re.I
+        )
         if heading:
             current = heading.group(1).lower()
             value = heading.group(2).strip().strip("`")
@@ -71,20 +77,25 @@ def normalize_card(document):
 
     fields = parse_card_body(task.get("body"))
     metadata_runs = [
-        run for run in document.get("runs", [])
+        run
+        for run in document.get("runs", [])
         if isinstance(run, dict) and isinstance(run.get("metadata"), dict)
     ]
     metadata = {}
     if metadata_runs:
+
         def run_order(run):
             run_id = run.get("id")
             if isinstance(run_id, int):
                 return 2, run_id
-            return 1, str(run.get("finished_at") or run.get("started_at") or run_id or "")
+            return 1, str(
+                run.get("finished_at") or run.get("started_at") or run_id or ""
+            )
 
         metadata = max(metadata_runs, key=run_order)["metadata"]
-    ginflow_metadata = metadata.get("ginflow", {}) if isinstance(
-        metadata.get("ginflow"), dict) else {}
+    ginflow_metadata = (
+        metadata.get("ginflow", {}) if isinstance(metadata.get("ginflow"), dict) else {}
+    )
     for name in ("objective", "scope", "acceptance", "links"):
         if name in ginflow_metadata:
             fields[name] = ginflow_metadata[name]
@@ -126,10 +137,17 @@ def load_kanban_card(task_id, board=None, workspace=None):
     except OSError as error:
         return {}, f"Unable to run Hermes Kanban for card {task_id}: {error}"
     if result.returncode != 0:
-        detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
+        detail = (
+            result.stderr.strip()
+            or result.stdout.strip()
+            or f"exit {result.returncode}"
+        )
         return {}, f"Unable to read Kanban card {task_id}: {detail}"
     if not result.stdout.strip():
-        return {}, f"Kanban card {task_id} returned no JSON; verify the task ID and board"
+        return (
+            {},
+            f"Kanban card {task_id} returned no JSON; verify the task ID and board",
+        )
     try:
         return json.loads(result.stdout), None
     except json.JSONDecodeError as error:
@@ -166,11 +184,19 @@ def startup_gate(card, target, current=None):
     except (OSError, TypeError, ValueError):
         card_workspace = None
     if card_workspace != current:
-        return {"route": "workspace_mismatch", "valid": False, "errors": ["card workspace does not match current workspace"]}
+        return {
+            "route": "workspace_mismatch",
+            "valid": False,
+            "errors": ["card workspace does not match current workspace"],
+        }
     required = ("id", "title", "objective", "scope", "acceptance", "assignee", "links")
     missing = [name for name in required if not card.get(name)]
     if missing:
-        return {"route": "docs_invalid", "valid": False, "errors": ["card missing: " + ", ".join(missing)]}
+        return {
+            "route": "docs_invalid",
+            "valid": False,
+            "errors": ["card missing: " + ", ".join(missing)],
+        }
 
     invalid_links = []
     for link in card.get("links", []):
@@ -189,14 +215,26 @@ def startup_gate(card, target, current=None):
         if relative.parts[:1] != ("docs",):
             invalid_links.append(path)
     if invalid_links:
-        return {"route": "docs_invalid", "valid": False, "errors": ["invalid linked docs: " + ", ".join(sorted(invalid_links))]}
+        return {
+            "route": "docs_invalid",
+            "valid": False,
+            "errors": ["invalid linked docs: " + ", ".join(sorted(invalid_links))],
+        }
 
     artifacts = linked_artifacts(card, target)
     if not artifacts:
-        return {"route": "docs_invalid", "valid": False, "errors": ["no linked target-local docs"]}
+        return {
+            "route": "docs_invalid",
+            "valid": False,
+            "errors": ["no linked target-local docs"],
+        }
     missing_paths = [path for path, candidate in artifacts if not candidate.is_file()]
     if missing_paths:
-        return {"route": "docs_invalid", "valid": False, "errors": ["missing linked docs: " + ", ".join(missing_paths)]}
+        return {
+            "route": "docs_invalid",
+            "valid": False,
+            "errors": ["missing linked docs: " + ", ".join(missing_paths)],
+        }
     next_state = str(card.get("status", "")).lower() in {"next", "todo", "ready"}
     if next_state:
         unstructured = []
@@ -205,25 +243,56 @@ def startup_gate(card, target, current=None):
             if not re.search(r"^#{1,6}\s+.+$", text, re.M):
                 unstructured.append(path)
         if unstructured:
-            return {"route": "docs_invalid", "valid": False, "errors": ["linked docs lack headings: " + ", ".join(unstructured)]}
+            return {
+                "route": "docs_invalid",
+                "valid": False,
+                "errors": ["linked docs lack headings: " + ", ".join(unstructured)],
+            }
         status = subprocess.run(
-            ["git", "status", "--porcelain", "--untracked-files=all", "--", *[path for path, _ in artifacts]],
+            [
+                "git",
+                "status",
+                "--porcelain",
+                "--untracked-files=all",
+                "--",
+                *[path for path, _ in artifacts],
+            ],
             cwd=target,
             text=True,
             capture_output=True,
         )
         if status.returncode != 0:
-            detail = status.stderr.strip() or status.stdout.strip() or f"exit {status.returncode}"
-            return {"route": "validation_failed", "valid": False, "errors": ["unable to inspect linked docs: " + detail]}
-        changed = sorted(line[3:] for line in status.stdout.splitlines() if len(line) > 3)
+            detail = (
+                status.stderr.strip()
+                or status.stdout.strip()
+                or f"exit {status.returncode}"
+            )
+            return {
+                "route": "validation_failed",
+                "valid": False,
+                "errors": ["unable to inspect linked docs: " + detail],
+            }
+        changed = sorted(
+            line[3:] for line in status.stdout.splitlines() if len(line) > 3
+        )
         if changed:
-            return {"route": "docs_changed", "valid": False, "errors": ["linked docs have uncommitted changes: " + ", ".join(changed)]}
-    return {"route": "ready_to_start", "valid": True, "errors": [], "transition_required": next_state}
+            return {
+                "route": "docs_changed",
+                "valid": False,
+                "errors": [
+                    "linked docs have uncommitted changes: " + ", ".join(changed)
+                ],
+            }
+    return {
+        "route": "ready_to_start",
+        "valid": True,
+        "errors": [],
+        "transition_required": next_state,
+    }
 
 
 def artifact_gate(card, target):
-    completed = str(card.get("status", "")).lower() in {
-        "done", "completed", "closed"}
+    completed = str(card.get("status", "")).lower() in {"done", "completed", "closed"}
     baseline = card.get("artifact_baseline")
     guarded = completed or baseline is not None
     artifacts = linked_artifacts(card, target) if guarded else []
@@ -269,8 +338,11 @@ def artifact_gate(card, target):
             text=True,
             capture_output=True,
         )
-        drifted = [line for line in diff.stdout.splitlines(
-        ) if line] if diff.returncode == 0 else linked_paths
+        drifted = (
+            [line for line in diff.stdout.splitlines() if line]
+            if diff.returncode == 0
+            else linked_paths
+        )
     card_id = card.get("id", "<CARD-ID>")
     baseline_resolution = (
         f"Keep card {card_id} open or reopen card {card_id}. Commit linked artifacts, "
@@ -292,8 +364,10 @@ def artifact_gate(card, target):
     elif not commit_valid:
         baseline_details = f"completion commit is unavailable: {commit}"
     elif missing_from_commit:
-        baseline_details = "linked artifacts absent from completion commit: " + \
-            ", ".join(missing_from_commit)
+        baseline_details = (
+            "linked artifacts absent from completion commit: "
+            + ", ".join(missing_from_commit)
+        )
     else:
         baseline_details = "completion commit and linked paths are recorded"
     return {
@@ -301,6 +375,7 @@ def artifact_gate(card, target):
         "baseline_details": baseline_details,
         "baseline_resolution": baseline_resolution,
         "matches": not drifted,
-        "drift_details": "changed, missing, or uncommitted relative to completion commit: " + ", ".join(drifted),
+        "drift_details": "changed, missing, or uncommitted relative to completion commit: "
+        + ", ".join(drifted),
         "drift_resolution": drift_resolution,
     }
